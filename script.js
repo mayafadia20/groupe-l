@@ -62,7 +62,7 @@
           if (e.isIntersecting) { show(e.target); io.unobserve(e.target); }
         });
       },
-      { threshold: 0.2 }
+      { threshold: 0.1, rootMargin: "0px 0px -5% 0px" }
     );
     targets.forEach((t) => io.observe(t));
   } else {
