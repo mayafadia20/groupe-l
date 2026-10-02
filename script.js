@@ -4,18 +4,19 @@
   // Année du pied de page et date du jour (héros)
   const year = document.getElementById("year");
   if (year) year.textContent = new Date().getFullYear();
-  const jour = document.getElementById("jour-semaine");
-  const date = document.getElementById("date-longue");
-  if (jour && date) {
-    const now = new Date();
-    const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-    jour.textContent = cap(now.toLocaleDateString("fr-CA", { weekday: "long" }));
-    date.textContent = now.toLocaleDateString("fr-CA", { day: "numeric", month: "long", year: "numeric" });
+  // Heure locale de Montréal (héros), mise à jour chaque demi-minute
+  const heure = document.getElementById("heure-locale");
+  if (heure) {
+    const maj = () => {
+      heure.textContent = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "America/Toronto" });
+    };
+    maj();
+    setInterval(maj, 30000);
   }
 
   // Menu mobile
   const toggle = document.querySelector(".nav-toggle");
-  const links = document.querySelector(".nav-pills");
+  const links = document.querySelector(".nav-links");
   if (toggle && links) {
     toggle.addEventListener("click", () => {
       const open = links.classList.toggle("open");

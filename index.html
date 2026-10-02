@@ -18,78 +18,39 @@
     <!-- ===== 1. Héros ===== -->
     <section class="panel hero" id="hero">
       <header class="hero-top">
-        <nav class="nav-pills" aria-label="Navigation principale">
-          <a href="#top" class="on">Accueil</a>
+        <a class="brand brand-hero" href="#top" aria-label="Groupe L — accueil">
+          <img src="assets/logo-blanc.png" alt="" class="brand-mark">Groupe L
+        </a>
+        <nav class="nav-links" aria-label="Navigation principale">
           <a href="#pour-qui">Pour qui</a>
+          <a href="#cabinet">Le cabinet</a>
           <a href="#trente-jours">30 jours</a>
           <a href="#services">Services</a>
+          <a href="#contact">Contact</a>
         </nav>
-        <div class="hero-date small">
-          <span id="jour-semaine"></span><br><span id="date-longue"></span>
-        </div>
-        <a class="btn btn-black" href="#contact">Discuter d'un mandat <i class="fl">↗</i></a>
         <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span></button>
       </header>
 
-      <div class="hero-grid">
-        <!-- colonne gauche -->
-        <div class="hero-left">
-          <h1 class="display">
-            Résolution<br>de problèmes <span class="tag">('26)</span>
-          </h1>
-          <p class="label"><i class="pt"></i>(À propos)</p>
-          <p class="hero-about">Cabinet de résolution de problèmes et d'amélioration continue. Des résultats dans les 30 premiers jours.</p>
-          <a class="btn btn-black btn-sm" href="#contact">Prendre rendez-vous <i class="fl">↗</i></a>
-
-          <div class="mini-cards" aria-label="Chiffres clés">
-            <div class="mini-card">
-              <strong>30</strong>
-              <small>jours avant les premiers résultats mesurés</small>
-              <ul class="mini-bars" aria-hidden="true"><li style="--w:35%"></li><li style="--w:70%"></li><li style="--w:100%"></li></ul>
-              <a class="btn btn-black btn-xs" href="#trente-jours">Voir les 30 jours</a>
-            </div>
-            <div class="mini-card mini-card-dark">
-              <span class="small">Fusions et acquisitions</span>
-              <strong>92 %</strong>
-              <small>des recommandations mises en œuvre</small>
-            </div>
-          </div>
+      <div class="hero-body">
+        <div class="hero-text">
+          <p class="hero-kicker">Résolution de problèmes <sup>01</sup></p>
+          <h1 class="hero-title">Des problèmes réglés.<br>Des résultats en 30 jours.</h1>
+          <p class="hero-lead">Cabinet de résolution de problèmes et d'amélioration continue : fusions et acquisitions, stratégie, implantation de systèmes, changement de structure. Avec vos équipes, sur le terrain.</p>
         </div>
 
-        <!-- portrait central -->
-        <figure class="portrait">
-          <img src="assets/portrait.jpg" alt="" onerror="this.remove()">
-          <figcaption class="badge">
-            <img src="assets/logo-blanc.png" alt="" class="badge-mark">
-            <span>Groupe L</span>
-            <i class="badge-lines" aria-hidden="true"></i>
-          </figcaption>
-        </figure>
-
-        <!-- colonne droite -->
-        <div class="hero-right">
-          <span class="pill"><i class="pt pt-ring"></i>Résultats en 30 jours</span>
-          <p class="small align-right">Disponibles<br><i class="pt pt-live"></i> pour un mandat</p>
-          <a class="feature-card" href="#services">
-            <span class="small">En ce moment</span>
-            <span class="feature-title">Fusions et acquisitions <em class="tag">2026</em></span>
-            <span class="feature-visual" aria-hidden="true">
-              <svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="1">
-                <path d="M20 70 L80 40 L140 70 L80 100 Z" opacity=".5"/>
-                <path d="M20 55 L80 25 L140 55 L80 85 Z" stroke-dasharray="3 3"/>
-                <path d="M20 40 L80 10 L140 40 L80 70 Z"/>
-              </svg>
-              <b class="arrow-btn">↗</b>
-            </span>
-            <span class="feature-bar" aria-hidden="true"><i></i></span>
-          </a>
+        <!-- objet noir coupé par le bord droit, à la manière de l'empennage -->
+        <div class="hero-object" aria-hidden="true">
+          <div class="fin">
+            <img src="assets/logo-blanc.png" alt="" class="fin-mark">
+            <span class="fin-text">Groupe L</span>
+          </div>
         </div>
       </div>
 
-      <div class="strip small">
-        <span>Montréal · Québec</span>
-        <span>Défiler <i class="scroll-dot">⊕</i></span>
-        <a href="mailto:info@groupel.ca">info@groupel.ca</a>
+      <div class="hero-stats">
+        <div><span class="small">Premiers résultats mesurés</span><strong>30 jours</strong></div>
+        <div><span class="small">Basés à</span><strong>Montréal</strong></div>
+        <div class="stat-time"><span class="small">Heure locale</span><strong id="heure-locale">--:--</strong></div>
       </div>
     </section>
 
