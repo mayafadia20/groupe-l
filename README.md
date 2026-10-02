@@ -23,16 +23,19 @@ npx serve .
 
 ## Direction visuelle
 
-- Style « studio » monochrome : héros gris clair avec portrait central
-  (déposer `assets/portrait.jpg`, noir et blanc ; sans photo, un fond
-  sombre prend sa place), titre en capitales grasses (Inter Tight),
-  étiquettes entre parenthèses, pastilles et boutons noirs avec flèche ↗
-- Bandeau fin sous le héros, énoncé en deux tons sur fond noir, cartes
-  « bento » à bord fin
-- Panneaux gris clair et noirs en alternance ; icônes géométriques au
-  trait ; anneau des services
-- Chaque section occupe la fenêtre, le défilement s'arrête de section en
-  section (arrêt souple sur téléphone)
+- Fond blanc pur ; cartes gris clair (`--grey`) et noires en contraste
+- Héros : navigation sobre, titre en deux lignes à graisse normale (Inter
+  Tight), empennage noir coupé par le bord droit, bandeau de trois
+  chiffres avec l'heure de Montréal en direct
+- Énoncé en deux tons sur fond noir, encadré de deux bandeaux fins
+- Pour qui : cartes empilées à titre en capitales et flèche ↗, visuel
+  sombre à droite (déposer `assets/visuel.jpg` pour une photo)
+- Le cabinet : duo de cartes gris clair / noire, pastilles de services,
+  diagramme de cercles
+- 30 jours : titre et paragraphe, trois cartes noires, ligne de chiffres
+- Contact : deux panneaux, noir à gauche et formulaire à droite
+- Chaque section occupe la fenêtre ; arrêt du défilement de section en
+  section (souple sur téléphone)
 
 Les couleurs vivent dans les variables `:root` de `styles.css`.
 
