@@ -23,15 +23,16 @@ npx serve .
 
 ## Direction visuelle
 
-- Monochrome éditorial : panneaux blanc cassé et noir en alternance ;
-  le héros seul porte un vert-noir profond coupé en deux
-- Typographie Inter (300 / 400 / 500), titres serrés, grandes tailles ;
-  libellés et boutons en monospace majuscule espacé
-- Icônes géométriques au trait fin, cercles pointillés, points blancs
-- Navigation en `mix-blend-mode: difference` : blanche sur fond sombre,
-  noire sur fond clair, sans changement de classe
-- Le logo blanc sert partout ; sur fond clair, il passe en noir par
-  `filter: invert(1)`
+- Style « studio » monochrome : héros gris clair avec portrait central
+  (déposer `assets/portrait.jpg`, noir et blanc ; sans photo, un fond
+  sombre prend sa place), titre en capitales grasses (Inter Tight),
+  étiquettes entre parenthèses, pastilles et boutons noirs avec flèche ↗
+- Bandeau fin sous le héros, énoncé en deux tons sur fond noir, cartes
+  « bento » à bord fin
+- Panneaux gris clair et noirs en alternance ; icônes géométriques au
+  trait ; anneau des services
+- Chaque section occupe la fenêtre, le défilement s'arrête de section en
+  section (arrêt souple sur téléphone)
 
 Les couleurs vivent dans les variables `:root` de `styles.css`.
 
