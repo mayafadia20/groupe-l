@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Groupe L — Création de valeur opérationnelle</title>
-  <meta name="description" content="Groupe L est une firme de consultation spécialisée en création de valeur opérationnelle : diagnostic, transformation et performance durable pour les entreprises.">
+  <title>Groupe L — Cabinet de résolution de problèmes</title>
+  <meta name="description" content="Groupe L est un cabinet de résolution de problèmes et d'amélioration continue : fusions et acquisitions, stratégie, implantation de systèmes, changement de structure. Des résultats dans les 30 premiers jours.">
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,18 +14,19 @@
 <body>
 
   <!-- ===== Navigation ===== -->
-  <header class="nav">
+  <header class="nav" id="nav">
     <a class="brand" href="#top" aria-label="Groupe L — accueil">
       <img src="assets/logo-blanc.png" alt="" class="brand-mark">
       <span class="brand-name">Groupe L</span>
     </a>
     <nav class="nav-links" aria-label="Navigation principale">
-      <a href="#approche">Approche</a>
-      <a href="#expertise">Expertise</a>
-      <a href="#resultats">Résultats</a>
+      <a href="#pour-qui">Pour qui</a>
+      <a href="#cabinet">Le cabinet</a>
+      <a href="#trente-jours">30 jours</a>
+      <a href="#services">Services</a>
       <a href="#contact">Contact</a>
     </nav>
-    <a class="btn-pill" href="#contact"><span class="dot"></span>Discuter d'un mandat</a>
+    <a class="btn btn-outline" href="#contact">Discuter d'un mandat</a>
     <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false">
       <span></span><span></span>
     </button>
@@ -33,197 +34,250 @@
 
   <main id="top">
 
-    <!-- ===== Panel 1 : Hero ===== -->
+    <!-- ===== 1. Héros ===== -->
     <section class="panel hero" id="hero">
-      <div class="ring ring-hero" aria-hidden="true"></div>
+      <div class="hero-split" aria-hidden="true"></div>
 
-      <div class="hero-content">
-        <p class="eyebrow">Firme de consultation en gestion</p>
-        <h1 class="chrome">
-          <span class="line1">Création de valeur</span>
-          <span class="line2">opérationnelle</span>
-        </h1>
-        <p class="hero-sub">Nous transformons les opérations des entreprises en leviers mesurables de rentabilité, de croissance et de résilience.</p>
-        <div class="hero-actions">
-          <a class="btn-pill" href="#approche"><span class="dot"></span>Découvrir l'approche</a>
-          <a class="btn-pill ghost" href="#resultats">Voir les résultats</a>
-        </div>
+      <p class="hero-eyebrow mono">
+        Cabinet de résolution de problèmes<br>
+        et d'amélioration continue · Montréal
+      </p>
+
+      <h1 class="hero-title" aria-label="Groupe L">
+        <span>G</span><span>R</span><span>O</span><span>U</span><span>P</span><span>E</span><span class="sep"></span><span>L</span>
+      </h1>
+
+      <div class="hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 160 100" fill="none" stroke="currentColor" stroke-width="1">
+          <ellipse cx="44" cy="50" rx="22" ry="36"/>
+          <path d="M44 14 L150 50 L44 86"/>
+          <path d="M44 50 L150 50" stroke-dasharray="3 4"/>
+          <circle cx="44" cy="50" r="2.5" fill="currentColor" stroke="none"/>
+          <circle cx="150" cy="50" r="2.5" fill="currentColor" stroke="none"/>
+        </svg>
       </div>
 
-      <div class="glass-card card-left reveal">
-        <div class="icon-circle" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3.5 8.5-7 10-3.5-1.5-7-5-7-10V6l7-3z"/><path d="M9.5 12l1.8 1.8L15 10.3"/></svg>
-        </div>
-        <h3>Performance durable</h3>
-        <p>Des gains ancrés dans les processus, les systèmes et les équipes, pas seulement dans un rapport.</p>
-      </div>
-
-      <div class="glass-card card-right reveal">
-        <div class="icon-circle" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/><path d="M16 4.5a3 3 0 0 1 0 6"/></svg>
-        </div>
-        <h3>Accompagnement terrain</h3>
-        <p>Nos consultants travaillent aux côtés de vos équipes, de la première analyse jusqu'à l'adoption.</p>
-      </div>
-
+      <p class="hero-tagline mono">Des résultats visibles dans les 30 premiers jours</p>
     </section>
 
-    <!-- ===== Panel 2 : Roadmap ===== -->
-    <section class="panel roadmap" id="approche">
-      <div class="panel-head">
-        <h2 class="chrome">Feuille de route de création de valeur</h2>
-        <p>Une approche claire et structurée pour bâtir des opérations performantes et évolutives.</p>
+    <!-- ===== 2. Pour qui ===== -->
+    <section class="panel light" id="pour-qui">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow mono">Pour qui</p>
+          <h2>Pour ceux qui ont un problème à régler</h2>
+        </div>
+        <a class="btn btn-solid" href="#contact">Discuter d'un mandat</a>
       </div>
 
-      <div class="phases">
-        <div class="phase-ring" style="--i:0"><span>Phase 1 · Diagnostic</span></div>
-        <div class="phase-ring" style="--i:1"><span>Phase 2 · Transformation</span></div>
-        <div class="phase-ring" style="--i:2"><span>Phase 3 · Pérennisation</span></div>
+      <ol class="grid-6">
+        <li class="cell reveal">
+          <span class="num mono">01</span>
+          <p>Vous achetez, vendez ou fusionnez une entreprise et la valeur doit survivre à l'intégration</p>
+          <svg class="glyph" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M20 70 L60 50 L100 70 L60 90 Z"/>
+            <path d="M20 58 L60 38 L100 58 L60 78 Z" stroke-dasharray="3 3"/>
+            <path d="M20 46 L60 26 L100 46 L60 66 Z"/>
+            <circle cx="60" cy="58" r="2.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </li>
+        <li class="cell reveal">
+          <span class="num mono">02</span>
+          <p>Vous devez définir une stratégie, choisir une direction et la faire tenir</p>
+          <svg class="glyph" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M60 28 L96 90 L24 90 Z"/>
+            <path d="M24 72 L96 72" stroke-dasharray="3 3"/>
+            <path d="M60 28 L60 90"/>
+            <circle cx="60" cy="28" r="2.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </li>
+        <li class="cell reveal">
+          <span class="num mono">03</span>
+          <p>Vous implantez un système et il doit être livré, adopté et rentable</p>
+          <svg class="glyph" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1">
+            <ellipse cx="40" cy="60" rx="14" ry="26"/>
+            <path d="M40 34 L104 60 L40 86"/>
+            <path d="M40 60 L104 60" stroke-dasharray="3 4"/>
+            <circle cx="40" cy="60" r="2.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </li>
+        <li class="cell reveal">
+          <span class="num mono">04</span>
+          <p>Vous changez de structure : organisation, rôles, gouvernance</p>
+          <svg class="glyph" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="60" cy="60" r="30" stroke-dasharray="3 4"/>
+            <path d="M30 60 A30 30 0 0 1 60 30" />
+            <path d="M90 60 A30 30 0 0 1 60 90" />
+            <circle cx="60" cy="60" r="3" fill="currentColor" stroke="none"/>
+            <path d="M56 28 L60 30 L57 34"/>
+            <path d="M64 92 L60 90 L63 86"/>
+          </svg>
+        </li>
+        <li class="cell reveal">
+          <span class="num mono">05</span>
+          <p>Un problème persiste depuis trop longtemps : coûts, délais, qualité, capacité</p>
+          <svg class="glyph" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1">
+            <path d="M30 36 L84 60 L30 84 Z"/>
+            <path d="M44 36 L98 60 L44 84 Z" stroke-dasharray="3 3"/>
+            <path d="M30 60 L98 60" stroke-dasharray="3 4"/>
+            <circle cx="30" cy="60" r="2.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </li>
+        <li class="cell reveal">
+          <span class="num mono">06</span>
+          <p>Vous voulez que vos équipes continuent de progresser sans nous</p>
+          <svg class="glyph" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1">
+            <circle cx="60" cy="60" r="32"/>
+            <circle cx="60" cy="60" r="18" stroke-dasharray="3 3"/>
+            <circle cx="60" cy="92" r="3" fill="currentColor" stroke="none"/>
+            <path d="M92 60 A32 32 0 0 1 60 92"/>
+          </svg>
+        </li>
+      </ol>
+    </section>
 
-        <div class="chips">
-          <div class="chip-row">
-            <span class="chip" style="--c:0"><i class="dot"></i>Analyse des opérations</span>
-            <span class="chip" style="--c:1"><i class="dot"></i>Conception des processus</span>
-            <span class="chip" style="--c:2"><i class="dot"></i>Déploiement</span>
-          </div>
-          <div class="chip-row">
-            <span class="chip" style="--c:0"><i class="dot"></i>Cartographie de la valeur</span>
-            <span class="chip" style="--c:1"><i class="dot"></i>Implantation des systèmes</span>
-            <span class="chip" style="--c:2"><i class="dot"></i>Rétroaction des équipes</span>
-          </div>
-          <div class="chip-row">
-            <span class="chip" style="--c:1"><i class="dot"></i>Pilotage de la performance</span>
-            <span class="chip" style="--c:2"><i class="dot"></i>Optimisation continue</span>
-          </div>
+    <!-- ===== 3. Le cabinet ===== -->
+    <section class="panel dark" id="cabinet">
+      <div class="statement">
+        <p class="eyebrow mono center">Ce que nous sommes</p>
+        <h2 class="center">Un cabinet de résolution de problèmes,<br class="br-desk"> pas un cabinet de rapports</h2>
+      </div>
+
+      <div class="venn reveal" aria-label="La rigueur d'une grande firme et la vitesse d'une petite équipe, réunies par Groupe L">
+        <div class="venn-circle venn-left">
+          <h3>Grande firme</h3>
+          <p class="mono">Méthodes, cadres d'analyse,<br>rigueur de la démarche</p>
         </div>
+        <div class="venn-circle venn-right">
+          <h3>Petite équipe</h3>
+          <p class="mono">Décisions rapides, présence terrain,<br>ajustement en continu</p>
+        </div>
+        <div class="venn-core">
+          <img src="assets/logo-blanc.png" alt="" class="venn-logo">
+          <h3>Groupe L</h3>
+          <p class="mono">Les deux, sans la lourdeur</p>
+        </div>
+        <svg class="venn-arrow venn-arrow-l" viewBox="0 0 80 10" aria-hidden="true"><path d="M0 5 H78" stroke="currentColor" stroke-width="1"/><path d="M72 1 L78 5 L72 9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
+        <svg class="venn-arrow venn-arrow-r" viewBox="0 0 80 10" aria-hidden="true"><path d="M80 5 H2" stroke="currentColor" stroke-width="1"/><path d="M8 1 L2 5 L8 9" fill="none" stroke="currentColor" stroke-width="1"/></svg>
       </div>
     </section>
 
-    <!-- ===== Panel 3 : Core expertise ===== -->
-    <section class="panel core" id="expertise">
-      <div class="core-stage">
-      <div class="giant-text" aria-hidden="true">VALEUR</div>
-
-      <div class="device reveal" aria-hidden="true">
-        <div class="device-screen">
-          <div class="device-top"><img src="assets/logo-blanc.png" alt=""><span>Groupe L</span></div>
-          <div class="device-metric">
-            <strong>+18 %</strong>
-            <small>Marge opérationnelle<br>après 12 mois</small>
-          </div>
-          <svg class="curve" viewBox="0 0 320 160" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="curveGrad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stop-color="#4fa3ff" stop-opacity="0"/>
-                <stop offset="1" stop-color="#ffffff"/>
-              </linearGradient>
-            </defs>
-            <path class="curve-path" d="M0 150 C 90 148, 170 125, 230 80 S 300 20, 318 10" fill="none" stroke="url(#curveGrad)" stroke-width="2"/>
-            <circle class="curve-dot" cx="318" cy="10" r="4" fill="#fff"/>
-          </svg>
-          <div class="device-foot">
-            <span>www.groupel.ca</span>
-            <span>info@groupel.ca</span>
-          </div>
+    <!-- ===== 4. Trente jours ===== -->
+    <section class="panel light" id="trente-jours">
+      <div class="editorial">
+        <div class="editorial-text">
+          <p class="eyebrow mono"><i class="sq"></i>Trente jours</p>
+          <h2 class="lead-gray"><span class="gray">Un mandat se juge</span><br>sur ses 30 premiers jours.</h2>
+          <p class="body-l">Les grandes firmes livrent un rapport au bout de trois mois. Nous livrons des résultats mesurés au bout d'un mois, parce que nous sommes plus petits, donc plus rapides.</p>
+          <p class="body-l">Le diagnostic, les premières actions et la mesure se font dans le même mois, avec vos équipes.</p>
         </div>
-      </div>
 
-      <span class="chip chip-large reveal"><i class="dot"></i>Excellence opérationnelle</span>
-
-      <div class="glass-card card-meter reveal">
-        <h3>Performance</h3>
-        <p>Efficacité des opérations et fiabilité des processus.</p>
-        <div class="meter" data-value="75">
-          <svg viewBox="0 0 120 120">
-            <circle class="meter-track" cx="60" cy="60" r="50"/>
-            <circle class="meter-fill" cx="60" cy="60" r="50"/>
-          </svg>
-          <span class="meter-label">75%</span>
-        </div>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="mono">Jours 1 – 10</span>
+            <h3>Comprendre et chiffrer</h3>
+            <p>Le problème est posé en chiffres, les gains possibles sont identifiés et classés.</p>
+          </li>
+          <li class="step reveal">
+            <span class="mono">Jours 11 – 20</span>
+            <h3>Agir sur les gains rapides</h3>
+            <p>Les premières actions sont mises en place sur le terrain, avec les personnes concernées.</p>
+          </li>
+          <li class="step reveal">
+            <span class="mono">Jours 21 – 30</span>
+            <h3>Mesurer et décider la suite</h3>
+            <p>Les résultats sont mesurés et présentés à la direction, qui décide de la suite en connaissance de cause.</p>
+          </li>
+        </ol>
       </div>
-      </div>
+    </section>
 
-      <div class="core-text">
-        <h2 class="chrome">Nos domaines d'intervention</h2>
-        <ul class="core-list">
-          <li><i class="dot"></i><div><strong>Excellence opérationnelle</strong><span>Lean, flux, capacité, qualité et coûts.</span></div></li>
-          <li><i class="dot"></i><div><strong>Transformation numérique</strong><span>ERP, CRM, données et automatisation au service des opérations.</span></div></li>
-          <li><i class="dot"></i><div><strong>Gouvernance et pilotage</strong><span>Indicateurs, rituels de gestion et imputabilité.</span></div></li>
-          <li><i class="dot"></i><div><strong>Chaîne d'approvisionnement</strong><span>Planification, inventaires, fournisseurs et logistique.</span></div></li>
+    <!-- ===== 5. Services ===== -->
+    <section class="panel dark" id="services">
+      <p class="eyebrow mono center">Ce que nous faisons</p>
+
+      <div class="ring-stage reveal">
+        <svg class="ring-svg" viewBox="0 0 600 600" aria-hidden="true">
+          <circle cx="300" cy="300" r="250" fill="none" stroke="currentColor" stroke-width="1"/>
+          <g fill="currentColor">
+            <circle cx="300" cy="50" r="3"/>
+            <circle cx="477" cy="123" r="3"/>
+            <circle cx="550" cy="300" r="3"/>
+            <circle cx="477" cy="477" r="3"/>
+            <circle cx="300" cy="550" r="3"/>
+            <circle cx="123" cy="477" r="3"/>
+            <circle cx="50" cy="300" r="3"/>
+            <circle cx="123" cy="123" r="3"/>
+          </g>
+        </svg>
+        <p class="ring-center">Vous travaillez avec nous</p>
+        <ul class="ring-labels">
+          <li style="--a:0">Fusions et acquisitions</li>
+          <li style="--a:1">Définition de la stratégie</li>
+          <li style="--a:2">Implantation de systèmes</li>
+          <li style="--a:3">Changement de structure</li>
+          <li style="--a:4">Amélioration continue</li>
+          <li style="--a:5">Excellence opérationnelle</li>
+          <li style="--a:6">Gouvernance et pilotage</li>
+          <li style="--a:7">Chaîne d'approvisionnement</li>
         </ul>
       </div>
+
+      <ul class="services-list">
+        <li>Fusions et acquisitions</li>
+        <li>Définition de la stratégie</li>
+        <li>Implantation de systèmes</li>
+        <li>Changement de structure</li>
+        <li>Amélioration continue</li>
+        <li>Excellence opérationnelle</li>
+        <li>Gouvernance et pilotage</li>
+        <li>Chaîne d'approvisionnement</li>
+      </ul>
     </section>
 
-    <!-- ===== Panel 4 : Results (bento) ===== -->
-    <section class="panel results" id="resultats">
-      <div class="panel-head">
-        <h2 class="chrome">Des résultats mesurables</h2>
-        <p>Chaque mandat est piloté par des indicateurs concrets, partagés avec la direction.</p>
-      </div>
-
+    <!-- ===== 6. Résultats ===== -->
+    <section class="panel dark results" id="resultats">
       <div class="bento">
-        <div class="tile tile-brand reveal">
-          <img src="assets/logo-blanc.png" alt="">
-          <span>Groupe L</span>
+        <div class="tile tile-text reveal">
+          <h2>Des résultats mesurés, partagés avec la direction</h2>
+          <p>Chaque mandat est piloté par des indicateurs concrets, lus chaque semaine avec vous.</p>
         </div>
-
         <div class="tile tile-stat reveal">
-          <div class="stat-head">
-            <strong class="count" data-count="92" data-suffix="%+">0</strong>
-            <small>Des recommandations mises en œuvre par nos clients.</small>
-          </div>
-          <svg class="curve" viewBox="0 0 400 160" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="curveGrad2" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" stop-color="#4fa3ff" stop-opacity="0"/>
-                <stop offset="1" stop-color="#ffffff"/>
-              </linearGradient>
-            </defs>
-            <path class="curve-path" d="M0 150 C 120 150, 220 130, 300 80 S 380 20, 396 12" fill="none" stroke="url(#curveGrad2)" stroke-width="2"/>
-            <circle class="curve-dot" cx="396" cy="12" r="4" fill="#fff"/>
-          </svg>
+          <strong class="count" data-count="30">0</strong>
+          <small>jours avant les premiers résultats mesurés</small>
         </div>
-
-        <div class="tile tile-portrait reveal">
-          <div class="portrait-glow"></div>
-          <div class="portrait-brand"><img src="assets/logo-blanc.png" alt=""><span>Groupe L</span></div>
+        <div class="tile tile-stat reveal">
+          <strong class="count" data-count="92" data-suffix="%">0</strong>
+          <small>des recommandations mises en œuvre par nos clients</small>
         </div>
-
-        <div class="tile tile-mark reveal">
-          <img src="assets/logo-blanc.png" alt="" class="mark-blur">
+        <div class="tile tile-stat reveal">
+          <strong class="count" data-count="35" data-suffix="%">0</strong>
+          <small>de réduction moyenne des délais</small>
         </div>
-
-        <div class="tile tile-fan reveal">
-          <div class="fan" aria-hidden="true">
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-          </div>
-          <p>Optimisez vos opérations grâce à des décisions fondées sur les données.</p>
-        </div>
-
-        <div class="tile tile-light reveal">
-          <div class="light-bar"></div>
-          <div class="tile-stats">
-            <div><strong class="count" data-count="35" data-suffix="%">0</strong><small>réduction moyenne des délais</small></div>
-            <div><strong class="count" data-count="12" data-suffix="x">0</strong><small>retour sur honoraires</small></div>
-          </div>
+        <div class="tile tile-stat reveal">
+          <strong class="count" data-count="12" data-suffix="x">0</strong>
+          <small>de retour sur honoraires</small>
         </div>
       </div>
     </section>
 
-    <!-- ===== Panel 5 : Contact ===== -->
-    <section class="panel contact" id="contact">
-      <div class="ring ring-contact" aria-hidden="true"></div>
+    <!-- ===== 7. Contact ===== -->
+    <section class="panel light contact" id="contact">
       <div class="contact-inner">
-        <h2 class="chrome">Parlons de la valeur<br>que vos opérations peuvent créer</h2>
-        <p>Un premier échange de 30 minutes suffit pour cibler vos principaux gisements de valeur.</p>
+        <div class="contact-text">
+          <p class="eyebrow mono">Contact</p>
+          <h2>Un problème à régler ?<br>Parlons-en cette semaine.</h2>
+          <p class="body-l">Un premier échange de 30 minutes suffit pour savoir si nous pouvons vous aider, et à quelle vitesse.</p>
+          <a class="contact-mail" href="mailto:info@groupel.ca">info@groupel.ca</a>
+        </div>
         <form class="contact-form" action="mailto:info@groupel.ca" method="post" enctype="text/plain">
           <div class="field-row">
             <input type="text" name="nom" placeholder="Nom" required>
             <input type="email" name="courriel" placeholder="Courriel" required>
           </div>
           <input type="text" name="entreprise" placeholder="Entreprise">
-          <textarea name="message" rows="3" placeholder="Décrivez brièvement votre enjeu opérationnel"></textarea>
-          <button type="submit" class="btn-pill"><span class="dot"></span>Envoyer</button>
+          <textarea name="message" rows="4" placeholder="Décrivez brièvement le problème à régler"></textarea>
+          <button type="submit" class="btn btn-solid">Envoyer</button>
         </form>
       </div>
     </section>
@@ -235,8 +289,8 @@
       <img src="assets/logo-blanc.png" alt="" class="brand-mark">
       <span class="brand-name">Groupe L</span>
     </div>
-    <p>© <span id="year"></span> Groupe L — Consultation en création de valeur opérationnelle. Montréal, Québec.</p>
-    <div class="footer-links">
+    <p class="mono">© <span id="year"></span> Groupe L · Cabinet de résolution de problèmes · Montréal, Québec</p>
+    <div class="footer-links mono">
       <a href="mailto:info@groupel.ca">info@groupel.ca</a>
       <a href="#top">Haut de page</a>
     </div>

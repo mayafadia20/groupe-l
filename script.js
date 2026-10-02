@@ -21,22 +21,9 @@
     );
   }
 
-  // Apparition au défilement
+  // Apparition au défilement et compteurs
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const targets = document.querySelectorAll(".reveal, .tile, .device, .card-meter, .tile-stat");
-
-  const show = (el) => {
-    el.classList.add("is-visible");
-    // Jauge circulaire
-    el.querySelectorAll(".meter").forEach((m) => {
-      const value = Number(m.dataset.value || 0);
-      const fill = m.querySelector(".meter-fill");
-      const circumference = 2 * Math.PI * 50;
-      if (fill) fill.style.strokeDashoffset = String(circumference * (1 - value / 100));
-    });
-    // Compteurs
-    el.querySelectorAll(".count").forEach((c) => animateCount(c));
-  };
+  const targets = document.querySelectorAll(".reveal");
 
   const animateCount = (el) => {
     if (el.dataset.done) return;
@@ -53,6 +40,12 @@
       if (t < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
+  };
+
+  const show = (el) => {
+    el.classList.add("is-visible");
+    el.querySelectorAll(".count").forEach(animateCount);
+    if (el.classList.contains("count")) animateCount(el);
   };
 
   if ("IntersectionObserver" in window && !reduced) {
