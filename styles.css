@@ -98,6 +98,14 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .brand-mark { width: 16px; }
 .brand-hero { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: -0.02em; text-transform: uppercase; }
 .brand-hero .brand-mark { width: 30px; filter: invert(1); }
+/* au survol du logo, le nom apparaît à sa droite ; il disparaît dès que le curseur quitte le logo */
+.brand-hero { position: relative; }
+.brand-name {
+  position: absolute; left: calc(100% + 10px); top: 50%; transform: translate(-6px, -50%);
+  font-size: 15px; font-weight: 600; letter-spacing: -0.02em; text-transform: none; white-space: nowrap; color: var(--ink);
+  opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.brand-hero:hover .brand-name, .brand-hero:focus-visible .brand-name { opacity: 1; transform: translate(0, -50%); }
 /* menu centré dans la barre, quelle que soit la largeur du logo et des liens de droite */
 .nav-links { display: flex; gap: 26px; position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 500; color: var(--ink-2); }
 .nav-links a:hover { color: var(--ink); }
