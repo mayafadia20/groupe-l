@@ -1,18 +1,9 @@
 // Groupe L — interactions légères (aucune dépendance)
 
 (function () {
-  // Année du pied de page et date du jour (héros)
+  // Année du pied de page
   const year = document.getElementById("year");
   if (year) year.textContent = new Date().getFullYear();
-  // Heure locale de Montréal (héros), mise à jour chaque demi-minute
-  const heure = document.getElementById("heure-locale");
-  if (heure) {
-    const maj = () => {
-      heure.textContent = new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "America/Toronto" });
-    };
-    maj();
-    setInterval(maj, 30000);
-  }
 
   // Menu mobile
   const toggle = document.querySelector(".nav-toggle");
