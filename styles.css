@@ -107,20 +107,9 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .hero-title { font-size: clamp(34px, 4.6vw, 68px); letter-spacing: -0.035em; margin-bottom: 36px; }
 .hero-lead { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); max-width: 34ch; }
 
-.hero-object { position: relative; height: 100%; min-height: 380px; }
-.fin {
-  position: absolute; right: calc(-1 * var(--pad) - 60px); top: 50%; transform: translateY(-46%);
-  width: min(66vw, 860px); aspect-ratio: 1.55;
-  background: linear-gradient(100deg, #0a0a0a 0%, #161616 60%, #262626 100%);
-  clip-path: polygon(40% 0, 100% 0, 100% 100%, 0 100%, 8% 78%);
-  border-radius: 0 0 0 10px;
-}
-.fin::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.08), transparent 35%); clip-path: inherit; }
-.fin-mark { position: absolute; left: 30%; top: 24%; width: clamp(60px, 7vw, 110px); opacity: 0.95; }
-.fin-text {
-  position: absolute; right: 9%; top: 50%; transform: translateY(-50%) rotate(-90deg);
-  font-family: var(--display); font-weight: 600; font-size: clamp(56px, 7.5vw, 124px); letter-spacing: -0.03em; text-transform: uppercase;
-  color: #1c1c1c; -webkit-text-stroke: 1px rgba(255,255,255,0.14); white-space: nowrap; line-height: 1;
+/* image de fond du héros : bras robotisé sur l'échiquier, calée à droite, au-dessus du bandeau */
+.hero-body {
+  background: url("assets/fond-heros.jpg") no-repeat right center / contain;
 }
 .hero-stats {
   position: relative; z-index: 2;
@@ -266,7 +255,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   }
   .nav-links.open a { padding: 10px 12px; }
   .nav-toggle { display: flex; }
-  .fin { width: 78vw; }
+  .hero-body { background-position: right bottom; }
   .stack-grid { grid-template-columns: 1fr; }
   .visual { min-height: 260px; }
   .duo, .trio-head, .login { grid-template-columns: 1fr; }
@@ -285,9 +274,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero-body { grid-template-columns: 1fr; align-items: start; }
   .hero-text { padding: 28px 0 16px; }
   .hero-kicker, .hero-title { margin-bottom: 22px; }
-  .hero-object { min-height: 260px; overflow: hidden; }
-  .fin { width: 120vw; right: -40vw; transform: translateY(-50%); }
-  .fin-mark { left: 34%; }
+  .hero-body { background-size: 165% auto; background-position: 100% 100%; padding-bottom: 72vw; }
   .hero-stats { grid-template-columns: 1fr 1fr; }
   .stat-time { grid-column: 1 / -1; align-items: flex-start; text-align: left; }
   .statement-panel { padding-top: 0; padding-bottom: 0; }
