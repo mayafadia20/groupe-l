@@ -84,10 +84,16 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 
 /* ── 1. Héros ── */
 .hero {
-  background: var(--white) url("assets/fond-heros.jpg") no-repeat right top / cover;
-  padding: 22px var(--pad) 0; justify-content: space-between; overflow: hidden;
+  --hero-top-h: 64px;        /* hauteur de la barre logo + menu */
+  background: var(--white) url("assets/fond-heros.jpg") no-repeat right var(--hero-top-h) / cover;
+  padding: 0 var(--pad) 0; justify-content: space-between; overflow: hidden;
 }
-.hero-top { display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 24px; position: relative; z-index: 3; }
+/* barre blanche pleine largeur, séparée de la photo par un trait gris */
+.hero-top {
+  display: grid; grid-template-columns: auto auto 1fr; align-items: center; gap: 24px; position: relative; z-index: 3;
+  height: var(--hero-top-h); margin: 0 calc(-1 * var(--pad)); padding: 0 var(--pad);
+  background: var(--white); border-bottom: 1px solid var(--line);
+}
 .brand { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
 .brand-mark { width: 16px; }
 .brand-hero { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: -0.02em; text-transform: uppercase; }
@@ -252,7 +258,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .nav-links { display: none; }
   .nav-links.open {
     display: flex; flex-direction: column; gap: 0;
-    position: absolute; right: 0; top: 48px; z-index: 5; min-width: 200px;
+    position: absolute; right: var(--pad); top: calc(100% + 6px); z-index: 5; min-width: 200px;
     background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 6px;
   }
   .nav-links.open a { padding: 10px 12px; }
@@ -271,7 +277,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   /* sur téléphone, les sections dépassent parfois l'écran : arrêt souple plutôt qu'obligatoire */
   html { scroll-snap-type: y proximity; }
   .panel { padding: 64px var(--pad) 36px; }
-  .hero { padding-top: 14px; }
+  .hero { --hero-top-h: 56px; padding-top: 0; }
   .hero-body { grid-template-columns: 1fr; align-items: start; }
   .hero-text { padding: 28px 0 16px; }
   .hero-kicker, .hero-title { margin-bottom: 22px; }
