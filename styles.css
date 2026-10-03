@@ -85,7 +85,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* ── 1. Héros ── */
 .hero {
   --hero-top-h: 64px;        /* hauteur de la barre logo + menu */
-  background: var(--white) url("assets/fond-heros.jpg") no-repeat right var(--hero-top-h) / cover;
+  background: var(--white) url("assets/fond-heros.jpg?v=2") no-repeat right var(--hero-top-h) / cover;
   padding: 0 var(--pad) 0; justify-content: space-between; overflow: hidden;
 }
 /* barre blanche pleine largeur, séparée de la photo par un trait gris */
