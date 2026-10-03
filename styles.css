@@ -98,8 +98,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .brand-mark { width: 16px; }
 .brand-hero { font-family: var(--display); font-weight: 600; font-size: 17px; letter-spacing: -0.02em; text-transform: uppercase; }
 .brand-hero .brand-mark { width: 30px; filter: invert(1); }
-/* menu rapproché du logo, sur la partie blanche de l'image */
-.nav-links { display: flex; gap: 26px; justify-self: start; margin-left: clamp(32px, 9vw, 150px); font-size: 11px; font-weight: 500; color: var(--ink-2); }
+/* menu centré dans la barre, quelle que soit la largeur du logo et des liens de droite */
+.nav-links { display: flex; gap: 26px; position: absolute; left: 50%; transform: translateX(-50%); font-size: 11px; font-weight: 500; color: var(--ink-2); }
 .nav-links a:hover { color: var(--ink); }
 /* à droite : portail client (icône de personne) et choix de langue */
 .nav-right { display: flex; align-items: center; gap: 22px; justify-self: end; font-size: 11px; font-weight: 500; color: var(--ink-2); }
@@ -266,7 +266,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .nav-links { display: none; }
   .nav-links.open {
     display: flex; flex-direction: column; gap: 0;
-    position: absolute; right: var(--pad); top: calc(100% + 6px); z-index: 5; min-width: 200px;
+    position: absolute; left: auto; right: var(--pad); top: calc(100% + 6px); transform: none; z-index: 5; min-width: 200px;
     background: var(--white); border: 1px solid var(--line); border-radius: var(--r); padding: 6px;
   }
   .nav-links.open a { padding: 10px 12px; }
