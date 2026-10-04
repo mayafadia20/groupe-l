@@ -66,9 +66,15 @@
           </a>
         </li>
         <li>
-          <a class="tool" href="#">
-            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M5 27h22"/><path d="M8 22V14M14 22V8M20 22v-6M26 22V11"/></svg>
-            <span><span class="small">Ouvrir</span>Tableau<br>de bord</span>
+          <a class="tool has-image" href="#" style="--img: url('assets/outil-laureat.jpg?v=1')">
+            <!-- même grille de points : réutilise le motif et le masque définis dans la première carte -->
+            <svg class="dots" viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
+              <rect width="40" height="40" fill="url(#grille-points)" mask="url(#masque-points)"/>
+            </svg>
+            <span class="tool-foot">
+              <span class="tool-name">Laureat</span>
+              <svg class="tool-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h15"/><path d="M13 6l6 6-6 6"/></svg>
+            </span>
           </a>
         </li>
         <li>
