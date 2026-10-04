@@ -301,6 +301,12 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .tool svg { width: clamp(40px, 4vw, 56px); height: auto; }
 .tool > span { display: grid; gap: 6px; font-size: clamp(16px, 1.5vw, 22px); line-height: 1.2; letter-spacing: -0.015em; }
 .tool .small { font-size: 12px; color: rgba(255,255,255,0.55); }
+/* variante : nom en capitales à gauche, flèche blanche à droite, grille de points en haut */
+.tool .dots { width: clamp(40px, 4vw, 56px); height: auto; }
+.tool .tool-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.tool .tool-name { text-transform: uppercase; letter-spacing: 0.04em; font-weight: 500; }
+.tool .tool-arrow { width: clamp(22px, 2vw, 28px); height: auto; flex: none; transition: transform 0.2s ease; }
+.tool:hover .tool-arrow { transform: translateX(4px); }
 
 /* ── Portail client : fenêtre de connexion ── */
 .login-modal {
