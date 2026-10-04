@@ -1316,12 +1316,12 @@
   var intro=document.getElementById("intro"), img=intro.querySelector(".v2");
   /* Image en pixels natifs : centre du logo sur le casque et hauteur du casque */
   var R={w:1774,h:887,cx:461,cy:317,hh:300};
-  var HOLD=120, MOVE=1700, HEAD=.74;          /* zoom de départ : le casque occupe 74 % de la hauteur */
+  var HOLD=120, MOVE=1700, HEAD=.56;          /* zoom de départ : le casque occupe 56 % de la hauteur, cou visible */
   var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   img.style.width=R.w+"px"; img.style.height=R.h+"px";
 
   /* Cadre de départ : gros plan sur le casque, centré */
-  function frameZoom(){ var W=innerWidth,H=innerHeight; return {x:W*.5, y:H*.5, hh:H*HEAD}; }
+  function frameZoom(){ var W=innerWidth,H=innerHeight; return {x:W*.5, y:H*.42, hh:H*HEAD}; }
   /* Cadre d'arrivée : image en plein écran, robot à gauche, place libre à droite */
   function frameWide(){
     var W=innerWidth,H=innerHeight,s=Math.max(W/R.w,H/R.h),dw=R.w*s,dh=R.h*s;
