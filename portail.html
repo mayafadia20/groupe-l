@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tools | Groupe Lounici</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="favicon.ico?v=3" sizes="16x16 32x32 48x48">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=3">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=3">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/favicon-512.png?v=3">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon-180.png?v=3">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=13">
+</head>
+<body class="portail">
+
+  <!-- ===== Barre : logo à gauche, Tools au centre, déconnexion à droite ===== -->
+  <div class="portal-wrap">
+    <header class="hero-top">
+      <a class="brand brand-hero" href="#top" aria-label="Groupe Lounici — portail client">
+        <img src="assets/logo-blanc.png" alt="Groupe Lounici" class="brand-mark">
+        <span class="brand-name" aria-hidden="true">Groupe Lounici</span>
+      </a>
+      <nav class="nav-links" aria-label="Portail client">
+        <a href="#outils" class="is-active">Tools</a>
+      </nav>
+      <div class="nav-right">
+        <a class="nav-portal" href="index.html" id="deconnexion">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 8l-4 4 4 4M6 12h12"/></svg>
+          <span>Log out</span>
+        </a>
+      </div>
+    </header>
+  </div>
+
+  <!-- ===== Outils : titre, sous-titre, cartes noires ===== -->
+  <main class="portal-main" id="top">
+    <section id="outils">
+      <h1 class="h-xl">Vos outils,<br>au même endroit</h1>
+      <p class="body-m">L'arsenal technologique de Groupe Lounici pour mesurer votre performance, l'aligner à votre vision et suivre votre plan d'action.</p>
+
+      <!-- outils provisoires : noms et adresses à remplacer par les vrais -->
+      <ul class="tools">
+        <li>
+          <a class="tool" href="#">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M5 22a11 11 0 1 1 22 0"/><path d="M16 22l6-8"/><circle cx="16" cy="22" r="1.5" fill="currentColor" stroke="none"/></svg>
+            <span><span class="small">Ouvrir</span>Diagnostic<br>de performance</span>
+          </a>
+        </li>
+        <li>
+          <a class="tool" href="#">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M5 27h22"/><path d="M8 22V14M14 22V8M20 22v-6M26 22V11"/></svg>
+            <span><span class="small">Ouvrir</span>Tableau<br>de bord</span>
+          </a>
+        </li>
+        <li>
+          <a class="tool" href="#">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" aria-hidden="true"><path d="M6 9l2 2 4-4M6 17l2 2 4-4M6 25l2 2 4-4"/><path d="M16 9h10M16 17h10M16 25h10"/></svg>
+            <span><span class="small">Ouvrir</span>Plan<br>d'action</span>
+          </a>
+        </li>
+      </ul>
+    </section>
+  </main>
+
+  <script src="script.js?v=13"></script>
+</body>
+</html>

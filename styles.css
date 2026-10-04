@@ -260,6 +260,24 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .field textarea { resize: vertical; }
 .form-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
 
+/* ── Portail client : page des outils ── */
+.portail { --hero-top-h: 64px; }
+.portal-wrap { padding: 0 var(--pad); }
+.nav-links a.is-active { color: var(--ink); }
+.nav-links a.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink); }
+.portal-main { padding: clamp(40px, 8vh, 88px) var(--pad) 72px; max-width: 1100px; }
+.portal-main .body-m { margin-top: 18px; }
+.tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 40px; max-width: 720px; }
+.tool {
+  display: flex; flex-direction: column; justify-content: space-between; aspect-ratio: 1; padding: 22px;
+  border-radius: var(--r-card); background: linear-gradient(180deg, #1a1a1a, #0a0a0a); color: #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tool:hover { transform: translateY(-3px); box-shadow: 0 24px 40px -24px rgba(10, 10, 10, 0.6); }
+.tool svg { width: 34px; height: 34px; }
+.tool > span { display: grid; gap: 4px; font-size: 15px; line-height: 1.25; letter-spacing: -0.01em; }
+.tool .small { color: rgba(255,255,255,0.55); }
+
 /* ── Portail client : fenêtre de connexion ── */
 .login-modal {
   width: min(440px, calc(100vw - 32px)); margin: auto; padding: 40px 36px 32px;
@@ -311,6 +329,10 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .has-menu[aria-expanded="true"]::after { display: none; }
   .mega { padding: 24px var(--pad) 32px; }
   .mega-list { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(5, auto); gap: 14px 24px; }
+  .tools { grid-template-columns: 1fr 1fr; }
+  .portail .nav-links { display: flex; position: absolute; left: 50%; top: 0; height: 100%; transform: translateX(-50%); }
+  .portail .nav-links > * { height: 100%; }
+  .portail .nav-toggle { display: none; }
   .nav-toggle { display: flex; }
   .stack-grid { grid-template-columns: 1fr; }
   .visual { min-height: 260px; }
@@ -330,6 +352,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero-top { gap: 14px; }
   .nav-right { gap: 14px; }
   .nav-portal span { display: none; }   /* sur téléphone, l'icône de personne suffit */
+  .tools { grid-template-columns: 1fr; max-width: 360px; }
   .hero-body { grid-template-columns: 1fr; align-items: start; }
   .hero-text { padding: 28px 0 16px; }
   .hero-kicker, .hero-title { margin-bottom: 22px; }

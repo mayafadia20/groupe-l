@@ -55,13 +55,27 @@
     });
     modal.querySelector(".modal-close").addEventListener("click", () => modal.close());
     modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
-    // Pas encore de portail derrière le formulaire : on l'indique au lieu d'envoyer
+    // Pas encore de serveur derrière le formulaire : les deux champs remplis
+    // suffisent pour entrer dans le portail (aucune vérification du mot de passe)
     const form = modal.querySelector(".login-form");
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      form.querySelector(".login-msg").hidden = false;
+      const rempli = [...form.querySelectorAll("input")].every((i) => i.value.trim());
+      if (!rempli) { form.querySelector(".login-msg").hidden = false; return; }
+      try { sessionStorage.setItem("portail", "1"); } catch (_) {}
+      window.location.href = "portail.html";
     });
     modal.addEventListener("close", () => { form.reset(); form.querySelector(".login-msg").hidden = true; });
+  }
+
+  // Page du portail : accessible seulement après le formulaire de connexion ;
+  // « Log out » efface la session et ramène à l'accueil
+  if (document.body.classList.contains("portail")) {
+    let ouvert = false;
+    try { ouvert = sessionStorage.getItem("portail") === "1"; } catch (_) {}
+    if (!ouvert) { window.location.replace("index.html#portail"); return; }
+    const sortie = document.getElementById("deconnexion");
+    if (sortie) sortie.addEventListener("click", () => { try { sessionStorage.removeItem("portail"); } catch (_) {} });
   }
 
   // Apparition au défilement et compteurs
