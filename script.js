@@ -42,6 +42,28 @@
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMega(false); });
   }
 
+  // Portail client : la fenêtre de connexion s'ouvre au clic sur « Client Portal »
+  // et se ferme par la croix, un clic sur le fond assombri ou la touche Échap
+  const portalLink = document.querySelector(".nav-portal");
+  const modal = document.getElementById("portail");
+  if (portalLink && modal && typeof modal.showModal === "function") {
+    portalLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      modal.querySelector(".login-form").reset();
+      modal.querySelector(".login-msg").hidden = true;
+      modal.showModal();
+    });
+    modal.querySelector(".modal-close").addEventListener("click", () => modal.close());
+    modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
+    // Pas encore de portail derrière le formulaire : on l'indique au lieu d'envoyer
+    const form = modal.querySelector(".login-form");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      form.querySelector(".login-msg").hidden = false;
+    });
+    modal.addEventListener("close", () => { form.reset(); form.querySelector(".login-msg").hidden = true; });
+  }
+
   // Apparition au défilement et compteurs
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const targets = document.querySelectorAll(".reveal");

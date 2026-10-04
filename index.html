@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=12">
 </head>
 <body>
 
@@ -34,7 +34,7 @@
         </nav>
         <div class="nav-right">
           <!-- portail client : adresse à fournir -->
-          <a class="nav-portal" href="#" aria-label="Client Portal">
+          <a class="nav-portal" href="#portail" aria-label="Client Portal" aria-haspopup="dialog">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.6 3.6-6 8-6s8 2.4 8 6"/></svg>
             <span>Client Portal</span>
           </a>
@@ -243,7 +243,22 @@
 
   </main>
 
-  <script src="script.js?v=11"></script>
+  <!-- Portail client : fenêtre de connexion ouverte par le lien « Client Portal » -->
+  <dialog class="login-modal" id="portail" aria-labelledby="portail-titre">
+    <button class="modal-close" type="button" aria-label="Fermer">×</button>
+    <h2 class="modal-title" id="portail-titre">Welcome, login to<br>your account.</h2>
+    <form class="login-form" novalidate>
+      <label class="field"><span class="small">Username or Email Address</span><input type="text" name="identifiant" autocomplete="username" placeholder="name@domain.com" autofocus required></label>
+      <label class="field"><span class="small">Password</span><input type="password" name="mot-de-passe" autocomplete="current-password" placeholder="Your Password" required></label>
+      <div class="form-foot">
+        <button type="submit" class="btn btn-black">Sign In Here</button>
+        <a class="small lost" href="mailto:info@lounici.ca?subject=Client%20Portal%20-%20password">Lost your password?</a>
+      </div>
+      <p class="login-msg small" hidden>The client portal is not open yet. Write to <a href="mailto:info@lounici.ca">info@lounici.ca</a> to get your access.</p>
+    </form>
+  </dialog>
+
+  <script src="script.js?v=12"></script>
 </body>
 </html>
 

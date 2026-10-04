@@ -260,6 +260,26 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .field textarea { resize: vertical; }
 .form-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
 
+/* ── Portail client : fenêtre de connexion ── */
+.login-modal {
+  width: min(440px, calc(100vw - 32px)); margin: auto; padding: 40px 36px 32px;
+  border: 0; border-radius: var(--r-card); background: #fff; color: var(--ink);
+  box-shadow: 0 40px 80px -30px rgba(10, 10, 10, 0.5);
+}
+.login-modal::backdrop { background: rgba(10, 10, 10, 0.45); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.modal-close {
+  position: absolute; top: 14px; right: 14px; width: 34px; height: 34px;
+  border: 0; border-radius: 50%; background: var(--grey); color: var(--ink); font-size: 20px; line-height: 1; cursor: pointer;
+}
+.modal-close:hover { background: var(--grey-2); }
+.modal-title { font-family: var(--display); font-weight: 400; letter-spacing: -0.03em; line-height: 1.08; font-size: clamp(26px, 3vw, 34px); margin-bottom: 26px; }
+.login-form { display: grid; gap: 14px; }
+.login-form .form-foot { margin-top: 8px; }
+.lost { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+.lost:hover { color: var(--ink); }
+.login-msg { margin-top: 4px; padding: 12px 14px; border-radius: var(--r); background: var(--grey); color: var(--ink-2); }
+.login-msg a { text-decoration: underline; }
+
 /* ── Apparition au défilement ── */
 @media (prefers-reduced-motion: no-preference) {
   .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.6s ease, transform 0.6s ease; }
