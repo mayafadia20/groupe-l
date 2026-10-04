@@ -21,6 +21,27 @@
     );
   }
 
+  // Grand menu « Our expertise » : ouvert au clic, fermé par un second clic,
+  // un clic ailleurs, la touche Échap ou le choix d'un lien
+  const megaBtn = document.querySelector(".has-menu");
+  const mega = megaBtn && document.getElementById(megaBtn.getAttribute("aria-controls"));
+  if (megaBtn && mega) {
+    const setMega = (open) => {
+      mega.hidden = !open;
+      megaBtn.setAttribute("aria-expanded", String(open));
+    };
+    megaBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setMega(mega.hidden);
+    });
+    mega.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (e.target.closest("a")) setMega(false);
+    });
+    document.addEventListener("click", () => setMega(false));
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") setMega(false); });
+  }
+
   // Apparition au défilement et compteurs
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const targets = document.querySelectorAll(".reveal");

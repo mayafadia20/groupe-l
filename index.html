@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=10">
+  <link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 
@@ -27,7 +27,7 @@
           <span class="brand-name" aria-hidden="true">Groupe Lounici</span>
         </a>
         <nav class="nav-links" aria-label="Navigation principale">
-          <a href="#cabinet">Our expertise</a>
+          <button class="has-menu" type="button" aria-expanded="false" aria-controls="menu-expertise">Our expertise <svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg></button>
           <a href="#trente-jours">Our programs</a>
           <a href="#cabinet">Our tools</a>
           <a href="#cabinet-enonce">About us</a>
@@ -46,6 +46,23 @@
           </div>
         </div>
         <button class="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span></button>
+
+        <!-- grand menu « Our expertise », ouvert au clic -->
+        <div class="mega" id="menu-expertise" hidden>
+          <a class="mega-title" href="#cabinet">Our expertise <span aria-hidden="true">→</span></a>
+          <ul class="mega-list">
+            <li><a href="#cabinet">Stratégie d’entreprise</a></li>
+            <li><a href="#cabinet">Finance d’entreprise</a></li>
+            <li><a href="#cabinet">Excellence opérationnelle</a></li>
+            <li><a href="#cabinet">Chaîne d’approvisionnement</a></li>
+            <li><a href="#cabinet">Organisation et gouvernance</a></li>
+            <li><a href="#cabinet">Transformation numérique</a></li>
+            <li><a href="#cabinet">Données et analytique</a></li>
+            <li><a href="#cabinet">Intelligence artificielle</a></li>
+            <li><a href="#cabinet">Marchés publics</a></li>
+            <li><a href="#cabinet">Performance et pilotage</a></li>
+          </ul>
+        </div>
       </header>
 
       <div class="hero-body">
@@ -227,7 +244,7 @@
 
   </main>
 
-  <script src="script.js?v=9"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>
 
