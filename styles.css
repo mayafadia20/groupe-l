@@ -274,7 +274,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* cartes pleine largeur, noires, avec un halo sombre tout autour pour le relief */
 .tools {
   flex: 1; min-height: 0; max-height: 50vh;                 /* un peu moins hautes que l'espace disponible */
-  display: flex; justify-content: center;                   /* cartes centrées, côte à côte */
+  display: flex; justify-content: flex-start;               /* cartes alignées à gauche, côte à côte */
   gap: clamp(16px, 2vw, 28px); margin-top: clamp(20px, 4vh, 48px);
 }
 .tools > li { display: grid; flex: none; height: 100%; aspect-ratio: 4 / 5; min-height: 0; }   /* format portrait : plus hautes que larges */
