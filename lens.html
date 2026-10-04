@@ -1249,7 +1249,6 @@
     position:absolute;left:0;top:0;transform-origin:0 0;
     will-change:transform,opacity;pointer-events:none;user-select:none;
   }
-  .intro-figure .v2{opacity:0;}
   .intro-text{
     position:absolute;right:0;top:0;bottom:0;width:46%;
     display:flex;flex-direction:column;justify-content:center;
@@ -1258,6 +1257,14 @@
     transition:opacity .9s ease,transform 1s cubic-bezier(.2,.8,.2,1);
   }
   #intro.step2 .intro-text{opacity:1;transform:none;}
+  .intro-text .ch{opacity:0;transition:opacity .12s ease;}
+  .intro-text .ch.on{opacity:1;}
+  .intro-text .caret{display:inline-block;width:.06em;height:.9em;margin-left:.04em;background:#0d0d0d;vertical-align:-.08em;animation:intro-caret 1s steps(2,start) infinite;}
+  .intro-text .caret.off{display:none;}
+  @keyframes intro-caret{to{visibility:hidden;}}
+  #intro-next{opacity:0;transform:translateY(10px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.2,1);}
+  #intro.ready #intro-next{opacity:1;transform:none;}
+  #intro.ready #intro-next:hover{transform:translateX(4px);}
   .intro-text h1{
     font-family:"Inter Tight","Inter","Helvetica Neue",Helvetica,Arial,sans-serif;
     font-size:clamp(42px,5.4vw,88px);font-weight:600;letter-spacing:-.04em;line-height:.98;
@@ -1273,9 +1280,8 @@
     background:#0d0d0d;border:0;cursor:pointer;
     display:grid;place-items:center;
     box-shadow:0 10px 30px rgba(0,0,0,.22);
-    transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s;
   }
-  #intro-next:hover{transform:translateX(4px);box-shadow:0 14px 36px rgba(0,0,0,.3);}
+  #intro-next:hover{box-shadow:0 14px 36px rgba(0,0,0,.3);}
   #intro-next:focus-visible{outline:2px solid #0d0d0d;outline-offset:4px;}
   #intro-next svg{width:28px;height:28px;display:block;}
   @media (max-width:760px){
@@ -1295,12 +1301,11 @@
 <body>
 <div id="intro" role="dialog" aria-label="Bienvenue dans Lens">
   <div class="intro-figure">
-    <img class="v1" src="assets/lens-vue-1.jpg" alt="" decoding="async">
     <img class="v2" src="assets/lens-vue-2.jpg" alt="" decoding="async">
   </div>
   <div class="intro-text">
-    <h1>Welcome to Lens&nbsp;!</h1>
-    <p>I will be assisting your diagnosis</p>
+    <h1 data-type="Welcome to Lens !"></h1>
+    <p data-type="I will be assisting your diagnosis"></p>
     <button id="intro-next" type="button" aria-label="Continuer">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg>
     </button>
@@ -1308,62 +1313,74 @@
 </div>
 <script>
 (function(){
-  var intro=document.getElementById("intro"), v1=intro.querySelector(".v1"), v2=intro.querySelector(".v2");
-  /* Repère commun entre les deux images (pixels natifs) : le robot reste aligné pendant tout le mouvement */
-  var R1={w:1556,h:1011,cx:545,cy:269,hh:415}, R2={w:1774,h:887,cx:461,cy:317,hh:300};  /* cx,cy = centre du logo sur le casque ; hh = hauteur du casque */
-  var HOLD=1000, MOVE=1500, ZOOM0=1.12, ZOOM1=1.07;
+  var intro=document.getElementById("intro"), img=intro.querySelector(".v2");
+  /* Image en pixels natifs : centre du logo sur le casque et hauteur du casque */
+  var R={w:1774,h:887,cx:461,cy:317,hh:300};
+  var HOLD=900, MOVE=1700, HEAD=.74;          /* zoom de départ : le casque occupe 74 % de la hauteur */
   var reduce=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  [[v1,R1],[v2,R2]].forEach(function(a){a[0].style.width=a[1].w+"px";a[0].style.height=a[1].h+"px";});
+  img.style.width=R.w+"px"; img.style.height=R.h+"px";
 
-  function cover(R){ var W=innerWidth,H=innerHeight,s=Math.max(W/R.w,H/R.h); return {s:s,W:W,H:H,dw:R.w*s,dh:R.h*s}; }
-  /* Cadre de départ : vue 1 en plein écran, tête vers le haut */
-  function frame1(){ var c=cover(R1), x=(c.W-c.dw)/2, y=(c.H-c.dh)*.12; return {x:x+c.s*R1.cx, y:y+c.s*R1.cy, hh:c.s*R1.hh}; }
-  /* Cadre d'arrivée : vue 2 en plein écran, robot à gauche, place libre à droite */
-  function frame2(){ var c=cover(R2), x=Math.min(0,Math.max(c.W-c.dw, c.W*.3-c.s*R2.cx)), y=(c.H-c.dh)/2; return {x:x+c.s*R2.cx, y:y+c.s*R2.cy, hh:c.s*R2.hh}; }
-  function place(img,R,f){ var s=f.hh/R.hh; img.style.transform="translate("+(f.x-s*R.cx)+"px,"+(f.y-s*R.cy)+"px) scale("+s+")"; }
+  /* Cadre de départ : gros plan sur le casque, centré */
+  function frameZoom(){ var W=innerWidth,H=innerHeight; return {x:W*.5, y:H*.5, hh:H*HEAD}; }
+  /* Cadre d'arrivée : image en plein écran, robot à gauche, place libre à droite */
+  function frameWide(){
+    var W=innerWidth,H=innerHeight,s=Math.max(W/R.w,H/R.h),dw=R.w*s,dh=R.h*s;
+    var x=Math.min(0,Math.max(W-dw, W*.3-s*R.cx)), y=(H-dh)/2;
+    return {x:x+s*R.cx, y:y+s*R.cy, hh:s*R.hh};
+  }
+  function place(f){ var s=f.hh/R.hh; img.style.transform="translate("+(f.x-s*R.cx)+"px,"+(f.y-s*R.cy)+"px) scale("+s+")"; }
   function lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, hh:a.hh*Math.pow(b.hh/a.hh,t)}; }
-  function zoomed(f,z){ var cx=innerWidth/2, cy=innerHeight/2; return {x:cx+(f.x-cx)*z, y:cy+(f.y-cy)*z, hh:f.hh*z}; }
   var easeOut=function(t){return 1-Math.pow(1-t,3);}, easeInOut=function(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};
   var clamp=function(t){return Math.max(0,Math.min(1,t));};
 
-  /* Part du mouvement pendant laquelle la vue 1 couvre encore tout l'écran : le fondu doit finir avant */
-  function fadeLimit(){
-    var a=zoomed(frame1(),ZOOM1), b=frame2(), ok=0, W=innerWidth, H=innerHeight;
-    for(var e=.02;e<=.6;e+=.02){
-      var f=lerp(a,b,e), sc=f.hh/R1.hh, x=f.x-sc*R1.cx, y=f.y-sc*R1.cy;
-      if(x<=0&&y<=0&&x+R1.w*sc>=W&&y+R1.h*sc>=H) ok=e; else break;
+  /* ---- Texte qui s'écrit ---- */
+  var h1=intro.querySelector("h1"), par=intro.querySelector("p"), caret=document.createElement("span"); caret.className="caret";
+  function prepare(el){ var t=el.getAttribute("data-type"), out=[]; for(var k=0;k<t.length;k++){ var c=t[k], sp=document.createElement("span"); sp.className="ch"; sp.textContent=c===" "?"\u00a0":c; el.appendChild(sp); out.push(sp);} return out; }
+  var c1=prepare(h1), c2=prepare(par);
+  var typing=false, typed=false;
+  function typeAll(){
+    if(typing||typed) return; typing=true;
+    var seq=[]; c1.forEach(function(sp){seq.push({sp:sp,el:h1,d:48});}); seq.push({pause:260}); c2.forEach(function(sp){seq.push({sp:sp,el:par,d:26});});
+    var k=0;
+    function step(){
+      if(k>=seq.length){ caret.classList.add("off"); typed=true; typing=false; intro.classList.add("ready"); return; }
+      var it=seq[k++];
+      if(it.pause){ setTimeout(step,it.pause); return; }
+      it.sp.classList.add("on"); it.sp.after(caret); caret.classList.remove("off");
+      var ch=it.sp.textContent, d=it.d*(ch===","||ch==="!"?4:1)*(.75+Math.random()*.5);
+      setTimeout(step,d);
     }
-    return Math.max(.06,Math.min(.22,ok));
+    h1.appendChild(caret); step();
   }
-  var t0=null, done=false, textShown=false, E=fadeLimit();
+  function showAll(){ c1.concat(c2).forEach(function(sp){sp.classList.add("on");}); caret.classList.add("off"); typed=true; intro.classList.add("step2","ready"); }
+
+  /* ---- Mouvement ---- */
+  var t0=null, done=false;
   function render(now){
     if(done) return;
     if(t0===null) t0=now;
     var el=now-t0;
     if(el<HOLD){
-      var z=ZOOM0-(ZOOM0-ZOOM1)*easeOut(el/HOLD);
-      place(v1,R1,zoomed(frame1(),z)); place(v2,R2,zoomed(frame1(),z));
-      v1.style.opacity=1; v2.style.opacity=0;
+      var f=frameZoom(); f.hh*=1+.05*(1-easeOut(el/HOLD));   /* léger recul pendant la pause */
+      place(f);
     } else {
-      var t=clamp((el-HOLD)/MOVE), e=easeInOut(t), f=lerp(zoomed(frame1(),ZOOM1),frame2(),e);
-      place(v1,R1,f); place(v2,R2,f);
-      var k=clamp(e/E); k=k*k*(3-2*k);      /* fondu croisé au début du mouvement, vue 1 encore plein écran */
-      v1.style.opacity=1-k; v2.style.opacity=k;
-      if(!textShown&&t>.45){ textShown=true; intro.classList.add("step2"); }
+      var t=clamp((el-HOLD)/MOVE), e=easeInOut(t);
+      place(lerp(frameZoom(),frameWide(),e));
+      if(t>.3&&!intro.classList.contains("step2")){ intro.classList.add("step2"); typeAll(); }
       if(t>=1){ done=true; return; }
     }
     requestAnimationFrame(render);
   }
-  function finish(){ done=true; var f=frame2(); place(v1,R1,f); place(v2,R2,f); v1.style.opacity=0; v2.style.opacity=1; intro.classList.add("step2"); }
-  addEventListener("resize",function(){ if(done) finish(); else E=fadeLimit(); });
+  function finish(){ done=true; place(frameWide()); if(!typed&&!typing) showAll(); else intro.classList.add("step2"); }
+  addEventListener("resize",function(){ if(done) place(frameWide()); });
 
   var started=false;
   function start(){ if(started)return; started=true; if(reduce){finish();return;} requestAnimationFrame(render); }
-  place(v1,R1,zoomed(frame1(),ZOOM0)); place(v2,R2,zoomed(frame1(),ZOOM0));
-  if(v1.complete) start(); else { v1.addEventListener("load",start); v1.addEventListener("error",start); setTimeout(start,2500); }
+  var f0=frameZoom(); f0.hh*=1.05; place(f0);
+  if(img.complete) start(); else { img.addEventListener("load",start); img.addEventListener("error",start); setTimeout(start,2500); }
 
   function leave(){ done=true; intro.classList.add("out"); setTimeout(function(){ intro.remove(); },800); document.removeEventListener("keydown",onKey); }
-  function onKey(e){ if(!intro.classList.contains("step2"))return; if(e.key==="Enter"||e.key===" "||e.key==="ArrowRight"){ e.preventDefault(); leave(); } }
+  function onKey(e){ if(!intro.classList.contains("ready"))return; if(e.key==="Enter"||e.key===" "||e.key==="ArrowRight"){ e.preventDefault(); leave(); } }
   document.getElementById("intro-next").addEventListener("click",leave);
   document.addEventListener("keydown",onKey);
 })();
