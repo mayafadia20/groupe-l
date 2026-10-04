@@ -1295,6 +1295,26 @@
   @media (prefers-reduced-motion:reduce){
     #intro,.intro-text{transition:none;}
   }
+
+  /* ---------- Page image : « lens vu 5 » plein écran, robot qui flotte ---------- */
+  #monde{position:fixed;inset:0;z-index:3;background:#fff;overflow:hidden;}
+  .monde-cadre{position:absolute;}
+  .monde-cadre .fond{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  .monde-cadre .robot{
+    position:absolute;left:47.98%;top:38.96%;width:4.297%;height:auto;display:block;
+    animation:robot-flotte 3.4s ease-in-out infinite;will-change:transform;
+  }
+  .monde-cadre .ombre{
+    position:absolute;left:50.13%;top:49.3%;width:3.6%;height:1.1%;
+    transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,.30) 0%,rgba(0,0,0,.14) 45%,rgba(0,0,0,0) 72%);
+    animation:ombre-flotte 3.4s ease-in-out infinite;will-change:transform,opacity;
+  }
+  @keyframes robot-flotte{0%,100%{transform:translateY(0);}50%{transform:translateY(-16%);}}
+  @keyframes ombre-flotte{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1;}50%{transform:translate(-50%,-50%) scale(.72);opacity:.45;}}
+  /* La scène 3D et ses commandes ne sont plus affichées */
+  #scene,#labels,header,footer,#dash-btn,#demo-btn{display:none !important;}
+  @media (prefers-reduced-motion:reduce){.monde-cadre .robot,.monde-cadre .ombre{animation:none;}}
 </style>
 </head>
 <body>
@@ -1388,6 +1408,20 @@
   function onKey(e){ if(!intro.classList.contains("ready"))return; if(e.key==="Enter"||e.key===" "||e.key==="ArrowRight"){ e.preventDefault(); leave(); } }
   document.getElementById("intro-next").addEventListener("click",leave);
   document.addEventListener("keydown",onKey);
+})();
+</script>
+<div id="monde" aria-hidden="true">
+  <div class="monde-cadre">
+    <img class="fond" src="assets/lens-vue-5.jpg" alt="" decoding="async">
+    <div class="ombre"></div>
+    <img class="robot" src="assets/lens-robot.png" alt="" decoding="async">
+  </div>
+</div>
+<script>
+(function(){
+  var cadre=document.querySelector("#monde .monde-cadre"), IW=1536, IH=1024;
+  function fit(){ var W=innerWidth,H=innerHeight,s=Math.max(W/IW,H/IH); cadre.style.width=IW*s+"px"; cadre.style.height=IH*s+"px"; cadre.style.left=(W-IW*s)/2+"px"; cadre.style.top=(H-IH*s)/2+"px"; }
+  fit(); addEventListener("resize",fit);
 })();
 </script>
 
@@ -5725,6 +5759,7 @@ function updateLabels() {
 }
 
 function animate() {
+  if (document.getElementById("monde")) return;   /* page image : la scène 3D n'est plus animée */
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
 
