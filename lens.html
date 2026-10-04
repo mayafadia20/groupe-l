@@ -15,10 +15,7 @@
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;overflow:hidden;}
   body{
-    background:
-      radial-gradient(ellipse 55% 40% at 50% 0%,   rgba(13,13,13,.22) 0%, rgba(13,13,13,.08) 45%, rgba(0,0,0,0) 72%),
-      radial-gradient(ellipse 70% 45% at 50% 100%, rgba(13,13,13,.16) 0%, rgba(0,0,0,0) 70%),
-      linear-gradient(180deg, #ffffff 0%, #f3f3f1 50%, #ffffff 100%);
+    background:#ffffff;
     color:#0d0d0d;
     font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
   }
@@ -3025,21 +3022,21 @@ const GLOBAUX = [
 /* Positions en éventail face à la caméra, trois rangées décalées.
    x : gauche/droite · y : hauteur · z : vers la caméra (+) ou vers le fond (−) */
 const POSITIONS = [
-  // Rangée basse, de part et d'autre du cube
+  // Rangée basse, de part et d'autre de l'agent
   { x: -10.4, y: 2.0, z:  0.9 },
   { x:  -7.0, y: 2.0, z:  0.9 },
   { x:  -3.6, y: 2.0, z:  0.9 },
   { x:   3.6, y: 2.0, z:  0.9 },
   { x:   7.0, y: 2.0, z:  0.9 },
   { x:  10.4, y: 2.0, z:  0.9 },
-  // Rangée médiane, au-dessus du cube
+  // Rangée médiane, de part et d'autre de l'agent
   { x:  -8.6, y: 4.5, z:  0.0 },
   { x:  -5.3, y: 4.5, z:  0.0 },
-  { x:  -2.0, y: 4.5, z:  0.0 },
-  { x:   2.0, y: 4.5, z:  0.0 },
+  { x:  -2.6, y: 4.5, z:  0.0 },
+  { x:   2.6, y: 4.5, z:  0.0 },
   { x:   5.3, y: 4.5, z:  0.0 },
   { x:   8.6, y: 4.5, z:  0.0 },
-  // Rangée haute, dans le faisceau
+  // Rangée haute, derrière l'agent
   { x:  -7.0, y: 6.8, z: -1.0 },
   { x:  -3.6, y: 6.8, z: -1.0 },
   { x:   3.6, y: 6.8, z: -1.0 },
@@ -3152,70 +3149,54 @@ function ring(rIn, rOut, y, opacity) {
 }
 
 /* ---------------------------------------------------------------------
-   Centre : plateforme, faisceau, empilement de plaques, cube
+   Centre : l'agent Lens, animé à partir d'une planche de 12 poses (6 × 2).
+   Deux sprites superposés : le premier affiche la pose courante, le second
+   fait apparaître la suivante en fondu, puis les rôles s'échangent.
    --------------------------------------------------------------------- */
 const center = new THREE.Group();
 world.add(center);
 
-const platform = new THREE.Mesh(
-  new THREE.CylinderGeometry(3.7, 4.0, 0.42, 96),
-  new THREE.MeshPhongMaterial({ color: 0x8a8a86, emissive: 0x2f2f2f, shininess: 50 })
-);
-platform.position.y = 0.21;
-center.add(platform);
+const AGENT_COLS = 6, AGENT_ROWS = 2;
+const AGENT_SIZE = 3.4, AGENT_Y = 3.5;                 /* taille (unités monde) et hauteur du centre de l'agent */
+const AGENT_SEQ  = [0, 1, 6, 11, 2, 8, 3, 9, 0, 4, 10, 7, 5, 11];   /* ordre des poses */
+const AGENT_HOLD = 1.5, AGENT_FADE = 0.6;              /* secondes : tenue d'une pose, durée du fondu */
 
-center.add(ring(3.70, 3.84, 0.44, 0.95));
-center.add(ring(4.35, 4.42, 0.02, 0.55));
-center.add(ring(5.25, 5.30, 0.02, 0.32));
-center.add(ring(6.30, 6.34, 0.02, 0.18));
-
-const floorGlow = glowSprite(13, 0.55);
-floorGlow.position.y = 0.05;
-center.add(floorGlow);
-
-const beamGeo = new THREE.CylinderGeometry(0.10, 3.85, 9.2, 96, 1, true);
-const beamMat = new THREE.ShaderMaterial({
-  transparent: true, depthWrite: false, side: THREE.DoubleSide,
-  blending: THREE.NormalBlending,
-  uniforms: { color: { value: new THREE.Color(0x8a8a86) } },
-  vertexShader: `
-    varying vec2 vUv;
-    void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-  fragmentShader: `
-    uniform vec3 color; varying vec2 vUv;
-    void main(){
-      float a = mix(0.05, 0.30, vUv.y);
-      gl_FragColor = vec4(color, a * 0.55);
-    }`,
+const agentLoader  = new THREE.TextureLoader();
+const agentSprites = [0, 1].map(i => {
+  const tex = agentLoader.load("assets/lens-agent.jpg");
+  tex.encoding   = THREE.sRGBEncoding;
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  tex.repeat.set(1 / AGENT_COLS, 1 / AGENT_ROWS);
+  const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: i === 0 ? 1 : 0, depthWrite: false, fog: false });
+  const spr = new THREE.Sprite(mat);
+  spr.scale.set(AGENT_SIZE, AGENT_SIZE, 1);
+  spr.position.y = AGENT_Y;
+  spr.renderOrder = 10 + i;
+  center.add(spr);
+  return spr;
 });
-const beam = new THREE.Mesh(beamGeo, beamMat);
-beam.position.y = 0.44 + 9.2 / 2;
-center.add(beam);
-
-const stack = new THREE.Group();
-center.add(stack);
-
-const CUBE = 2.3;
-const cube = glassBox(CUBE, 0.34, 0x8a8a86);
-cube.position.y = 2.55;
-stack.add(cube);
-
-const innerCube = glassBox(CUBE * 0.6, 0.24, 0xa3a3a1);
-innerCube.position.y = 2.55;
-stack.add(innerCube);
-
-stack.add(plate(4.4, 1.10, 0.50));
-stack.add(plate(3.3, 2.55, 0.45));
-stack.add(plate(1.25, 4.20, 0.65));
-
-const cubeGlow = glowSprite(7.5, 0.55);
-cubeGlow.position.y = 2.55;
-center.add(cubeGlow);
-
-const grid = new THREE.GridHelper(70, 70, 0xafafad, 0xd6d6d4);
-grid.material.transparent = true;
-grid.material.opacity = 0.6;
-world.add(grid);
+function agentFrame(spr, idx) {
+  const c = idx % AGENT_COLS, r = Math.floor(idx / AGENT_COLS);
+  spr.material.map.offset.set(c / AGENT_COLS, 1 - (r + 1) / AGENT_ROWS);
+}
+let agentBase = 0, agentStep = 0, agentT0 = 0;
+agentFrame(agentSprites[0], AGENT_SEQ[0]);
+agentFrame(agentSprites[1], AGENT_SEQ[1]);
+function animateAgent(t) {
+  const local = t - agentT0;
+  if (local < AGENT_HOLD) return;
+  const base = agentSprites[agentBase], top = agentSprites[1 - agentBase];
+  const k = Math.min(1, (local - AGENT_HOLD) / AGENT_FADE);
+  top.material.opacity = k * k * (3 - 2 * k);           /* la pose suivante apparaît par-dessus, la base reste opaque */
+  if (k >= 1) {
+    agentStep = (agentStep + 1) % AGENT_SEQ.length;
+    agentT0   = t;
+    top.renderOrder  = 10; base.renderOrder = 11;
+    base.material.opacity = 0;
+    agentFrame(base, AGENT_SEQ[(agentStep + 1) % AGENT_SEQ.length]);
+    agentBase = 1 - agentBase;
+  }
+}
 
 /* ---------------------------------------------------------------------
    Départements : pyramides inversées + étiquettes
@@ -5754,7 +5735,7 @@ function animate() {
   rotY += (targetRotY - rotY) * 0.08;
   world.rotation.y = rotY + (retourFace ? Math.sin(t * 0.25) * 0.05 : 0);
 
-  stack.rotation.y = t * 0.15;
+  animateAgent(t);
 
   depts.forEach(d => {
     d.cur.x += (d.target.x - d.cur.x) * 0.08;
