@@ -265,18 +265,28 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .portal-wrap { padding: 0 var(--pad); }
 .nav-links a.is-active { color: var(--ink); }
 .nav-links a.is-active::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink); }
-.portal-main { padding: clamp(40px, 8vh, 88px) var(--pad) 72px; max-width: 1100px; }
+.portal-main { padding: clamp(40px, 8vh, 88px) var(--pad) 96px; }
 .portal-main .body-m { margin-top: 18px; }
-.tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 40px; max-width: 720px; }
+/* cartes pleine largeur, noires, avec un halo sombre tout autour pour le relief */
+.tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(20px, 2.4vw, 34px); margin-top: clamp(40px, 6vh, 64px); }
 .tool {
-  display: flex; flex-direction: column; justify-content: space-between; aspect-ratio: 1; padding: 22px;
-  border-radius: var(--r-card); background: linear-gradient(180deg, #1a1a1a, #0a0a0a); color: #fff;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex; flex-direction: column; justify-content: space-between; aspect-ratio: 1; padding: clamp(24px, 2.4vw, 34px);
+  border-radius: 26px; color: #fff;
+  background: linear-gradient(170deg, #1f1f1f 0%, #0e0e0e 45%, #050505 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),             /* fine lumière sur le bord haut */
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    0 24px 48px -12px rgba(0, 0, 0, 0.55),               /* ombre portée vers le bas */
+    0 0 60px rgba(0, 0, 0, 0.28);                        /* halo sombre autour */
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.tool:hover { transform: translateY(-3px); box-shadow: 0 24px 40px -24px rgba(10, 10, 10, 0.6); }
-.tool svg { width: 34px; height: 34px; }
-.tool > span { display: grid; gap: 4px; font-size: 15px; line-height: 1.25; letter-spacing: -0.01em; }
-.tool .small { color: rgba(255,255,255,0.55); }
+.tool:hover {
+  transform: translateY(-6px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 4px 10px rgba(0, 0, 0, 0.3), 0 40px 64px -16px rgba(0, 0, 0, 0.6), 0 0 80px rgba(0, 0, 0, 0.34);
+}
+.tool svg { width: clamp(40px, 4vw, 56px); height: auto; }
+.tool > span { display: grid; gap: 6px; font-size: clamp(16px, 1.5vw, 22px); line-height: 1.2; letter-spacing: -0.015em; }
+.tool .small { font-size: 12px; color: rgba(255,255,255,0.55); }
 
 /* ── Portail client : fenêtre de connexion ── */
 .login-modal {
@@ -352,7 +362,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero-top { gap: 14px; }
   .nav-right { gap: 14px; }
   .nav-portal span { display: none; }   /* sur téléphone, l'icône de personne suffit */
-  .tools { grid-template-columns: 1fr; max-width: 360px; }
+  .tools { grid-template-columns: 1fr; }
   .hero-body { grid-template-columns: 1fr; align-items: start; }
   .hero-text { padding: 28px 0 16px; }
   .hero-kicker, .hero-title { margin-bottom: 22px; }
