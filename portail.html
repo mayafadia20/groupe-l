@@ -46,10 +46,18 @@
       <ul class="tools">
         <li>
           <a class="tool has-image" href="#" style="--img: url('assets/outil-diagnostic.jpg?v=1')">
-            <!-- grille de points blancs (9 × 9) -->
-            <svg class="dots" viewBox="0 0 36 36" fill="currentColor" aria-hidden="true">
-              <defs><pattern id="grille-points" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1"/></pattern></defs>
-              <rect width="36" height="36" fill="url(#grille-points)"/>
+            <!-- grille de points blancs (10 × 10), pleins au centre et de plus en plus transparents vers les bords -->
+            <svg class="dots" viewBox="0 0 40 40" fill="currentColor" aria-hidden="true">
+              <defs>
+                <pattern id="grille-points" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.1"/></pattern>
+                <radialGradient id="fondu-points" cx="50%" cy="50%" r="50%">
+                  <stop offset="0" stop-color="#fff"/>
+                  <stop offset="0.35" stop-color="#fff"/>
+                  <stop offset="1" stop-color="#fff" stop-opacity="0.1"/>
+                </radialGradient>
+                <mask id="masque-points"><rect width="40" height="40" fill="url(#fondu-points)"/></mask>
+              </defs>
+              <rect width="40" height="40" fill="url(#grille-points)" mask="url(#masque-points)"/>
             </svg>
             <span class="tool-foot">
               <span class="tool-name">Lens</span>
