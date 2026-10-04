@@ -272,7 +272,12 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .portal-main .h-xl { font-size: clamp(30px, 4.6vh, 64px); }
 .portal-main .body-m { margin-top: clamp(10px, 2vh, 18px); }
 /* cartes pleine largeur, noires, avec un halo sombre tout autour pour le relief */
-.tools { flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); gap: clamp(20px, 2.4vw, 34px); margin-top: clamp(20px, 4vh, 48px); }
+.tools {
+  flex: 1; min-height: 0; max-height: 50vh;                 /* un peu moins hautes que l'espace disponible */
+  width: 90%; margin-left: auto; margin-right: auto;        /* un peu moins larges, centrées */
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr);
+  gap: clamp(20px, 2.4vw, 34px); margin-top: clamp(20px, 4vh, 48px);
+}
 .tools > li { display: grid; min-height: 0; }   /* la carte prend toute la hauteur de sa case */
 .tool {
   display: flex; flex-direction: column; justify-content: space-between; min-height: 200px; padding: clamp(24px, 2.4vw, 34px);
