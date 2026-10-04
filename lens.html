@@ -1248,7 +1248,9 @@
   .intro-figure img{
     position:absolute;left:0;top:0;transform-origin:0 0;
     will-change:transform,opacity;pointer-events:none;user-select:none;
+    visibility:hidden;            /* rendue visible par le script dès le premier positionnement */
   }
+  .intro-figure img.placed{visibility:visible;}
   .intro-text{
     position:absolute;right:0;top:0;bottom:0;width:46%;
     display:flex;flex-direction:column;justify-content:center;
@@ -1328,7 +1330,13 @@
     var x=Math.min(0,Math.max(W-dw, W*.3-s*R.cx)), y=(H-dh)/2;
     return {x:x+s*R.cx, y:y+s*R.cy, hh:s*R.hh};
   }
-  function place(f){ var s=f.hh/R.hh; img.style.transform="translate("+(f.x-s*R.cx)+"px,"+(f.y-s*R.cy)+"px) scale("+s+")"; }
+  /* Positionne l'image en garantissant qu'elle couvre toujours toute la fenêtre (aucun bord visible) */
+  function place(f){
+    var W=innerWidth,H=innerHeight,s=Math.max(f.hh/R.hh, W/R.w, H/R.h);
+    var x=Math.min(0,Math.max(W-R.w*s, f.x-s*R.cx)), y=Math.min(0,Math.max(H-R.h*s, f.y-s*R.cy));
+    img.style.transform="translate("+x+"px,"+y+"px) scale("+s+")";
+    img.classList.add("placed");
+  }
   function lerp(a,b,t){ return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t, hh:a.hh*Math.pow(b.hh/a.hh,t)}; }
   var easeOut=function(t){return 1-Math.pow(1-t,3);}, easeInOut=function(t){return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;};
   var clamp=function(t){return Math.max(0,Math.min(1,t));};
