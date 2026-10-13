@@ -1338,6 +1338,22 @@
   <div class="intro-text">
     <h1 data-type="Welcome to Lens !"></h1>
     <p data-type="I will be assisting your diagnosis"></p>
+    <script>
+      // Langue choisie sur le site (FR par défaut, mémorisée par l'accueil) : textes de l'intro et lien de retour
+      (function () {
+        var en = false; try { en = localStorage.getItem("langue") === "en"; } catch (e) {}
+        document.documentElement.lang = en ? "en" : "fr";
+        if (!en) {
+          var h = document.querySelector("h1[data-type]"), p = document.querySelector("p[data-type]");
+          if (h) h.dataset.type = "Bienvenue dans Lens !";
+          if (p) p.dataset.type = "Je vais vous assister dans votre diagnostic";
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+          var a = document.getElementById("retour-portail");
+          if (a && en) { a.textContent = "← Portal"; a.title = "Back to portal"; }
+        });
+      })();
+    </script>
     <button id="intro-next" type="button" aria-label="Continuer">
       <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16"/><path d="M13 5l7 7-7 7"/></svg>
     </button>

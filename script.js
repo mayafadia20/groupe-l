@@ -1,6 +1,128 @@
 // Groupe L — interactions légères (aucune dépendance)
 
 (function () {
+  // ── Langue : français par défaut, anglais au clic sur « EN ». Le choix est mémorisé (localStorage)
+  //    et suivi sur toutes les pages. Le français vit dans le HTML ; l'anglais dans ce dictionnaire.
+  //    data-i18n="cle" traduit le contenu ; data-i18n-attr="attr=cle;attr2=cle2" traduit des attributs.
+  const EN = {
+      "title_home": "Home | Groupe Lounici",
+      "meta_desc": "Groupe Lounici is a problem-solving and continuous-improvement firm: mergers and acquisitions, strategy, system implementation, structural change. Results within the first 30 days.",
+      "brand_home": "Groupe Lounici — home",
+      "nav_label": "Main navigation",
+      "nav_expertise": "Our expertise",
+      "nav_about": "About us",
+      "nav_contact": "Contact us",
+      "nav_portal": "Client portal",
+      "nav_toggle": "Open menu",
+      "lang_label": "Language",
+      "mega_title": "Our expertise <span aria-hidden=\"true\">→</span>",
+      "exp_1": "Corporate strategy",
+      "exp_2": "Corporate finance",
+      "exp_3": "Operational excellence",
+      "exp_4": "Supply chain",
+      "exp_5": "Organization and governance",
+      "exp_6": "Digital transformation",
+      "exp_7": "Data and analytics",
+      "exp_8": "Artificial intelligence",
+      "exp_9": "Public procurement",
+      "exp_10": "Performance management",
+      "hero_title": "Where does your<br>performance get lost?",
+      "hero_lead": "We have our own technology arsenal to measure your performance, align it with your vision and build the action plan that will take your company where you want it to go.",
+      "strip_scroll": "Scroll",
+      "statement": "\n          We believe the best decisions come from combining human expertise, data and technology.\n          <span class=\"dim\">Our technology ecosystem speeds up diagnosis, structures execution and gives leaders continuous visibility on their performance, turning strategy into measurable results.</span>\n        ",
+      "expo_pill": "Our expertise",
+      "expo_title": "Areas of expertise",
+      "caro_role": "carousel",
+      "slide_role": "slide",
+      "card_1": "Choose a direction, put numbers on it and make it hold across the organization, not just in a document.",
+      "card_2": "Mergers, acquisitions, financing: value has to survive the transaction, then the integration.",
+      "card_3": "Costs, lead times, quality, capacity: fixed on the floor with your teams, who then carry on without us.",
+      "card_4": "Inventory, suppliers, logistics: a readable flow from order to delivery.",
+      "card_5": "Roles, responsibilities, governance bodies: a structure that decides fast and holds.",
+      "card_6": "ERP, CRM, business tools: delivered, adopted and profitable.",
+      "card_7": "Reliable indicators, read every week, that trigger decisions.",
+      "card_8": "Use cases chosen for their return, deployed with your data and your teams.",
+      "card_9": "SEAO monitoring, tender qualification and bids that win.",
+      "card_10": "A dashboard, targets and a review cadence that last over time.",
+      "more": "Learn more",
+      "prev": "Previous expertise",
+      "next": "Next expertise",
+      "dots": "Choose an expertise",
+      "cta": "Discuss a mandate",
+      "contact_title": "A problem to solve?<br>Let’s talk this week.",
+      "f_name": "Name",
+      "f_email": "Email",
+      "f_company": "Company",
+      "f_problem": "The problem to solve, in a few words",
+      "f_send": "Send",
+      "foot_top": "Back to top ↑",
+      "close": "Close",
+      "modal_title": "Welcome, log in to<br>your account.",
+      "m_user": "Username or email address",
+      "m_user_ph": "name@domain.com",
+      "m_pass": "Password",
+      "m_pass_ph": "Your password",
+      "m_submit": "Sign in",
+      "m_lost": "Lost your password?",
+      "m_msg_empty": "Please enter your username and password.",
+      "m_msg_bad": "Incorrect username or password.",
+      "title_tools": "Tools | Groupe Lounici",
+      "brand_portal": "Groupe Lounici — client portal",
+      "p_tools": "Tools",
+      "p_logout": "Log out",
+      "p_title": "Your tools,<br>in one place",
+      "p_lead": "Groupe Lounici’s technology arsenal to measure your performance, align it with your vision and track your action plan.",
+      "slide_1": "1 of 10",
+      "slide_2": "2 of 10",
+      "slide_3": "3 of 10",
+      "slide_4": "4 of 10",
+      "slide_5": "5 of 10",
+      "slide_6": "6 of 10",
+      "slide_7": "7 of 10",
+      "slide_8": "8 of 10",
+      "slide_9": "9 of 10",
+      "slide_10": "10 of 10"
+  };
+  const LANG_KEY = "langue";
+  const frContent = new WeakMap(), frAttrs = new WeakMap();
+  function getLang() { try { return localStorage.getItem(LANG_KEY) === "en" ? "en" : "fr"; } catch (_) { return "fr"; } }
+  function t(key, fr) { return getLang() === "en" && EN[key] !== undefined ? EN[key] : fr; }
+  function applyLang(lang) {
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+      if (el.closest(".is-clone")) return;
+      if (!frContent.has(el)) frContent.set(el, el.innerHTML);
+      const en = EN[el.dataset.i18n];
+      el.innerHTML = lang === "en" && en !== undefined ? en : frContent.get(el);
+    });
+    document.querySelectorAll("[data-i18n-attr]").forEach((el) => {
+      if (el.closest(".is-clone")) return;
+      if (!frAttrs.has(el)) frAttrs.set(el, {});
+      const mem = frAttrs.get(el);
+      el.dataset.i18nAttr.split(";").forEach((pair) => {
+        const [attr, key] = pair.split("=");
+        if (!(attr in mem)) mem[attr] = el.getAttribute(attr);
+        const en = EN[key];
+        el.setAttribute(attr, lang === "en" && en !== undefined ? en : mem[attr]);
+      });
+    });
+    document.querySelectorAll(".lang a").forEach((a) => {
+      const on = a.getAttribute("lang") === lang;
+      a.classList.toggle("is-on", on);
+      if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+    });
+    document.dispatchEvent(new CustomEvent("langchange", { detail: lang }));
+  }
+  document.querySelectorAll(".lang a").forEach((a) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      const lang = a.getAttribute("lang") === "en" ? "en" : "fr";
+      try { localStorage.setItem(LANG_KEY, lang); } catch (_) {}
+      applyLang(lang);
+    });
+  });
+  applyLang(getLang());
+
   // Année du pied de page
   const year = document.getElementById("year");
   if (year) year.textContent = new Date().getFullYear();
@@ -65,9 +187,9 @@
       e.preventDefault();
       const courriel = form.querySelector("[name=identifiant]").value.trim().toLowerCase();
       const mdp = form.querySelector("[name=mot-de-passe]").value;
-      if (!courriel || !mdp) { msg.textContent = "Please enter your username and password."; msg.hidden = false; return; }
+      if (!courriel || !mdp) { msg.textContent = t("m_msg_empty", "Veuillez saisir votre identifiant et votre mot de passe."); msg.hidden = false; return; }
       if ((await sha256(courriel + ":" + mdp)) !== EMPREINTE) {
-        msg.textContent = "Incorrect username or password.";
+        msg.textContent = t("m_msg_bad", "Identifiant ou mot de passe incorrect.");
         msg.hidden = false;
         return;
       }
@@ -189,6 +311,8 @@
     track.insertBefore(cloneLast, cards[0]);
     track.appendChild(cloneFirst);
     const slots = Array.from(track.children);   // positions 0..N+1 ; la carte réelle k est à la position k+1
+    // les clones suivent la langue de leur carte d'origine
+    document.addEventListener("langchange", () => { cloneLast.innerHTML = cards[N - 1].innerHTML; cloneFirst.innerHTML = cards[0].innerHTML; });
 
     let index = 0, pos = 1, timer = null, snapTo = null;
 
