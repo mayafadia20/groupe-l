@@ -217,10 +217,11 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* flèches au milieu de l’espace entre la voisine visible (160 px) et la carte active */
 .caro-prev { left: max(var(--pad), calc((100% - var(--card-w)) / 4 + 58px)); background: #fff; color: var(--ink); }
 .caro-next { right: max(var(--pad), calc((100% - var(--card-w)) / 4 + 58px)); background: var(--black); color: #fff; }
-.caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: 22px; }
+/* points + bouton centrés dans l’espace libre sous la carte */
+.caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: auto; padding-top: 22px; }
 .caro-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: rgba(10,10,10,0.14); cursor: pointer; transition: width 0.3s ease, background 0.3s ease; }
 .caro-dot.is-on { width: 22px; background: var(--ink); }
-.expo-foot { text-align: center; margin-top: 22px; }
+.expo-foot { text-align: center; margin-top: 22px; margin-bottom: auto; }
 
 /* ── 6. Contact : la carte remplit la fenêtre, le formulaire est centré dedans ── */
 .contact { padding: 16px var(--pad); display: flex; flex-direction: column; }
