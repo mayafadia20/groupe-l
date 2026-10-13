@@ -2,8 +2,8 @@
    Groupe L — Feuille de style
    Direction : studio monochrome sur fond blanc pur. Héros à empennage
    noir, énoncé en deux tons sur noir, cartes empilées à flèches, duo de
-   cartes gris clair / noir, trio de cartes noires, contact en deux
-   panneaux. Toutes les couleurs passent par les tokens.
+   cartes gris clair / noir, trio de cartes noires, formulaire de contact
+   seul et centré. Toutes les couleurs passent par les tokens.
    ===================================================================== */
 
 :root {
@@ -226,28 +226,17 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .trio-stats .sep { color: var(--line); }
 .star { font-style: normal; color: var(--ink); }
 
-/* ── 6. Contact : deux panneaux ── */
-.contact { padding: 16px var(--pad); }
-.login { flex: 1; min-height: 0; display: grid; grid-template-columns: 1.1fr 1fr; border-radius: var(--r-card); overflow: hidden; border: 1px solid var(--line); }
-.login-dark {
-  position: relative; padding: 28px; color: #fff; display: flex; flex-direction: column; justify-content: space-between;
-  background:
-    radial-gradient(70% 60% at 30% 60%, #2a2a2a, transparent 70%),
-    linear-gradient(150deg, #1b1b1b, #050505);
-  min-height: 420px;
+/* ── 6. Contact : formulaire seul, centré ── */
+.contact { padding: 16px var(--pad); display: flex; flex-direction: column; justify-content: center; }
+.login {
+  width: 100%; max-width: 640px; margin: auto;
+  display: flex; flex-direction: column; gap: 22px;
+  padding: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 48px);
+  background: #fff; border: 1px solid var(--line); border-radius: var(--r-card);
 }
-.login-pill { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.08); border: 1px solid var(--line-dark); color: rgba(255,255,255,0.85); }
-.login-art {
-  position: absolute; left: 10%; top: 18%; width: 80%; height: 64%;
-  background:
-    repeating-linear-gradient(115deg, transparent 0 28px, rgba(255,255,255,0.05) 28px 29px),
-    radial-gradient(40% 50% at 60% 50%, rgba(255,255,255,0.1), transparent 70%);
-  border-radius: 30% 70% 60% 40% / 50% 40% 60% 50%;
-}
-.login-brand { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-.login-brand .small { color: rgba(255,255,255,0.6); }
-.login-light { padding: 28px clamp(24px, 3vw, 48px); display: flex; flex-direction: column; justify-content: center; gap: 22px; background: #fff; }
-.login-light .align-right { color: var(--muted); }
+.site-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 4px 0; color: var(--muted); }
+.site-foot .brand { color: var(--ink); }
+.site-foot .brand-mark { filter: invert(1); }
 .contact-form { display: grid; gap: 12px; }
 .field { display: grid; gap: 6px; }
 .field .small { color: var(--muted); }
@@ -341,7 +330,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .stack-card .small { display: none; }
   .duo-card { gap: 12px; }
   .trio-card { min-height: 180px; }
-  .login-dark { min-height: 0; }
 }
 
 /* ── Écrans moyens ── */
@@ -368,11 +356,10 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .nav-toggle { display: flex; }
   .stack-grid { grid-template-columns: 1fr; }
   .visual { min-height: 260px; }
-  .duo, .trio-head, .login { grid-template-columns: 1fr; }
+  .duo, .trio-head { grid-template-columns: 1fr; }
   .trio { grid-template-columns: 1fr; }
   .trio-card { min-height: 0; flex-direction: row; align-items: center; gap: 16px; }
   .trio-icon { margin-bottom: 0; }
-  .login-dark { min-height: 240px; }
 }
 
 /* ── Téléphones ── */
@@ -395,5 +382,5 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .stack-card .small { display: none; }
   .orbit-label { display: none; }
   .form-foot { flex-direction: column; align-items: flex-start; }
-  .login-brand { flex-direction: column; align-items: flex-start; }
+  .site-foot { flex-direction: column; align-items: flex-start; }
 }

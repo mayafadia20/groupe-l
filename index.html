@@ -215,29 +215,22 @@
     <!-- ===== 6. Contact : deux panneaux ===== -->
     <section class="panel contact" id="contact">
       <div class="login">
-        <div class="login-dark">
-          <span class="login-pill small"><i class="pt pt-live"></i>Disponibles pour un mandat</span>
-          <div class="login-art" aria-hidden="true"></div>
-          <div class="login-brand">
-            <span class="brand"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Groupe L</span>
-            <span class="small">© <span id="year"></span> Groupe L · Montréal, Québec</span>
-            <a class="small" href="#top">Haut de page ↑</a>
+        <h2 class="h-lead">Un problème à régler ?<br>Parlons-en cette semaine.</h2>
+        <form class="contact-form" action="mailto:info@lounici.ca" method="post" enctype="text/plain">
+          <label class="field"><span class="small">Nom</span><input type="text" name="nom" required></label>
+          <label class="field"><span class="small">Courriel</span><input type="email" name="courriel" required></label>
+          <label class="field"><span class="small">Entreprise</span><input type="text" name="entreprise"></label>
+          <label class="field"><span class="small">Le problème à régler, en quelques mots</span><textarea name="message" rows="3"></textarea></label>
+          <div class="form-foot">
+            <button type="submit" class="btn btn-black">Envoyer</button>
+            <a class="small" href="mailto:info@lounici.ca">info@lounici.ca</a>
           </div>
-        </div>
-        <div class="login-light">
-          <p class="small align-right">Groupe L<br>Cabinet de résolution de problèmes</p>
-          <h2 class="h-lead">Un problème à régler ?<br>Parlons-en cette semaine.</h2>
-          <form class="contact-form" action="mailto:info@lounici.ca" method="post" enctype="text/plain">
-            <label class="field"><span class="small">Nom</span><input type="text" name="nom" required></label>
-            <label class="field"><span class="small">Courriel</span><input type="email" name="courriel" required></label>
-            <label class="field"><span class="small">Entreprise</span><input type="text" name="entreprise"></label>
-            <label class="field"><span class="small">Le problème à régler, en quelques mots</span><textarea name="message" rows="3"></textarea></label>
-            <div class="form-foot">
-              <button type="submit" class="btn btn-black">Envoyer</button>
-              <a class="small" href="mailto:info@lounici.ca">info@lounici.ca</a>
-            </div>
-          </form>
-        </div>
+        </form>
+      </div>
+      <div class="site-foot">
+        <span class="brand"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Groupe L</span>
+        <span class="small">© <span id="year"></span> Groupe L · Montréal, Québec</span>
+        <a class="small" href="#top">Haut de page ↑</a>
       </div>
     </section>
 
