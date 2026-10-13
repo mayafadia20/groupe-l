@@ -227,6 +227,21 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .caro-dot.is-on { width: 22px; background: var(--ink); }
 .expo-foot { text-align: center; margin-top: 22px; margin-bottom: auto; }
 
+/* ── 4. À propos : silhouette en arrière-plan à droite, texte à gauche ── */
+.panel.about {
+  position: relative; justify-content: center;
+  background: #fff url("assets/a-propos.webp") no-repeat right center / cover;
+}
+.about-top { position: absolute; left: var(--pad); right: var(--pad); top: 30px; display: flex; justify-content: space-between; gap: 16px; text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; }
+.about-tag { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); }
+.about-tag .sq { width: 7px; height: 7px; background: var(--ink); }
+.about-quote { color: var(--muted); }
+.about-text { max-width: 560px; display: grid; gap: 16px; }
+.about-title { font-family: var(--display); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; font-size: clamp(28px, 3.2vw, 50px); margin-bottom: 18px; }
+.about-title .dim { font-weight: 400; }
+.about-text p { font-size: clamp(15px, 1.15vw, 18px); line-height: 1.5; color: var(--ink); max-width: 46ch; }
+.about-foot { position: absolute; left: 0; right: 0; bottom: 26px; text-align: center; color: var(--muted); }
+
 /* ── 6. Contact : la carte remplit la fenêtre, le formulaire est centré dedans ── */
 .contact { padding: 16px var(--pad); display: flex; flex-direction: column; }
 .login {
@@ -352,6 +367,9 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .portail .nav-toggle { display: none; }
   .nav-toggle { display: flex; }
   .panel.expo { --card-w: 86vw; --card-gap: -24px; }
+  .panel.about { justify-content: flex-start; background-size: auto 48%; background-position: right -10vw bottom; }
+  .about-text { padding-top: 24px; padding-bottom: 46vh; }
+  .about-foot { text-align: left; left: var(--pad); }
   .caro-card { aspect-ratio: auto; grid-template-columns: 1fr; gap: 16px; padding: 14px; border-radius: 30px; }
   .caro-visual { height: clamp(160px, 26vh, 240px); border-radius: 24px; }
   .caro-visual svg { width: 36%; }
