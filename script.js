@@ -21,12 +21,21 @@
       "exp_3": "Operational excellence",
       "exp_4": "Supply chain",
       "exp_5": "Organization and governance",
-      "exp_6": "Digital transformation",
+      "exp_6": "Systems engineering",
       "exp_7": "Data and analytics",
       "exp_8": "Artificial intelligence",
       "exp_9": "Public procurement",
       "exp_10": "Performance management",
       "hero_title": "Turning vision<br>into measurable results.",
+      "hero_label": "(About)",
+      "hero_cta": "Request a consultation",
+      "hero_avail": "Available for a mandate",
+      "hero_avail_sub": "Montréal · Québec<br>On site and remote",
+      "stat_domains": "areas of expertise",
+      "stat_days": "days to first measured results",
+      "stat_days_n": "30 d",
+      "card_tag": "Our tools",
+      "card_sub": "Operational diagnosis",
       "hero_lead": "We have our own technology arsenal to measure your performance, align it with your vision and build the action plan that will take your company where you want it to go.",
         "statement": "\n          We believe the best decisions come from combining human expertise, data and technology.\n          <span class=\"dim\">Our technology ecosystem speeds up diagnosis, structures execution and gives leaders continuous visibility on their performance, turning strategy into measurable results.</span>\n        ",
       "expo_pill": "Our expertise",
@@ -169,15 +178,16 @@
 
   // Portail client : la fenêtre de connexion s'ouvre au clic sur « Client Portal »
   // et se ferme par la croix, un clic sur le fond assombri ou la touche Échap
-  const portalLink = document.querySelector(".nav-portal");
+  // tous les liens vers #portail ouvrent la fenêtre de connexion (menu et carte outil du héros)
+  const portalLinks = document.querySelectorAll('a[href="#portail"]');
   const modal = document.getElementById("portail");
-  if (portalLink && modal && typeof modal.showModal === "function") {
-    portalLink.addEventListener("click", (e) => {
+  if (portalLinks.length && modal && typeof modal.showModal === "function") {
+    portalLinks.forEach((portalLink) => portalLink.addEventListener("click", (e) => {
       e.preventDefault();
       modal.querySelector(".login-form").reset();
       modal.querySelector(".login-msg").hidden = true;
       modal.showModal();
-    });
+    }));
     modal.querySelector(".modal-close").addEventListener("click", () => modal.close());
     modal.addEventListener("click", (e) => { if (e.target === modal) modal.close(); });
     // Pas de serveur derrière le formulaire : la vérification se fait dans le navigateur,
