@@ -169,8 +169,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
    Tout est exprimé en fraction de la largeur de carte pour garder la forme exacte à toutes les tailles. */
 .panel.expo {
   padding-left: 0; padding-right: 0; overflow: hidden; background: var(--grey); justify-content: flex-start;
-  --card-w: min(1100px, 74vw, calc((100vh - 400px) * 2.24));
-  --card-gap: -56px;
+  --card-w: min(860px, 56vw, calc((100vh - 400px) * 2.24));
+  --card-gap: -48px;
   --card-pad: calc(var(--card-w) * 0.01078);   /* 20 / 1856 */
   --card-r: calc(var(--card-w) * 0.11315);     /* 210 / 1856 */
   --tile-w: calc(var(--card-w) * 0.48491);     /* 900 / 1856 */
@@ -215,8 +215,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   box-shadow: 0 8px 20px -8px rgba(10,10,10,0.35);
 }
 .caro-btn:hover { transform: translateY(-50%) scale(1.06); }
-.caro-prev { left: max(var(--pad), calc((100% - var(--card-w)) / 2 - 92px)); background: #fff; color: var(--ink); }
-.caro-next { right: max(var(--pad), calc((100% - var(--card-w)) / 2 - 92px)); background: var(--black); color: #fff; }
+.caro-prev { left: max(var(--pad), calc((100% - var(--card-w)) / 2 - 80px)); background: #fff; color: var(--ink); }
+.caro-next { right: max(var(--pad), calc((100% - var(--card-w)) / 2 - 80px)); background: var(--black); color: #fff; }
 .caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: 26px; }
 .caro-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: rgba(10,10,10,0.14); cursor: pointer; transition: width 0.3s ease, background 0.3s ease; }
 .caro-dot.is-on { width: 22px; background: var(--ink); }
