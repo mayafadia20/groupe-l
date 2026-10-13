@@ -165,7 +165,17 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .statement-sub { margin-top: 36px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.8); }
 
 /* ── 3. Expertises : carrousel de cartes (référence : carte blanche très arrondie, voisines derrière) ── */
-.panel.expo { padding-left: 0; padding-right: 0; overflow: hidden; background: var(--grey); --card-w: min(1040px, 74vw); --card-gap: -56px; }
+/* Proportions de la référence (1856 × 830) : ratio 2,24 ; marge 20 ; tuile 900 de large ; rayons 210 (carte) et 200 (tuile).
+   Tout est exprimé en fraction de la largeur de carte pour garder la forme exacte à toutes les tailles. */
+.panel.expo {
+  padding-left: 0; padding-right: 0; overflow: hidden; background: var(--grey);
+  --card-w: min(1100px, 74vw, calc((100vh - 400px) * 2.24));
+  --card-gap: -56px;
+  --card-pad: calc(var(--card-w) * 0.01078);   /* 20 / 1856 */
+  --card-r: calc(var(--card-w) * 0.11315);     /* 210 / 1856 */
+  --tile-w: calc(var(--card-w) * 0.48491);     /* 900 / 1856 */
+  --tile-r: calc(var(--card-w) * 0.10776);     /* 200 / 1856 */
+}
 .expo-head { text-align: center; padding: 0 var(--pad); margin-bottom: 30px; }
 .expo-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--ink-2); text-transform: uppercase; font-size: 9px; letter-spacing: 0.1em; }
 .expo-head .h-xl { margin-top: 14px; font-weight: 500; }
@@ -173,24 +183,22 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .caro-track { display: flex; gap: var(--card-gap); will-change: transform; transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .caro-card {
   position: relative; z-index: 1;
-  flex: 0 0 var(--card-w); width: var(--card-w);
-  display: grid; grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr); gap: 30px;
-  padding: 18px; border-radius: 44px; background: #fff;
+  flex: 0 0 var(--card-w); width: var(--card-w); aspect-ratio: 1856 / 830;
+  display: grid; grid-template-columns: var(--tile-w) minmax(0, 1fr); gap: 30px;
+  padding: var(--card-pad); border-radius: var(--card-r); background: #fff; border: 2px solid #e9e9e9;
   box-shadow: 0 1px 0 rgba(10,10,10,0.04);
   transform: scale(0.84); opacity: 0.7;
   transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.7s ease, box-shadow 0.7s ease;
 }
-.caro-card.is-active { z-index: 2; transform: none; opacity: 1; box-shadow: 0 40px 80px -40px rgba(10,10,10,0.35), 0 2px 0 rgba(10,10,10,0.03); }
+.caro-card.is-active { z-index: 2; transform: none; opacity: 1; box-shadow: 0 30px 70px -30px rgba(10,10,10,0.28), 0 8px 24px rgba(10,10,10,0.06); }
 .caro-visual {
-  height: clamp(240px, 44vh, 460px); border-radius: 36px; display: grid; place-items: center;
+  height: 100%; min-height: 0; border-radius: var(--tile-r); display: grid; place-items: center;
   color: rgba(255,255,255,0.9);
-  background:
-    radial-gradient(70% 60% at 68% 32%, #4a4a4a, transparent 70%),
-    linear-gradient(160deg, #262626, #050505);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  background: linear-gradient(165deg, #2b2f34 0%, #1c2024 45%, #121518 100%);
+  box-shadow: 0 24px 50px -24px rgba(10,10,10,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .caro-visual svg { width: 52%; height: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.5)); }
-.caro-body { display: flex; flex-direction: column; gap: 10px; padding: 18px 20px 16px 0; min-width: 0; }
+.caro-body { display: flex; flex-direction: column; gap: 10px; padding: clamp(10px, 2.2vw, 28px) clamp(14px, 2.4vw, 36px) clamp(10px, 2vw, 24px) 0; min-width: 0; min-height: 0; }
 .caro-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; font-weight: 700; }
 .caro-tag .brand-mark { filter: invert(1); width: 16px; }
 .caro-body h3 { font-size: clamp(22px, 2.2vw, 34px); font-weight: 600; letter-spacing: -0.025em; margin-top: 4px; }
@@ -315,7 +323,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* ── Écrans peu hauts ── */
 @media (max-height: 820px) {
   .hero-kicker, .hero-title { margin-bottom: 24px; }
-  .caro-visual { height: clamp(200px, 38vh, 360px); }
   .expo-head { margin-bottom: 16px; }
 }
 
@@ -341,10 +348,9 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .portail .nav-links > * { height: 100%; }
   .portail .nav-toggle { display: none; }
   .nav-toggle { display: flex; }
-  .expo { --card-w: 86vw; --card-gap: -24px; }
-  .caro-card { grid-template-columns: 1fr; gap: 16px; padding: 14px; border-radius: 30px; }
-  .caro-visual { border-radius: 24px; }
-  .caro-visual { height: clamp(160px, 26vh, 240px); }
+  .panel.expo { --card-w: 86vw; --card-gap: -24px; }
+  .caro-card { aspect-ratio: auto; grid-template-columns: 1fr; gap: 16px; padding: 14px; border-radius: 30px; }
+  .caro-visual { height: clamp(160px, 26vh, 240px); border-radius: 24px; }
   .caro-visual svg { width: 36%; }
   .caro-body { padding: 4px 6px 8px; }
   .caro-btn { top: 26px; transform: none; width: 36px; height: 36px; }
