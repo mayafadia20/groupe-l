@@ -173,14 +173,24 @@
     return H.map((x) => x.toString(16).padStart(8, "0")).join("");
   }
 
-  // Carrousel des expertises : une carte au centre, les voisines en retrait ; défile seul toutes les 5 s
+  // Carrousel des expertises : carte active au centre, voisines en retrait derrière ; boucle infinie
+  // (un clone de la dernière carte en tête, un clone de la première en queue) ; défile seul toutes les 5 s
   const caro = document.querySelector(".caro");
   if (caro) {
     const track = caro.querySelector(".caro-track");
     const cards = Array.from(track.children);
+    const N = cards.length;
     const dotsBox = document.querySelector(".caro-dots");
     const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
-    let index = 0, timer = null;
+
+    const cloneLast = cards[N - 1].cloneNode(true);
+    const cloneFirst = cards[0].cloneNode(true);
+    [cloneLast, cloneFirst].forEach((cl) => { cl.classList.add("is-clone"); cl.setAttribute("aria-hidden", "true"); cl.removeAttribute("data-slide"); });
+    track.insertBefore(cloneLast, cards[0]);
+    track.appendChild(cloneFirst);
+    const slots = Array.from(track.children);   // positions 0..N+1 ; la carte réelle k est à la position k+1
+
+    let index = 0, pos = 1, timer = null, snapTo = null;
 
     const dots = cards.map((_, k) => {
       const b = document.createElement("button");
@@ -191,24 +201,42 @@
       return b;
     });
 
-    function layout() {
-      const w = cards[0].offsetWidth;
+    function place() {
+      const w = slots[0].offsetWidth;
       const gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0;
-      const x = (caro.clientWidth - w) / 2 - index * (w + gap);
-      track.style.transform = "translateX(" + x + "px)";
+      track.style.transform = "translateX(" + ((caro.clientWidth - w) / 2 - pos * (w + gap)) + "px)";
     }
-    function go(k) {
-      index = (k + cards.length) % cards.length;
-      cards.forEach((c, n) => { c.classList.toggle("is-active", n === index); c.setAttribute("aria-hidden", n === index ? "false" : "true"); });
+    function mark() {
+      slots.forEach((s, p) => s.classList.toggle("is-active", p === pos));
+      cards.forEach((c, n) => c.setAttribute("aria-hidden", n === index ? "false" : "true"));
       dots.forEach((d, n) => { d.classList.toggle("is-on", n === index); d.setAttribute("aria-selected", n === index ? "true" : "false"); });
-      layout();
     }
+    function snap(p) {   // repositionne sans animation (après être arrivé sur un clone)
+      track.style.transition = "none";
+      pos = p; mark(); place();
+      void track.offsetWidth;
+      track.style.transition = "";
+    }
+    // k peut valoir -1 (vers le clone de tête) ou N (vers le clone de queue) pour une boucle fluide
+    function go(k) {
+      snapTo = null;
+      if (k < 0) { index = N - 1; pos = 0; snapTo = N; }
+      else if (k >= N) { index = 0; pos = N + 1; snapTo = 1; }
+      else { index = k; pos = k + 1; }
+      mark(); place();
+    }
+    track.addEventListener("transitionend", (e) => { if (e.target === track && snapTo !== null) { const p = snapTo; snapTo = null; snap(p); } });
+
     function stop() { if (timer) { clearInterval(timer); timer = null; } }
     function restart() { stop(); if (motionOk) timer = setInterval(() => go(index + 1), 5000); }
 
     caro.querySelector(".caro-prev").addEventListener("click", () => { go(index - 1); restart(); });
     caro.querySelector(".caro-next").addEventListener("click", () => { go(index + 1); restart(); });
-    cards.forEach((c, n) => c.addEventListener("click", (e) => { if (n !== index) { e.preventDefault(); go(n); restart(); } }));
+    slots.forEach((s, p) => s.addEventListener("click", (e) => {
+      if (p === pos) return;
+      e.preventDefault();
+      go(p === 0 ? -1 : p === N + 1 ? N : p - 1); restart();
+    }));
     caro.addEventListener("mouseenter", stop);
     caro.addEventListener("mouseleave", restart);
     caro.addEventListener("focusin", stop);
@@ -233,10 +261,10 @@
     });
 
     // la position dépend des largeurs réelles : recalcul au redimensionnement et une fois les polices chargées
-    window.addEventListener("resize", layout);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    window.addEventListener("resize", place);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(place);
     document.addEventListener("visibilitychange", () => (document.hidden ? stop() : restart()));
 
-    go(0); restart();
+    snap(1); restart();
   }
 })();
