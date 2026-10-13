@@ -168,7 +168,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* Proportions de la référence (1856 × 830) : ratio 2,24 ; marge 20 ; tuile 900 de large ; rayons 210 (carte) et 200 (tuile).
    Tout est exprimé en fraction de la largeur de carte pour garder la forme exacte à toutes les tailles. */
 .panel.expo {
-  padding-left: 0; padding-right: 0; overflow: hidden; background: var(--grey);
+  padding-left: 0; padding-right: 0; overflow: hidden; background: var(--grey); justify-content: flex-start;
   --card-w: min(1100px, 74vw, calc((100vh - 400px) * 2.24));
   --card-gap: -56px;
   --card-pad: calc(var(--card-w) * 0.01078);   /* 20 / 1856 */
@@ -177,6 +177,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   --tile-r: calc(var(--card-w) * 0.10776);     /* 200 / 1856 */
 }
 .expo-head { text-align: center; padding: 0 var(--pad); margin-bottom: 30px; }
+.caro { margin-top: auto; }
+.expo-foot { margin-bottom: auto; }
 .expo-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--ink-2); text-transform: uppercase; font-size: 9px; letter-spacing: 0.1em; }
 .expo-head .h-xl { margin-top: 14px; font-weight: 500; }
 .caro { position: relative; width: 100%; }
@@ -198,16 +200,13 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   box-shadow: 0 24px 50px -24px rgba(10,10,10,0.55), inset 0 1px 0 rgba(255,255,255,0.06);
 }
 .caro-visual svg { width: 52%; height: auto; filter: drop-shadow(0 10px 18px rgba(0,0,0,0.5)); }
-.caro-body { display: flex; flex-direction: column; gap: 10px; padding: clamp(10px, 2.2vw, 28px) clamp(14px, 2.4vw, 36px) clamp(10px, 2vw, 24px) 0; min-width: 0; min-height: 0; }
+.caro-body { display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: clamp(10px, 2.2vw, 28px) clamp(14px, 2.4vw, 36px) clamp(10px, 2vw, 24px) 0; min-width: 0; min-height: 0; }
 .caro-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); text-transform: uppercase; letter-spacing: 0.12em; font-size: 10px; font-weight: 700; }
 .caro-tag .brand-mark { filter: invert(1); width: 16px; }
 .caro-body h3 { font-size: clamp(22px, 2.2vw, 34px); font-weight: 600; letter-spacing: -0.025em; margin-top: 4px; }
 .caro-body p { color: var(--ink-2); font-size: 14px; max-width: 44ch; }
 .caro-more { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
 .caro-more .pt-ring { border-color: var(--muted); }
-.caro-stats { display: flex; flex-wrap: wrap; gap: 14px 40px; margin-top: auto; padding-top: 18px; }
-.caro-stat b { display: block; font-family: var(--display); font-weight: 600; letter-spacing: -0.03em; font-size: clamp(24px, 2.1vw, 34px); line-height: 1.1; }
-.caro-stat .small { color: var(--muted); }
 .caro-btn {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
   width: 44px; height: 44px; border-radius: 50%; border: 0; cursor: pointer;
@@ -375,7 +374,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero { background-size: 165% auto; background-position: 100% calc(100% - 120px); }
   .hero-body { padding-bottom: 72vw; }
   .statement-panel { padding-top: 0; padding-bottom: 0; }
-  .caro-stats { gap: 10px 22px; }
   .caro-body p { font-size: 14px; }
   .form-foot { flex-direction: column; align-items: flex-start; }
   .site-foot { flex-direction: column; align-items: flex-start; }
