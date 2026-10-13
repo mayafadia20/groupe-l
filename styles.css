@@ -237,8 +237,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .login > * { width: 100%; max-width: 860px; }
 .login .h-lead { margin-bottom: 22px; }
 .site-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 4px 0; color: var(--muted); }
-.site-foot .brand { color: var(--ink); }
-.site-foot .brand-mark { filter: invert(1); }
 .contact-form { display: grid; gap: 12px; }
 .field { display: grid; gap: 6px; }
 .field .small { color: var(--muted); }
