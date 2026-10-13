@@ -7,8 +7,8 @@
 
 :root {
   --white: #ffffff;          /* fond de page : blanc pur */
-  --grey: #f3f3f1;           /* cartes gris clair */
-  --grey-2: #e9e9e7;
+  --grey: #f4f5f6;           /* gris clair neutre (fond du carrousel, champs) */
+  --grey-2: #e8e9eb;
   --black: #0a0a0a;
   --card-dark: #141414;
   --ink: #0a0a0a;
@@ -168,7 +168,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* Cotes de référence pour un écran de 1662 px : carte 760 × 340, tuile 370 × 320, rayons 85 (carte) et 80 (tuile),
    voisines visibles sur 160 px de chaque côté. Tout est exprimé en fraction de la largeur de carte. */
 .panel.expo {
-  padding-left: 0; padding-right: 0; overflow: hidden; background: var(--grey); justify-content: flex-start;
+  padding-left: 0; padding-right: 0; overflow: hidden; background: #f5f6f7; justify-content: flex-start;
   --card-w: min(760px, 45.73vw, calc((100vh - 400px) * 2.235));
   /* écart tel que la voisine (réduite à 84 %) ne montre que 160 px : marge latérale − retrait d'échelle − 160 */
   --card-gap: calc((100vw - var(--card-w)) / 2 - var(--card-w) * 0.08 - 160px);
@@ -186,7 +186,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   position: relative; z-index: 1;
   flex: 0 0 var(--card-w); width: var(--card-w); aspect-ratio: 760 / 340;
   display: grid; grid-template-columns: var(--tile-w) minmax(0, 1fr); gap: 30px;
-  padding: var(--card-pad); border-radius: var(--card-r); background: #fff; border: 2px solid #e9e9e9;
+  padding: var(--card-pad); border-radius: var(--card-r); background: #fff; border: 2px solid #e9eaec;
   box-shadow: 0 1px 0 rgba(10,10,10,0.04);
   transform: scale(0.84); opacity: 0.7;
   transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.7s ease, box-shadow 0.7s ease;
