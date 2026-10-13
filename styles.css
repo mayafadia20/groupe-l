@@ -198,7 +198,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   padding: clamp(28px, 4vw, 56px) var(--pad);
   background: #fff; border: 1px solid var(--line); border-radius: var(--r-card);
 }
-.login > * { width: 100%; max-width: 860px; }
+.login > * { width: 100%; }
 .login .h-lead { margin-bottom: 22px; }
 .site-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 4px 0; color: var(--muted); }
 .contact-form { display: grid; gap: 12px; }
