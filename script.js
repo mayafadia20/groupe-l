@@ -172,4 +172,71 @@
     }
     return H.map((x) => x.toString(16).padStart(8, "0")).join("");
   }
+
+  // Carrousel des expertises : une carte au centre, les voisines en retrait ; défile seul toutes les 5 s
+  const caro = document.querySelector(".caro");
+  if (caro) {
+    const track = caro.querySelector(".caro-track");
+    const cards = Array.from(track.children);
+    const dotsBox = document.querySelector(".caro-dots");
+    const motionOk = window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+    let index = 0, timer = null;
+
+    const dots = cards.map((_, k) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "caro-dot"; b.setAttribute("role", "tab");
+      b.setAttribute("aria-label", "Expertise " + (k + 1));
+      b.addEventListener("click", () => { go(k); restart(); });
+      dotsBox.appendChild(b);
+      return b;
+    });
+
+    function layout() {
+      const w = cards[0].offsetWidth;
+      const gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 0;
+      const x = (caro.clientWidth - w) / 2 - index * (w + gap);
+      track.style.transform = "translateX(" + x + "px)";
+    }
+    function go(k) {
+      index = (k + cards.length) % cards.length;
+      cards.forEach((c, n) => { c.classList.toggle("is-active", n === index); c.setAttribute("aria-hidden", n === index ? "false" : "true"); });
+      dots.forEach((d, n) => { d.classList.toggle("is-on", n === index); d.setAttribute("aria-selected", n === index ? "true" : "false"); });
+      layout();
+    }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    function restart() { stop(); if (motionOk) timer = setInterval(() => go(index + 1), 5000); }
+
+    caro.querySelector(".caro-prev").addEventListener("click", () => { go(index - 1); restart(); });
+    caro.querySelector(".caro-next").addEventListener("click", () => { go(index + 1); restart(); });
+    cards.forEach((c, n) => c.addEventListener("click", (e) => { if (n !== index) { e.preventDefault(); go(n); restart(); } }));
+    caro.addEventListener("mouseenter", stop);
+    caro.addEventListener("mouseleave", restart);
+    caro.addEventListener("focusin", stop);
+    caro.addEventListener("focusout", restart);
+    caro.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight") { go(index + 1); restart(); }
+      if (e.key === "ArrowLeft") { go(index - 1); restart(); }
+    });
+
+    // balayage tactile / souris
+    let startX = null;
+    caro.addEventListener("pointerdown", (e) => { startX = e.clientX; });
+    caro.addEventListener("pointerup", (e) => {
+      if (startX === null) return;
+      const dx = e.clientX - startX; startX = null;
+      if (Math.abs(dx) > 40) { go(index + (dx < 0 ? 1 : -1)); restart(); }
+    });
+
+    // les liens du grand menu ouvrent directement la carte visée
+    document.querySelectorAll('a[href="#expertises"][data-slide]').forEach((a) => {
+      a.addEventListener("click", () => { go(Number(a.dataset.slide)); restart(); });
+    });
+
+    // la position dépend des largeurs réelles : recalcul au redimensionnement et une fois les polices chargées
+    window.addEventListener("resize", layout);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+    document.addEventListener("visibilitychange", () => (document.hidden ? stop() : restart()));
+
+    go(0); restart();
+  }
 })();

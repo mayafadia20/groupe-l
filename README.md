@@ -6,7 +6,7 @@ Site vitrine de **Groupe L**, firme de consultation spécialisée en
 ## Structure
 
 ```
-index.html     Page unique (héros, feuille de route, expertise, résultats, contact)
+index.html     Accueil (héros, énoncé, carrousel des expertises, contact)
 styles.css     Feuille de style — tokens de couleur, verre dépoli, texte chrome
 script.js      Interactions légères (menu mobile, apparitions, jauge, compteurs)
 assets/        Logo (blanc et bronze) et favicon

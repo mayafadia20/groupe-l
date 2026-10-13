@@ -1,7 +1,7 @@
 /* =====================================================================
    Groupe L — Feuille de style
    Direction : studio monochrome sur fond blanc pur. Héros à empennage
-   noir, énoncé en deux tons sur noir, cartes empilées à flèches, duo de
+   noir, énoncé en deux tons sur noir, carrousel d’expertises, duo de
    formulaire de contact seul et centré. Toutes les couleurs passent par les tokens.
    ===================================================================== */
 
@@ -164,31 +164,50 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .statement-text { font-family: var(--display); font-weight: 400; font-size: clamp(22px, 2.6vw, 40px); letter-spacing: -0.03em; line-height: 1.18; }
 .statement-sub { margin-top: 36px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.8); }
 
-/* ── 3. Cartes empilées + visuel ── */
-.stack-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 14px; align-items: stretch; flex: 1; min-height: 0; }
-.stack { display: grid; gap: 10px; align-content: center; }
-.stack-card {
-  position: relative; display: grid; grid-template-columns: 1fr auto; gap: 4px 20px; align-items: end;
-  padding: 16px 20px; border-radius: 14px;
-  background: var(--grey); color: var(--ink);
+/* ── 3. Expertises : carrousel de cartes ── */
+.expo { padding-left: 0; padding-right: 0; overflow: hidden; --card-w: min(1040px, 74vw); --card-gap: 24px; }
+.expo-head { text-align: center; padding: 0 var(--pad); margin-bottom: 26px; }
+.expo-pill { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-2); text-transform: uppercase; font-size: 10px; letter-spacing: 0.08em; }
+.expo-head .h-xl { margin-top: 16px; }
+.caro { position: relative; width: 100%; }
+.caro-track { display: flex; gap: var(--card-gap); will-change: transform; transition: transform 0.65s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.caro-card {
+  flex: 0 0 var(--card-w); width: var(--card-w);
+  display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 28px;
+  padding: 20px; border-radius: 28px; background: var(--grey); border: 1px solid var(--line);
+  transform: scale(0.9); opacity: 0.45; transition: transform 0.65s cubic-bezier(0.2, 0.7, 0.2, 1), opacity 0.65s ease;
 }
-.stack-card h3 { grid-column: 1 / -1; text-align: right; text-transform: uppercase; font-weight: 500; letter-spacing: 0.02em; font-size: clamp(16px, 1.5vw, 22px); line-height: 1.05; }
-.stack-card .small { grid-column: 1; max-width: 32ch; color: var(--muted); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; }
-.stack-arrow { grid-column: 2; justify-self: end; font-size: 20px; line-height: 1; color: var(--ink); }
-.stack-card.is-dark { background: var(--black); color: #fff; }
-.stack-card.is-dark .small { color: rgba(255,255,255,0.55); }
-.stack-card.is-dark .stack-arrow { color: #fff; }
-/* visuel : image ou panneau sombre avec trait géométrique */
-.visual {
-  position: relative; margin: 0; border-radius: 14px; overflow: hidden; min-height: 420px;
-  background:
-    radial-gradient(60% 55% at 70% 40%, #3b3b3b, transparent 70%),
-    linear-gradient(160deg, #1a1a1a, #050505);
+.caro-card.is-active { transform: none; opacity: 1; }
+.caro-visual {
+  height: clamp(240px, 44vh, 460px); border-radius: 20px; display: grid; place-items: center;
   color: rgba(255,255,255,0.85);
+  background:
+    radial-gradient(60% 55% at 65% 35%, #3b3b3b, transparent 70%),
+    linear-gradient(160deg, #1a1a1a, #050505);
 }
-.visual > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: grayscale(1); }
-.visual-art { position: absolute; left: 50%; top: 50%; width: min(70%, 420px); transform: translate(-50%, -52%); }
-.visual figcaption { position: absolute; left: 20px; bottom: 16px; color: rgba(255,255,255,0.6); }
+.caro-visual svg { width: 54%; height: auto; }
+.caro-body { display: flex; flex-direction: column; gap: 12px; padding: 14px 16px 14px 0; min-width: 0; }
+.caro-tag { display: inline-flex; align-items: center; gap: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 10px; }
+.caro-tag .brand-mark { filter: invert(1); width: 14px; }
+.caro-body h3 { font-size: clamp(22px, 2.3vw, 36px); }
+.caro-body p { color: var(--ink-2); max-width: 46ch; }
+.caro-more { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+.caro-stats { display: flex; flex-wrap: wrap; gap: 14px 36px; margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line); }
+.caro-stat b { display: block; font-family: var(--display); font-weight: 400; letter-spacing: -0.03em; font-size: clamp(22px, 2vw, 32px); line-height: 1.1; }
+.caro-stat .small { color: var(--muted); }
+.caro-btn {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+  width: 42px; height: 42px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--black); color: #fff; font: inherit; font-size: 16px; line-height: 1;
+  display: grid; place-items: center; transition: background 0.2s ease;
+}
+.caro-btn:hover { background: #2a2a2a; }
+.caro-prev { left: max(var(--pad), calc((100% - var(--card-w)) / 2 - 64px)); }
+.caro-next { right: max(var(--pad), calc((100% - var(--card-w)) / 2 - 64px)); }
+.caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: 22px; }
+.caro-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: var(--grey-2); cursor: pointer; transition: width 0.3s ease, background 0.3s ease; }
+.caro-dot.is-on { width: 20px; background: var(--ink); }
+.expo-foot { text-align: center; margin-top: 22px; }
 
 /* ── 6. Contact : la carte remplit la fenêtre, le formulaire est centré dedans ── */
 .contact { padding: 16px var(--pad); display: flex; flex-direction: column; }
@@ -290,8 +309,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* ── Écrans peu hauts ── */
 @media (max-height: 820px) {
   .hero-kicker, .hero-title { margin-bottom: 24px; }
-  .stack-card { padding: 12px 18px; }
-  .stack-card .small { display: none; }
+  .caro-visual { height: clamp(200px, 38vh, 360px); }
+  .expo-head { margin-bottom: 16px; }
 }
 
 /* ── Écrans moyens ── */
@@ -316,8 +335,14 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .portail .nav-links > * { height: 100%; }
   .portail .nav-toggle { display: none; }
   .nav-toggle { display: flex; }
-  .stack-grid { grid-template-columns: 1fr; }
-  .visual { min-height: 260px; }
+  .expo { --card-w: 86vw; --card-gap: 16px; }
+  .caro-card { grid-template-columns: 1fr; gap: 16px; padding: 14px; border-radius: 22px; }
+  .caro-visual { height: clamp(160px, 26vh, 240px); }
+  .caro-visual svg { width: 36%; }
+  .caro-body { padding: 4px 6px 8px; }
+  .caro-btn { top: 26px; transform: none; width: 36px; height: 36px; background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .caro-btn:hover { background: var(--grey-2); }
+  .caro-prev { left: calc(7vw + 26px); } .caro-next { right: calc(7vw + 26px); }
 }
 
 /* ── Téléphones ── */
@@ -337,7 +362,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero { background-size: 165% auto; background-position: 100% calc(100% - 120px); }
   .hero-body { padding-bottom: 72vw; }
   .statement-panel { padding-top: 0; padding-bottom: 0; }
-  .stack-card .small { display: none; }
+  .caro-stats { gap: 10px 22px; }
+  .caro-body p { font-size: 14px; }
   .form-foot { flex-direction: column; align-items: flex-start; }
   .site-foot { flex-direction: column; align-items: flex-start; }
 }

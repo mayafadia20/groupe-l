@@ -47,18 +47,18 @@
 
         <!-- grand menu « Our expertise », ouvert au clic -->
         <div class="mega" id="menu-expertise" hidden>
-          <a class="mega-title" href="#pour-qui">Our expertise <span aria-hidden="true">→</span></a>
+          <a class="mega-title" href="#expertises">Our expertise <span aria-hidden="true">→</span></a>
           <ul class="mega-list">
-            <li><a href="#pour-qui">Stratégie d’entreprise</a></li>
-            <li><a href="#pour-qui">Finance d’entreprise</a></li>
-            <li><a href="#pour-qui">Excellence opérationnelle</a></li>
-            <li><a href="#pour-qui">Chaîne d’approvisionnement</a></li>
-            <li><a href="#pour-qui">Organisation et gouvernance</a></li>
-            <li><a href="#pour-qui">Transformation numérique</a></li>
-            <li><a href="#pour-qui">Données et analytique</a></li>
-            <li><a href="#pour-qui">Intelligence artificielle</a></li>
-            <li><a href="#pour-qui">Marchés publics</a></li>
-            <li><a href="#pour-qui">Performance et pilotage</a></li>
+            <li><a href="#expertises" data-slide="0">Stratégie d’entreprise</a></li>
+            <li><a href="#expertises" data-slide="1">Finance d’entreprise</a></li>
+            <li><a href="#expertises" data-slide="2">Excellence opérationnelle</a></li>
+            <li><a href="#expertises" data-slide="3">Chaîne d’approvisionnement</a></li>
+            <li><a href="#expertises" data-slide="4">Organisation et gouvernance</a></li>
+            <li><a href="#expertises" data-slide="5">Transformation numérique</a></li>
+            <li><a href="#expertises" data-slide="6">Données et analytique</a></li>
+            <li><a href="#expertises" data-slide="7">Intelligence artificielle</a></li>
+            <li><a href="#expertises" data-slide="8">Marchés publics</a></li>
+            <li><a href="#expertises" data-slide="9">Performance et pilotage</a></li>
           </ul>
         </div>
       </header>
@@ -89,52 +89,121 @@
     </section>
 
     <!-- ===== 3. Pour qui : cartes empilées + visuel ===== -->
-    <section class="panel light" id="pour-qui">
-      <div class="stack-grid">
-        <ol class="stack">
-          <li class="stack-card reveal">
-            <h3>Fusion ou<br>acquisition</h3>
-            <p class="small">Vous achetez, vendez ou fusionnez une entreprise et la valeur doit survivre à l'intégration</p>
-            <a class="stack-arrow" href="#contact" aria-label="Discuter d'un mandat">↗</a>
-          </li>
-          <li class="stack-card is-dark reveal">
-            <h3>Stratégie<br>à définir</h3>
-            <p class="small">Vous devez choisir une direction et la faire tenir</p>
-            <a class="stack-arrow" href="#contact" aria-label="Discuter d'un mandat">↗</a>
-          </li>
-          <li class="stack-card reveal">
-            <h3>Système<br>à implanter</h3>
-            <p class="small">ERP, CRM, données : livré, adopté et rentable</p>
-            <a class="stack-arrow" href="#contact" aria-label="Discuter d'un mandat">↗</a>
-          </li>
-          <li class="stack-card reveal">
-            <h3>Structure<br>à changer</h3>
-            <p class="small">Organisation, rôles, gouvernance</p>
-            <a class="stack-arrow" href="#contact" aria-label="Discuter d'un mandat">↗</a>
-          </li>
-          <li class="stack-card reveal">
-            <h3>Problème<br>persistant</h3>
-            <p class="small">Coûts, délais, qualité, capacité : réglé avec vos équipes, et elles continuent sans nous</p>
-            <a class="stack-arrow" href="#contact" aria-label="Discuter d'un mandat">↗</a>
-          </li>
-        </ol>
-
-        <!-- visuel : la photo (assets/visuel.jpg) s'affiche si elle existe ; sinon, panneau sombre -->
-        <figure class="visual reveal">
-          <img src="assets/visuel.jpg" alt="" onerror="this.remove()">
-          <svg class="visual-art" viewBox="0 0 400 400" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
-            <path d="M80 250 L200 190 L320 250 L200 310 Z"/>
-            <path d="M80 210 L200 150 L320 210 L200 270 Z" stroke-dasharray="4 4"/>
-            <path d="M80 170 L200 110 L320 170 L200 230 Z"/>
-            <path d="M80 170 L80 250 M320 170 L320 250 M200 230 L200 310"/>
-            <circle cx="200" cy="190" r="3" fill="currentColor" stroke="none"/>
-          </svg>
-          <figcaption class="small">(Pour qui) · cinq situations où l'on nous appelle</figcaption>
-        </figure>
+    <section class="panel light expo" id="expertises">
+      <div class="expo-head">
+        <span class="expo-pill small"><i class="pt pt-ring"></i>Nos expertises</span>
+        <h2 class="h-xl">Ce que nous réglons</h2>
       </div>
+      <div class="caro" aria-roledescription="carrousel" aria-label="Nos expertises">
+        <div class="caro-track">
+          <article class="caro-card" data-slide="0" aria-roledescription="diapositive" aria-label="1 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="60" cy="60" r="34"/><circle cx="60" cy="60" r="18" stroke-dasharray="3 4"/><circle cx="60" cy="60" r="2.5" fill="currentColor" stroke="none"/><path d="M60 14v12M60 94v12M14 60h12M94 60h12M60 60l26-26"/><path d="M86 34h-9M86 34v9"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 01 / 10</span>
+              <h3>Stratégie d’entreprise</h3>
+              <p>Choisir une direction, la chiffrer et la faire tenir dans l’organisation, pas seulement dans un document.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>3</b><span class="small">scénarios chiffrés</span></div><div class="caro-stat"><b>1</b><span class="small">page de décision</span></div><div class="caro-stat"><b>30 j</b><span class="small">plan d’action</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="1" aria-roledescription="diapositive" aria-label="2 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 92h76"/><path d="M30 92V66M48 92V52M66 92V60M84 92V36"/><path d="M26 58 48 40 66 48 92 24" stroke-dasharray="3 4"/><circle cx="92" cy="24" r="2.5" fill="currentColor" stroke="none"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 02 / 10</span>
+              <h3>Finance d’entreprise</h3>
+              <p>Fusions, acquisitions, financement : la valeur doit survivre à la transaction, puis à l’intégration.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>3</b><span class="small">scénarios de valorisation</span></div><div class="caro-stat"><b>1</b><span class="small">modèle financier partagé</span></div><div class="caro-stat"><b>100 j</b><span class="small">plan d’intégration</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="2" aria-roledescription="diapositive" aria-label="3 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="60" cy="60" r="30"/><circle cx="60" cy="60" r="12"/><path d="M60 18v12M60 90v12M18 60h12M90 60h12M30 30l8 8M82 82l8 8M30 90l8-8M82 38l8-8"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 03 / 10</span>
+              <h3>Excellence opérationnelle</h3>
+              <p>Coûts, délais, qualité, capacité : réglés sur le terrain avec vos équipes, qui continuent ensuite sans nous.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>30 j</b><span class="small">premier gain mesuré</span></div><div class="caro-stat"><b>1</b><span class="small">tableau de bord terrain</span></div><div class="caro-stat"><b>0</b><span class="small">consultant permanent</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="3" aria-roledescription="diapositive" aria-label="4 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 44 34 36l16 8-16 8zM50 64l16-8 16 8-16 8zM70 36l16-8 16 8-16 8z"/><path d="M18 44v16l16 8V52M50 64v16l16 8V72M70 36v16l16 8V44"/><path d="M34 60l16 4M66 72l12-10" stroke-dasharray="3 3"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 04 / 10</span>
+              <h3>Chaîne d’approvisionnement</h3>
+              <p>Stocks, fournisseurs, logistique : un flux lisible de la commande à la livraison.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>1</b><span class="small">cartographie bout en bout</span></div><div class="caro-stat"><b>30 j</b><span class="small">plan de stocks</span></div><div class="caro-stat"><b>20</b><span class="small">fournisseurs critiques revus</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="4" aria-roledescription="diapositive" aria-label="5 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="48" y="22" width="24" height="16" rx="4"/><rect x="18" y="68" width="24" height="16" rx="4"/><rect x="48" y="68" width="24" height="16" rx="4"/><rect x="78" y="68" width="24" height="16" rx="4"/><path d="M60 38v14M30 68V52h60v16M60 52v16"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 05 / 10</span>
+              <h3>Organisation et gouvernance</h3>
+              <p>Rôles, responsabilités, instances : une structure qui décide vite et qui tient.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>1</b><span class="small">organigramme cible</span></div><div class="caro-stat"><b>1</b><span class="small">matrice de décision</span></div><div class="caro-stat"><b>4</b><span class="small">rituels de pilotage</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="5" aria-roledescription="diapositive" aria-label="6 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="40" y="40" width="40" height="40" rx="6"/><rect x="52" y="52" width="16" height="16" rx="2" stroke-dasharray="3 3"/><path d="M48 40V26M60 40V22M72 40V26M48 80v14M60 80v18M72 80v14M40 48H26M40 60H22M40 72H26M80 48h14M80 60h18M80 72h14"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 06 / 10</span>
+              <h3>Transformation numérique</h3>
+              <p>ERP, CRM, outils métier : livrés, adoptés et rentables.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>1</b><span class="small">feuille de route</span></div><div class="caro-stat"><b>3</b><span class="small">processus prioritaires</span></div><div class="caro-stat"><b>1</b><span class="small">plan d’adoption</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="6" aria-roledescription="diapositive" aria-label="7 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="60" cy="34" rx="30" ry="10"/><path d="M30 34v20c0 5.5 13.4 10 30 10s30-4.5 30-10V34"/><path d="M30 54v20c0 5.5 13.4 10 30 10s30-4.5 30-10V54"/><path d="M30 74v12c0 5.5 13.4 10 30 10s30-4.5 30-10V74" stroke-dasharray="3 3"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 07 / 10</span>
+              <h3>Données et analytique</h3>
+              <p>Des indicateurs fiables, lus chaque semaine, qui déclenchent des décisions.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>10</b><span class="small">indicateurs clés</span></div><div class="caro-stat"><b>1</b><span class="small">source de vérité</span></div><div class="caro-stat"><b>1</b><span class="small">revue hebdomadaire</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="7" aria-roledescription="diapositive" aria-label="8 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="30" cy="40" r="5"/><circle cx="30" cy="80" r="5"/><circle cx="60" cy="28" r="5"/><circle cx="60" cy="60" r="5"/><circle cx="60" cy="92" r="5"/><circle cx="90" cy="46" r="5"/><circle cx="90" cy="74" r="5"/><path d="M35 40l20-10M35 42l20 16M35 78l20-16M35 82l20 8M65 30l20 14M65 60l20-12M65 62l20 10M65 90l20-14" opacity=".7"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 08 / 10</span>
+              <h3>Intelligence artificielle</h3>
+              <p>Des cas d’usage choisis pour leur rendement, déployés avec vos données et vos équipes.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>3</b><span class="small">cas d’usage priorisés</span></div><div class="caro-stat"><b>1</b><span class="small">pilote en production</span></div><div class="caro-stat"><b>30 j</b><span class="small">première mesure</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="8" aria-roledescription="diapositive" aria-label="9 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 44 60 24l38 20z"/><path d="M28 44v38M44 44v38M60 44v38M76 44v38M92 44v38"/><path d="M20 82h80M24 90h72"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 09 / 10</span>
+              <h3>Marchés publics</h3>
+              <p>Veille SEAO, qualification des appels d’offres et réponses qui gagnent.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>1</b><span class="small">veille SEAO quotidienne</span></div><div class="caro-stat"><b>1</b><span class="small">grille go / no-go</span></div><div class="caro-stat"><b>1</b><span class="small">bibliothèque de réponses</span></div></div>
+            </div>
+          </article>
+          <article class="caro-card" data-slide="9" aria-roledescription="diapositive" aria-label="10 sur 10">
+            <div class="caro-visual" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 78a38 38 0 0 1 76 0"/><path d="M34 78a26 26 0 0 1 52 0" stroke-dasharray="3 4"/><path d="M60 78 82 50"/><circle cx="60" cy="78" r="3" fill="currentColor" stroke="none"/><path d="M22 86h76"/></svg></div>
+            <div class="caro-body">
+              <span class="caro-tag small"><img src="assets/logo-blanc.png" alt="" class="brand-mark">Expertise 10 / 10</span>
+              <h3>Performance et pilotage</h3>
+              <p>Un tableau de bord, des cibles et une cadence de revue qui tiennent dans le temps.</p>
+              <a class="caro-more small" href="#contact">En savoir plus <i class="pt pt-ring"></i></a>
+              <div class="caro-stats"><div class="caro-stat"><b>1</b><span class="small">tableau de bord</span></div><div class="caro-stat"><b>12</b><span class="small">cibles suivies</span></div><div class="caro-stat"><b>1</b><span class="small">revue mensuelle</span></div></div>
+            </div>
+          </article>
+        </div>
+        <button class="caro-btn caro-prev" type="button" aria-label="Expertise précédente">←</button>
+        <button class="caro-btn caro-next" type="button" aria-label="Expertise suivante">→</button>
+      </div>
+      <div class="caro-dots" role="tablist" aria-label="Choisir une expertise"></div>
+      <div class="expo-foot"><a class="btn btn-black" href="#contact">Discuter d’un mandat</a></div>
     </section>
 
-    <!-- ===== 4. Le cabinet : deux cartes ===== -->
     <section class="panel contact" id="contact">
       <div class="login">
         <h2 class="h-lead">Un problème à régler ?<br>Parlons-en cette semaine.</h2>
@@ -173,7 +242,7 @@
     </form>
   </dialog>
 
-  <script src="script.js?v=14"></script>
+  <script src="script.js?v=15"></script>
 </body>
 </html>
 
