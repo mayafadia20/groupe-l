@@ -180,7 +180,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .expo-head { text-align: center; padding: 0 var(--pad); margin-bottom: 55px; }
 .expo-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--ink-2); text-transform: uppercase; font-size: 9px; letter-spacing: 0.1em; }
 .expo-head .h-xl { margin-top: 14px; font-weight: 500; }
-.caro { position: relative; width: 100%; }
+.caro { position: relative; width: 100%; margin-top: auto; }   /* la carte se centre entre le titre et les points */
 .caro-track { display: flex; gap: var(--card-gap); will-change: transform; transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .caro-card {
   position: relative; z-index: 1;
