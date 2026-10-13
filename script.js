@@ -48,8 +48,6 @@
       "next": "Next expertise",
       "dots": "Choose an expertise",
       "cta": "Discuss a mandate",
-      "about_tag": "About us",
-      "about_quote": "“From vision to results”",
       "about_title": "<span class=\"dim\">From vision to strategy.</span><br>From strategy to results.",
       "about_p1": "I turn ambitious business visions into clear, actionable strategies designed to deliver measurable results.",
       "about_p2": "By understanding each organization’s goals, operations and challenges, I identify the most effective path forward, aligning people, processes and technology to accelerate growth.",
