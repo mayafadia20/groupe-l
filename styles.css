@@ -168,7 +168,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* Cotes de référence pour un écran de 1662 px : carte 760 × 340, tuile 370 × 320, rayons 85 (carte) et 80 (tuile),
    voisines visibles sur 160 px de chaque côté. Tout est exprimé en fraction de la largeur de carte. */
 .panel.expo {
-  padding-left: 0; padding-right: 0; overflow: hidden; background: #f5f6f7; justify-content: flex-start;
+  padding-top: 48px; padding-left: 0; padding-right: 0; overflow: hidden; background: #f5f6f7; justify-content: flex-start;
   --card-w: min(760px, 45.73vw, calc((100vh - 400px) * 2.235));
   /* écart tel que la voisine (réduite à 84 %) ne montre que 160 px : marge latérale − retrait d'échelle − 160 */
   --card-gap: calc((100vw - var(--card-w)) / 2 - var(--card-w) * 0.08 - 160px);
@@ -218,7 +218,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .caro-prev { left: max(var(--pad), calc((100% - var(--card-w)) / 4 + 58px)); background: #fff; color: var(--ink); }
 .caro-next { right: max(var(--pad), calc((100% - var(--card-w)) / 4 + 58px)); background: var(--black); color: #fff; }
 /* points + bouton centrés dans l’espace libre sous la carte */
-.caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: auto; padding-top: 22px; }
+.caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: auto; padding-top: calc(22px + 8vh); }
 .caro-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: rgba(10,10,10,0.14); cursor: pointer; transition: width 0.3s ease, background 0.3s ease; }
 .caro-dot.is-on { width: 22px; background: var(--ink); }
 .expo-foot { text-align: center; margin-top: 22px; margin-bottom: auto; }
