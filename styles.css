@@ -226,14 +226,16 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .trio-stats .sep { color: var(--line); }
 .star { font-style: normal; color: var(--ink); }
 
-/* ── 6. Contact : formulaire seul, centré ── */
-.contact { padding: 16px var(--pad); display: flex; flex-direction: column; justify-content: center; }
+/* ── 6. Contact : la carte remplit la fenêtre, le formulaire est centré dedans ── */
+.contact { padding: 16px var(--pad); display: flex; flex-direction: column; }
 .login {
-  width: 100%; max-width: 640px; margin: auto;
-  display: flex; flex-direction: column; gap: 22px;
-  padding: clamp(28px, 4vw, 48px) clamp(24px, 3vw, 48px);
+  flex: 1; min-height: 0; width: 100%;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: clamp(28px, 4vw, 56px) var(--pad);
   background: #fff; border: 1px solid var(--line); border-radius: var(--r-card);
 }
+.login > * { width: 100%; max-width: 860px; }
+.login .h-lead { margin-bottom: 22px; }
 .site-foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 4px 0; color: var(--muted); }
 .site-foot .brand { color: var(--ink); }
 .site-foot .brand-mark { filter: invert(1); }
