@@ -147,19 +147,9 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   align-items: center; column-gap: 24px; row-gap: 24px; padding-bottom: 36px;
 }
 .hero-body > * { position: relative; z-index: 2; }
-.hero-text { grid-column: 1; grid-row: 1; padding: 24px 0; }
-.hero-label { margin: 28px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10px; }
-/* repères en bas à gauche : deux tuiles grises */
-.hero-stats { grid-column: 1; grid-row: 2; align-self: end; display: flex; gap: 10px; flex-wrap: wrap; }
-.hero-stat { display: grid; gap: 2px; min-width: 150px; padding: 14px 18px; border-radius: 14px; background: rgba(244,245,246,0.92); border: 1px solid var(--line); }
-.hero-stat b { font-family: var(--display); font-weight: 600; letter-spacing: -0.03em; font-size: 26px; line-height: 1.1; }
-.hero-stat .small { color: var(--muted); }
-/* bouton de consultation, en bas au centre */
-.hero-cta { grid-column: 2; grid-row: 2; align-self: end; justify-self: center; }
-/* à droite : disponibilité en haut, carte outil en bas */
-.hero-aside { grid-column: 3; grid-row: 1; justify-self: end; align-self: start; padding-top: 36px; text-align: right; display: grid; gap: 14px; justify-items: end; }
-.hero-pill { display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--ink); }
-.hero-avail { color: var(--muted); line-height: 1.5; }
+.hero-text { grid-column: 1; grid-row: 1 / span 2; align-self: center; padding: 24px 0; }
+.hero-cta { margin-top: 28px; }
+/* carte outil en bas à droite */
 .hero-card {
   grid-column: 3; grid-row: 2; align-self: end; justify-self: end;
   position: relative; width: 250px; aspect-ratio: 16 / 10; border-radius: 16px; overflow: hidden; color: #fff;
@@ -175,7 +165,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .hero-card:hover .hero-card-arrow { transform: scale(1.08); }
 .hero-kicker { font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 36px; }
 .hero-kicker sup { font-size: 9px; margin-left: 4px; color: var(--muted); }
-.hero-title { font-size: clamp(32px, 4.2vw, 62px); letter-spacing: -0.035em; margin-bottom: 36px; }
+.hero-title { font-size: clamp(32px, 4.2vw, 62px); font-weight: 600; letter-spacing: -0.035em; margin-bottom: 28px; }
+.hero-title .dim { font-weight: 400; }
 .hero-lead { font-size: clamp(13px, 1vw, 15px); line-height: 1.6; color: var(--ink-2); max-width: 44ch; }
 
 /* ── 2. Énoncé ── */
@@ -373,11 +364,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero { background-size: auto 50svh; background-position: center bottom; }
   .hero-body { grid-template-columns: 1fr; grid-template-rows: none; align-items: start; column-gap: 0; row-gap: 14px; padding-bottom: 46svh; }
   .hero-text { grid-row: auto; padding: 16px 0 0; }
-  .hero-label { margin-top: 18px; }
-  .hero-aside { grid-column: 1; grid-row: auto; justify-self: start; justify-items: start; text-align: left; padding-top: 0; }
-  .hero-stats { grid-column: 1; grid-row: auto; }
-  .hero-stat { min-width: 0; flex: 1; padding: 10px 14px; }
-  .hero-cta { grid-column: 1; grid-row: auto; justify-self: start; }
+  .hero-cta { margin-top: 20px; }
   .hero-card { display: none; }
   .nav-links { display: none; }
   .nav-links.open {
