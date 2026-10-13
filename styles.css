@@ -2,8 +2,7 @@
    Groupe L — Feuille de style
    Direction : studio monochrome sur fond blanc pur. Héros à empennage
    noir, énoncé en deux tons sur noir, cartes empilées à flèches, duo de
-   cartes gris clair / noir, trio de cartes noires, formulaire de contact
-   seul et centré. Toutes les couleurs passent par les tokens.
+   formulaire de contact seul et centré. Toutes les couleurs passent par les tokens.
    ===================================================================== */
 
 :root {
@@ -191,41 +190,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .visual-art { position: absolute; left: 50%; top: 50%; width: min(70%, 420px); transform: translate(-50%, -52%); }
 .visual figcaption { position: absolute; left: 20px; bottom: 16px; color: rgba(255,255,255,0.6); }
 
-/* ── 4. Duo de cartes ── */
-.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; flex: 1; min-height: 0; align-items: stretch; }
-.duo-card { border-radius: var(--r-card); padding: clamp(24px, 2.6vw, 40px); display: flex; flex-direction: column; gap: 18px; }
-.duo-light { background: var(--grey); color: var(--ink); }
-.duo-dark { background: var(--black); color: #fff; }
-.duo-dark .body-m { color: rgba(255,255,255,0.7); }
-.duo-light .btn { margin-top: auto; align-self: flex-start; }
-.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
-.chips li { font-size: 11px; font-weight: 500; padding: 7px 12px; border-radius: 999px; background: #fff; border: 1px solid var(--line); }
-.orbits { position: relative; margin-top: auto; color: rgba(255,255,255,0.6); }
-.orbits svg { width: 100%; height: auto; display: block; }
-.orbit-label {
-  position: absolute; top: 50%; transform: translate(-50%, -50%);
-  font-size: 11px; font-weight: 500; padding: 6px 12px; border-radius: 999px;
-  background: var(--card-dark); border: 1px solid var(--line-dark); color: rgba(255,255,255,0.85); white-space: nowrap;
-}
-.orbit-label.is-on { border-color: #2ecc71; color: #fff; }
-.duo-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.badge-ok { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; padding: 9px 14px; border-radius: 999px; background: var(--card-dark); border: 1px solid var(--line-dark); }
-
-/* ── 5. Trio de cartes ── */
-.trio-head { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: end; margin-bottom: 28px; }
-.trio { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-.trio-card {
-  min-height: clamp(200px, 32vh, 300px); padding: 24px; border-radius: var(--r-card);
-  background: linear-gradient(180deg, #1a1a1a, #0a0a0a); color: #fff;
-  display: flex; flex-direction: column; gap: 6px;
-}
-.trio-icon { width: 44px; height: 44px; margin-bottom: auto; color: rgba(255,255,255,0.9); }
-.trio-card .small { color: rgba(255,255,255,0.55); }
-.trio-card h3 { font-size: clamp(18px, 1.7vw, 24px); }
-.trio-stats { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 18px; color: var(--muted); }
-.trio-stats .sep { color: var(--line); }
-.star { font-style: normal; color: var(--ink); }
-
 /* ── 6. Contact : la carte remplit la fenêtre, le formulaire est centré dedans ── */
 .contact { padding: 16px var(--pad); display: flex; flex-direction: column; }
 .login {
@@ -328,8 +292,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero-kicker, .hero-title { margin-bottom: 24px; }
   .stack-card { padding: 12px 18px; }
   .stack-card .small { display: none; }
-  .duo-card { gap: 12px; }
-  .trio-card { min-height: 180px; }
 }
 
 /* ── Écrans moyens ── */
@@ -356,10 +318,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .nav-toggle { display: flex; }
   .stack-grid { grid-template-columns: 1fr; }
   .visual { min-height: 260px; }
-  .duo, .trio-head { grid-template-columns: 1fr; }
-  .trio { grid-template-columns: 1fr; }
-  .trio-card { min-height: 0; flex-direction: row; align-items: center; gap: 16px; }
-  .trio-icon { margin-bottom: 0; }
 }
 
 /* ── Téléphones ── */
@@ -380,7 +338,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .hero-body { padding-bottom: 72vw; }
   .statement-panel { padding-top: 0; padding-bottom: 0; }
   .stack-card .small { display: none; }
-  .orbit-label { display: none; }
   .form-foot { flex-direction: column; align-items: flex-start; }
   .site-foot { flex-direction: column; align-items: flex-start; }
 }
