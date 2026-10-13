@@ -26,7 +26,7 @@
       "exp_8": "Artificial intelligence",
       "exp_9": "Public procurement",
       "exp_10": "Performance management",
-      "hero_title": "Where does your<br>performance get lost?",
+      "hero_title": "Turning vision<br>into measurable results.",
       "hero_lead": "We have our own technology arsenal to measure your performance, align it with your vision and build the action plan that will take your company where you want it to go.",
         "statement": "\n          We believe the best decisions come from combining human expertise, data and technology.\n          <span class=\"dim\">Our technology ecosystem speeds up diagnosis, structures execution and gives leaders continuous visibility on their performance, turning strategy into measurable results.</span>\n        ",
       "expo_pill": "Our expertise",

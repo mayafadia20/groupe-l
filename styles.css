@@ -84,7 +84,7 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* ── 1. Héros ── */
 .hero {
   --hero-top-h: 64px;        /* hauteur de la barre logo + menu */
-  background: var(--white) url("assets/fond-heros.jpg?v=2") no-repeat right var(--hero-top-h) / cover;
+  background: var(--white) url("assets/fond-heros.webp?v=3") no-repeat center var(--hero-top-h) / cover;
   padding: 0 var(--pad) 0; justify-content: space-between; overflow: hidden;
 }
 /* barre blanche pleine largeur, séparée de la photo par un trait gris */
@@ -143,13 +143,14 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 
 .hero-body {
   position: relative; flex: 1; min-height: 0;
-  display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); align-items: center;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.7fr) minmax(0, 1fr); align-items: center; column-gap: 24px;
 }
-.hero-text { position: relative; z-index: 2; padding: 40px 0; }
+.hero-text { position: relative; z-index: 2; padding: 40px 0; grid-column: 1; }
+.hero-aside { position: relative; z-index: 2; grid-column: 3; justify-self: end; padding: 40px 0; }
 .hero-kicker { font-size: 12px; font-weight: 500; color: var(--ink-2); margin-bottom: 36px; }
 .hero-kicker sup { font-size: 9px; margin-left: 4px; color: var(--muted); }
 .hero-title { font-size: clamp(32px, 4.2vw, 62px); letter-spacing: -0.035em; margin-bottom: 36px; }
-.hero-lead { font-size: 12.5px; line-height: 1.55; color: var(--ink-2); max-width: 61ch; }
+.hero-lead { font-size: clamp(13px, 1vw, 15px); line-height: 1.6; color: var(--ink-2); max-width: 40ch; }
 
 /* ── 2. Énoncé ── */
 .statement-panel { justify-content: space-between; padding-top: 0; padding-bottom: 0; }
@@ -342,6 +343,11 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 
 /* ── Écrans moyens ── */
 @media (max-width: 1000px) {
+  /* colonne unique : titre puis paragraphe en haut, silhouette centrée en bas */
+  .hero { background-size: auto 56svh; background-position: center bottom; }
+  .hero-body { grid-template-columns: 1fr; align-items: start; column-gap: 0; padding-bottom: 52svh; }
+  .hero-text { padding-bottom: 0; }
+  .hero-aside { grid-column: 1; justify-self: start; padding: 0 0 16px; }
   .nav-links { display: none; }
   .nav-links.open {
     display: flex; flex-direction: column; gap: 0;
@@ -385,11 +391,8 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   .nav-portal span { display: none; }   /* sur téléphone, l'icône de personne suffit */
   .tools { grid-template-columns: 1fr; }
   .tools > li { aspect-ratio: 5 / 4; }
-  .hero-body { grid-template-columns: 1fr; align-items: start; }
   .hero-text { padding: 28px 0 16px; }
   .hero-kicker, .hero-title { margin-bottom: 22px; }
-  .hero { background-size: 165% auto; background-position: 100% calc(100% - 120px); }
-  .hero-body { padding-bottom: 72vw; }
   .statement-panel { padding-top: 0; padding-bottom: 0; }
   .caro-body p { font-size: 14px; }
   .form-foot { flex-direction: column; align-items: flex-start; }
