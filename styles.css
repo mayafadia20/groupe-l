@@ -165,27 +165,26 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 .statement-sub { margin-top: 36px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.8); }
 
 /* ── 3. Expertises : carrousel de cartes (référence : carte blanche très arrondie, voisines derrière) ── */
-/* Proportions de la référence (1856 × 830) : ratio 2,24 ; marge 20 ; tuile 900 de large ; rayons 210 (carte) et 200 (tuile).
-   Tout est exprimé en fraction de la largeur de carte pour garder la forme exacte à toutes les tailles. */
+/* Cotes de référence pour un écran de 1662 px : carte 760 × 340, tuile 370 × 320, rayons 85 (carte) et 80 (tuile),
+   voisines visibles sur 160 px de chaque côté. Tout est exprimé en fraction de la largeur de carte. */
 .panel.expo {
   padding-left: 0; padding-right: 0; overflow: hidden; background: var(--grey); justify-content: flex-start;
-  --card-w: min(720px, 46vw, calc((100vh - 400px) * 2.24));
-  --card-gap: -40px;
-  --card-pad: calc(var(--card-w) * 0.01078);   /* 20 / 1856 */
-  --card-r: calc(var(--card-w) * 0.11315);     /* 210 / 1856 */
-  --tile-w: calc(var(--card-w) * 0.48491);     /* 900 / 1856 */
-  --tile-r: calc(var(--card-w) * 0.10776);     /* 200 / 1856 */
+  --card-w: min(760px, 45.73vw, calc((100vh - 400px) * 2.235));
+  /* écart tel que la voisine (réduite à 84 %) ne montre que 160 px : marge latérale − retrait d'échelle − 160 */
+  --card-gap: calc((100vw - var(--card-w)) / 2 - var(--card-w) * 0.08 - 160px);
+  --card-pad: calc(var(--card-w) * 0.01053);   /* 8 / 760 : avec la bordure de 2 px, la tuile fait 320 de haut */
+  --card-r: calc(var(--card-w) * 0.11184);     /* 85 / 760 */
+  --tile-w: calc(var(--card-w) * 0.48684);     /* 370 / 760 */
+  --tile-r: calc(var(--card-w) * 0.10526);     /* 80 / 760 */
 }
-.expo-head { text-align: center; padding: 0 var(--pad); margin-bottom: 30px; }
-.caro { margin-top: auto; }
-.expo-foot { margin-bottom: auto; }
+.expo-head { text-align: center; padding: 0 var(--pad); margin-bottom: 55px; }
 .expo-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 11px; border-radius: 999px; background: #fff; border: 1px solid var(--line); color: var(--ink-2); text-transform: uppercase; font-size: 9px; letter-spacing: 0.1em; }
 .expo-head .h-xl { margin-top: 14px; font-weight: 500; }
 .caro { position: relative; width: 100%; }
 .caro-track { display: flex; gap: var(--card-gap); will-change: transform; transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
 .caro-card {
   position: relative; z-index: 1;
-  flex: 0 0 var(--card-w); width: var(--card-w); aspect-ratio: 1856 / 830;
+  flex: 0 0 var(--card-w); width: var(--card-w); aspect-ratio: 760 / 340;
   display: grid; grid-template-columns: var(--tile-w) minmax(0, 1fr); gap: 30px;
   padding: var(--card-pad); border-radius: var(--card-r); background: #fff; border: 2px solid #e9e9e9;
   box-shadow: 0 1px 0 rgba(10,10,10,0.04);
@@ -215,9 +214,10 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
   box-shadow: 0 8px 20px -8px rgba(10,10,10,0.35);
 }
 .caro-btn:hover { transform: translateY(-50%) scale(1.06); }
-.caro-prev { left: max(var(--pad), calc((100% - var(--card-w)) / 2 - 80px)); background: #fff; color: var(--ink); }
-.caro-next { right: max(var(--pad), calc((100% - var(--card-w)) / 2 - 80px)); background: var(--black); color: #fff; }
-.caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: 26px; }
+/* flèches au milieu de l’espace entre la voisine visible (160 px) et la carte active */
+.caro-prev { left: max(var(--pad), calc((100% - var(--card-w)) / 4 + 58px)); background: #fff; color: var(--ink); }
+.caro-next { right: max(var(--pad), calc((100% - var(--card-w)) / 4 + 58px)); background: var(--black); color: #fff; }
+.caro-dots { display: flex; justify-content: center; gap: 6px; margin-top: 22px; }
 .caro-dot { width: 6px; height: 6px; padding: 0; border: 0; border-radius: 3px; background: rgba(10,10,10,0.14); cursor: pointer; transition: width 0.3s ease, background 0.3s ease; }
 .caro-dot.is-on { width: 22px; background: var(--ink); }
 .expo-foot { text-align: center; margin-top: 22px; }
@@ -322,7 +322,6 @@ h3 { font-size: clamp(18px, 1.6vw, 24px); }
 /* ── Écrans peu hauts ── */
 @media (max-height: 820px) {
   .hero-kicker, .hero-title { margin-bottom: 24px; }
-  .expo-head { margin-bottom: 16px; }
 }
 
 /* ── Écrans moyens ── */
