@@ -338,8 +338,24 @@
     list.innerHTML = '<table style="width: 100%; border-collapse: collapse; font-size: 14px"><thead><tr style="color: #5e5e65; font-size: 12.5px; text-align: left"><th style="font-weight: 500; padding: 6px 8px 10px 0">Département</th><th style="font-weight: 500; padding: 6px 8px 10px">Responsable</th><th style="font-weight: 500; padding: 6px 8px 10px">Relève de</th><th style="font-weight: 500; padding: 6px 8px 10px">Employés</th><th style="font-weight: 500; padding: 6px 0 10px 8px; text-align: right">Couverture</th></tr></thead><tbody>' +
       D.departments.map((d) => '<tr style="border-top: 1px solid #ececef"><td style="padding: 11px 8px 11px 0"><b>' + esc(d.name) + '</b></td><td style="padding: 11px 8px">' + esc(d.resp) + '</td><td style="padding: 11px 8px; color: #5e5e65">' + esc(d.parent || "—") + '</td><td style="padding: 11px 8px">' + d.n + '</td><td style="padding: 11px 0 11px 8px; text-align: right"><b>' + cov(d) + " %</b></td></tr>").join("") + "</tbody></table>";
   }
+  function renderHR() {
+    const rows = $("#rh-rows"); if (!rows) return;
+    const total = totalEmployees(); const users = D.users;
+    const active = users.filter((u) => u.status === "active").length, sent = users.filter((u) => u.status === "sent").length, todo = users.filter((u) => u.status === "todo").length;
+    const accounts = Math.min(total, active + sent + (Number(D.extraInvited) || 0));
+    const engaged = total ? Math.round((accounts / total) * 100) : 0;
+    $("#rh-kicker").textContent = "RESSOURCES HUMAINES · " + D.departments.length + " DÉPARTEMENTS · " + total + " EMPLOYÉS";
+    const tile = (v, l, dark) => '<div style="border-radius: 20px; padding: 16px; min-height: 92px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 4px; background: ' + (dark ? GRADC : "#f4f4f6") + "; color: " + (dark ? "#ffffff" : "#111113") + '"><b style="font-size: 26px; line-height: 1">' + v + '</b><span style="font-size: 12.5px; color: ' + (dark ? "#d4d4d8" : "#5e5e65") + '">' + l + "</span></div>";
+    $("#rh-kpis").innerHTML = tile(total, "employés", true) + tile(accounts, "comptes Lens") + tile(sent, sent > 1 ? "invitations en attente" : "invitation en attente") + tile(todo, "encore à inviter") + tile(engaged + " %", "de l’équipe engagée");
+    const max = Math.max(1, ...D.departments.map((d) => Number(d.n) || 0));
+    const COLS = "minmax(140px, 1.2fr) minmax(0, 2fr) 90px 110px";
+    rows.innerHTML = '<div style="display: grid; grid-template-columns: ' + COLS + '; gap: 12px; align-items: center; padding: 8px 0 10px; font-size: 12.5px; color: #5e5e65"><span>Département</span><span>Effectif</span><span style="text-align: right">Comptes actifs</span><span style="text-align: right">Responsable</span></div>' +
+      D.departments.map((d) => { const n = Number(d.n) || 0; const us = users.filter((u) => u.dept === d.name); const act = us.filter((u) => u.status === "active").length;
+        return '<div style="display: grid; grid-template-columns: ' + COLS + '; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid #ececef; font-size: 14px"><span style="display: flex; flex-direction: column; gap: 2px"><b>' + esc(d.name) + "</b>" + (d.parent ? '<span style="font-size: 12px; color: #5e5e65">Relève de ' + esc(d.parent) + "</span>" : "") + '</span><span style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; display: block; height: 10px; border-radius: 10px; background: #e4e4e8"><span style="display: block; width: ' + Math.round((n / max) * 100) + '%; height: 10px; border-radius: 10px; background: #111113"></span></span><b style="min-width: 56px; font-size: 13px">' + n + ' empl.</b></span><span style="text-align: right">' + act + " / " + us.length + '</span><span style="text-align: right; color: #5e5e65">' + esc(d.resp) + "</span></div>"; }).join("");
+  }
   function initHome() {
-    if (!$("#home-name")) return; applyCompany(); renderMapList();
+    if (!$("#home-name")) return; applyCompany(); renderMapList(); renderHR();
+    $("#rh-invite").addEventListener("click", () => { location.hash = "utilisateurs"; });
     const seg = (on, off) => { on.style.background = "#111113"; on.style.color = "#fff"; off.style.background = "transparent"; off.style.color = "#111113"; };
     $("#map-global").addEventListener("click", () => { $("#map-wrap").hidden = false; $("#map-listview").hidden = true; seg($("#map-global"), $("#map-list")); });
     $("#map-list").addEventListener("click", () => { renderMapList(); $("#map-wrap").hidden = true; $("#map-listview").hidden = false; seg($("#map-list"), $("#map-global")); });
@@ -445,7 +461,7 @@
   });
 
   // ───────────────────────── démarrage ─────────────────────────
-  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "accueil") { applyCompany(); renderMapList(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
+  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "accueil") { applyCompany(); renderMapList(); renderHR(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
   function init() {
     initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initDiag(); initHome(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
     window.addEventListener("hashchange", refresh); refresh();
