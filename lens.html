@@ -245,16 +245,25 @@ body:not(:has(.screen:target)) #connexion{display:block}
 
   <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
 
-    <section aria-label="Nouvel objectif global" style="flex: 3 1 560px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 30px; display: flex; flex-direction: column; gap: 22px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-      <div style="display: flex; flex-direction: column; gap: 6px">
-        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">ÉTAPE 3 SUR 3</span>
-        <h1 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em">Fixez vos objectifs globaux</h1>
-        <p style="margin: 0; font-size: 14.5px; line-height: 1.5; color: #5e5e65; max-width: 640px">Un objectif global se décline en indicateurs par département. Lens calcule l'écart entre la cible et le réel, puis relie chaque écart aux processus qui l'expliquent.</p>
+    <section aria-label="Objectifs globaux" style="flex: 3 1 560px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 30px; display: flex; flex-direction: column; gap: 22px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px">
+        <div style="flex: 1 1 360px; min-width: 0; max-width: 640px; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">ÉTAPE 3 SUR 3</span>
+          <h1 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em">Fixez vos objectifs globaux</h1>
+          <p style="margin: 0; font-size: 14.5px; line-height: 1.5; color: #5e5e65">Un objectif global se décline en indicateurs par département. Lens calcule l'écart entre la cible et le réel, puis relie chaque écart aux processus qui l'expliquent.</p>
+        </div>
+        <button type="button" id="obj-open" style="flex: none; display: flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 20px; border-radius: 999px; border: none; background: #111113; color: #ffffff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Ajouter un objectif</button>
       </div>
 
-      <div style="display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 13px; font-weight: 600">Catégorie</span>
-        <div id="obj-cats" style="display: flex; flex-wrap: wrap; gap: 8px">
+      <div id="obj-empty" style="border-radius: 22px; border: 1.5px dashed #b9b9bf; padding: 36px 24px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+        <b style="font-size: 16px">Aucun objectif pour l'instant</b>
+        <span style="font-size: 14px; line-height: 1.5; color: #5e5e65; max-width: 460px">Cliquez sur « Ajouter un objectif » pour définir sa catégorie, sa cible, les départements liés et leurs indicateurs. Chaque objectif enregistré apparaît à droite.</span>
+      </div>
+
+      <div id="obj-form" style="display: none; flex-direction: column; gap: 22px">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Catégorie</span>
+          <div id="obj-cats" style="display: flex; flex-wrap: wrap; gap: 8px">
           <button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #111113; color: #ffffff; font: inherit; font-size: 13.5px; cursor: pointer">Financier</button>
           <button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer">Opérationnel</button>
           <button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer">Client</button>
@@ -263,53 +272,39 @@ body:not(:has(.screen:target)) #connexion{display:block}
           <button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer">Culturel</button>
           <button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer">Technologique</button>
           <button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer">ESG</button>
+          </div>
         </div>
-      </div>
 
-      <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Objectif<input id="obj-title" value="Profitabilité sur les contrats de construction" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113"></label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Objectif<input id="obj-title" placeholder="Ex. : Profitabilité sur les contrats de construction" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113"></label>
 
-      <div style="display: grid; grid-template-columns: 80px minmax(0, 1fr) 90px minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: end">
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Cible<select id="obj-op" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 6px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff"><option>↔</option><option>=</option><option>≥</option><option>≤</option></select></label>
-        <div style="display: flex; align-items: center; gap: 6px"><input id="obj-min" aria-label="Cible minimum" value="14" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; color: #111113; width: 100%; min-width: 0"><span style="font-size: 13px; color: #5e5e65">à</span><input id="obj-max" aria-label="Cible maximum" value="16" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; color: #111113; width: 100%; min-width: 0"></div>
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Unité<input id="obj-unit" value="%" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; min-width: 0"></label>
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Par<input id="obj-per" value="contrat" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; min-width: 0"></label>
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Horizon<select id="obj-horizon" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 8px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0"><option>Par contrat</option><option>Journalier</option><option>Hebdomadaire</option><option>Bi-hebdomadaire</option><option>Mensuel</option><option>Trimestriel</option><option>Annuel</option></select></label>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 13px; font-weight: 600">Départements liés à cet objectif</span>
-        <div id="obj-depts" style="display: flex; flex-wrap: wrap; gap: 8px">
-          <button type="button" style="display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #111113; background: #111113; color: #ffffff; font: inherit; font-size: 13.5px; cursor: pointer">✓ Finance</button>
-          <button type="button" style="display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #111113; background: #111113; color: #ffffff; font: inherit; font-size: 13.5px; cursor: pointer">✓ Estimation</button>
-          <button type="button" style="display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #111113; background: #111113; color: #ffffff; font: inherit; font-size: 13.5px; cursor: pointer">✓ Opérations</button>
-          <button type="button" style="display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #111113; background: #111113; color: #ffffff; font: inherit; font-size: 13.5px; cursor: pointer">✓ Approvisionnement</button>
-          <button type="button" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #dcdce0; background: #ffffff; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer">Ventes</button>
-          <button type="button" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #dcdce0; background: #ffffff; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer">Ressources humaines</button>
+        <div style="display: grid; grid-template-columns: 80px minmax(0, 1fr) 90px minmax(0, 1fr) minmax(0, 1fr); gap: 10px; align-items: end">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Cible<select id="obj-op" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0; width: 100%; padding: 0 6px"><option>↔</option><option>=</option><option>≥</option><option>≤</option></select></label>
+          <div style="display: flex; align-items: center; gap: 6px"><input id="obj-min" aria-label="Cible minimum" placeholder="14" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0; width: 100%"><span id="obj-sep" style="font-size: 13px; color: #5e5e65">à</span><input id="obj-max" aria-label="Cible maximum" placeholder="16" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0; width: 100%"></div>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Unité<input id="obj-unit" placeholder="%" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0; width: 100%"></label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Par<input id="obj-per" placeholder="contrat" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0; width: 100%"></label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Horizon<select id="obj-horizon" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0; width: 100%; padding: 0 8px"><option>Par contrat</option><option>Journalier</option><option>Hebdomadaire</option><option>Bi-hebdomadaire</option><option>Mensuel</option><option>Trimestriel</option><option>Annuel</option></select></label>
         </div>
-      </div>
 
-      <div style="display: flex; flex-direction: column; gap: 10px">
-        <span style="font-size: 13px; font-weight: 600">Indicateurs par département</span>
-        <div style="display: flex; flex-direction: column; border-radius: 18px; border: 1px solid #e4e4e8; overflow: hidden">
-<div id="ind-rows" style="display: flex; flex-direction: column">
-          <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 12px 16px; font-size: 14px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em">FINANCE</span><span>Profitabilité</span><span style="justify-self: end; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #e4e4e8">14 à 16 % / contrat</span></div>
-          <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid #ececef; font-size: 14px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em">ESTIMATION</span><span>Délai de soumission</span><span style="justify-self: end; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #e4e4e8">6 j / dossier</span></div>
-          <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid #ececef; font-size: 14px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em">OPÉRATIONS</span><span>Heures par itération</span><span style="justify-self: end; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #e4e4e8">50 à 60 h / itération</span></div>
-          <div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid #ececef; font-size: 14px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em">APPROVIS.</span><span>Preuve de livraison</span><span style="justify-self: end; font-size: 12.5px; font-style: italic; padding: 3px 9px; border-radius: 999px; border: 1.5px dashed #b9b9bf; color: #5e5e65">cible à définir</span></div>
-</div>
-          <button type="button" style="min-height: 48px; border: none; border-top: 1px dashed #b9b9bf; background: #fafafb; color: #111113; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="ind-add">+ Ajouter un indicateur</button>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600">Départements liés à cet objectif</span>
+          <div id="obj-depts" style="display: flex; flex-wrap: wrap; gap: 8px"></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 13px; font-weight: 600">Indicateurs par département</span>
+          <div id="ind-rows" style="display: flex; flex-direction: column; border-radius: 18px; border: 1px solid #e4e4e8; overflow: hidden"></div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 4px">
+          <button type="button" id="obj-save" style="min-height: 48px; padding: 0 22px; border-radius: 999px; border: none; background: #111113; color: #ffffff; font: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer">Enregistrer l'objectif</button>
+          <button type="button" id="obj-cancel" style="min-height: 48px; padding: 0 20px; border-radius: 999px; border: 1.5px solid #dcdce0; background: #ffffff; color: #111113; font: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer">Annuler</button>
         </div>
       </div>
     </section>
 
     <section aria-label="Vos objectifs" style="flex: 2 1 320px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 26px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-      <div style="display: flex; justify-content: space-between; align-items: center"><h2 style="margin: 0; font-size: 18px; font-weight: 600">Vos objectifs globaux</h2><span id="obj-badge" style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #f1f1f3">3 objectifs</span></div>
-      <div id="obj-list" style="display: flex; flex-direction: column; gap: 14px">
-      <div style="border-radius: 22px; padding: 20px; background: radial-gradient(130% 160% at 90% -10%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113"><div style="display: flex; justify-content: space-between; align-items: flex-start"><span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em">FINANCIER · POIDS 40 %</span><span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #ffffff; color: #111113">En création</span></div><span style="font-size: 16px; font-weight: 600">Profitabilité sur les contrats</span><div style="display: flex; justify-content: space-between; font-size: 13px; color: #d4d4d8"><span>•••• 4 départements</span><b style="color: #ffffff; font-size: 18px">14 à 16 %</b></div></div>
-      <div style="border-radius: 22px; padding: 20px; background: radial-gradient(130% 160% at 90% -10%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; display: flex; flex-direction: column; gap: 12px"><span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em">OPÉRATIONNEL · POIDS 35 %</span><span style="font-size: 16px; font-weight: 600">Délai de soumission</span><div style="display: flex; justify-content: space-between; font-size: 13px; color: #d4d4d8"><span>•••• 2 départements</span><b style="color: #ffffff; font-size: 18px">6 j</b></div></div>
-      <div style="border-radius: 22px; padding: 20px; background: #f4f4f6; display: flex; flex-direction: column; gap: 12px"><span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em">HUMAIN · POIDS 25 %</span><span style="font-size: 16px; font-weight: 600">Charge moyenne des équipes</span><div style="display: flex; justify-content: space-between; font-size: 13px; color: #5e5e65"><span>•••• 8 départements</span><b style="color: #111113; font-size: 18px">80 %</b></div></div>
-      </div>
-      <button id="obj-add" type="button" style="min-height: 52px; border-radius: 18px; border: 1.5px dashed #6b6b72; background: #ffffff; color: #111113; font: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer">+ Ajouter un objectif</button>
+      <div style="display: flex; justify-content: space-between; align-items: center"><h2 style="margin: 0; font-size: 18px; font-weight: 600">Vos objectifs globaux</h2><span id="obj-badge" style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #f1f1f3">0 objectif</span></div>
+      <div id="obj-list" style="display: flex; flex-direction: column; gap: 14px"></div>
       <p style="margin: 0; font-size: 12.5px; line-height: 1.5; color: #5e5e65">Les poids servent à prioriser les améliorations : un processus lié à un objectif lourd et en écart passe en tête de la feuille de route.</p>
     </section>
   </div>

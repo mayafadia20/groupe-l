@@ -23,11 +23,9 @@
       { name: "Marc Bélanger", mail: "m.belanger@constructionboreal.ca", dept: "Estimation", role: "Contributeur", status: "sent" },
       { name: "Patricia Lavoie", mail: "p.lavoie@constructionboreal.ca", dept: "Estimation", role: "Contributrice", status: "todo" }],
     extraInvited: 25,   // comptes invités hors de la liste affichée (démo : 31 sur 52)
-    objForm: { cat: "Financier", depts: ["Finance", "Estimation", "Opérations", "Approvisionnement"] },
-    objectives: [
-      { cat: "Financier", weight: 40, title: "Profitabilité sur les contrats", depts: 4, target: "14 à 16 %", status: "creating" },
-      { cat: "Opérationnel", weight: 35, title: "Délai de soumission", depts: 2, target: "6 j", status: "active" },
-      { cat: "Humain", weight: 25, title: "Charge moyenne des équipes", depts: 8, target: "80 %", status: "draft" }],
+    v: 2,   // version des données : les objectifs de démonstration ont été retirés en v2
+    objForm: { cat: "Financier", depts: [], inds: {} },
+    objectives: [],
     indicators: [],
     task: { name: "Préparer une soumission", dept: "Estimation", proc: "Nouveau processus", freq: "Plusieurs fois par semaine", windows: ["Excel", "Revit", "Outlook", "Word"] },
     rec: null,
@@ -47,7 +45,12 @@
     realOverrides: {}, period: "T3 2026", chartMode: "monthly", sysMode: "usage", dashObj: 0,
   };
   let D = load();
-  function load() { try { const s = localStorage.getItem(KEY); if (s) return Object.assign(JSON.parse(JSON.stringify(DEF)), JSON.parse(s)); } catch (_) {} return JSON.parse(JSON.stringify(DEF)); }
+  function load() {
+    try { const s = localStorage.getItem(KEY); if (s) { const saved = JSON.parse(s);
+      if ((saved.v || 1) < 2) { delete saved.objectives; delete saved.objForm; delete saved.indicators; saved.v = 2; }   // repart avec des objectifs vides
+      return Object.assign(JSON.parse(JSON.stringify(DEF)), saved); } } catch (_) {}
+    return JSON.parse(JSON.stringify(DEF));
+  }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} }
   const deptNames = () => D.departments.map((d) => d.name);
   const totalEmployees = () => D.departments.reduce((a, d) => a + (Number(d.n) || 0), 0);
@@ -204,34 +207,59 @@
     paint();
   }
   const GRADC = "radial-gradient(130% 160% at 90% -10%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%)";
+  const objDeptCount = (o) => (Array.isArray(o.depts) ? o.depts.length : Number(o.depts) || 0);
   function renderObjectives() {
     const list = $("#obj-list"); if (!list) return;
-    $("#obj-badge").textContent = D.objectives.length + (D.objectives.length > 1 ? " objectifs" : " objectif");
+    const n = D.objectives.length;
+    $("#obj-badge").textContent = n + (n > 1 ? " objectifs" : " objectif");
+    if (!n) { list.innerHTML = '<div style="border-radius: 22px; padding: 24px 20px; background: #f4f4f6; display: flex; flex-direction: column; gap: 6px; text-align: center"><b style="font-size: 15px">Aucun objectif enregistré</b><span style="font-size: 13.5px; line-height: 1.5; color: #5e5e65">Les objectifs que vous enregistrez apparaissent ici, avec leur poids relatif.</span></div>'; return; }
     list.innerHTML = D.objectives.map((o, i) => {
-      const dark = o.status !== "draft";
-      const head = '<span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em">' + esc(o.cat.toUpperCase()) + " · POIDS " + o.weight + " %</span>";
-      const badge = o.status === "creating" ? '<span style="font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: #ffffff; color: #111113">En création</span>' : '<button type="button" data-objdel="' + i + '" aria-label="Retirer" style="border: none; background: transparent; color: inherit; font: inherit; font-size: 16px; cursor: pointer; line-height: 1">×</button>';
-      return '<div style="border-radius: 22px; padding: 20px; background: ' + (dark ? GRADC : "#f4f4f6") + "; color: " + (dark ? "#ffffff" : "#111113") + "; display: flex; flex-direction: column; gap: 12px" + (o.status === "creating" ? "; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113" : "") + '"><div style="display: flex; justify-content: space-between; align-items: flex-start">' + head + badge + '</div><span style="font-size: 16px; font-weight: 600">' + esc(o.title) + '</span><div style="display: flex; justify-content: space-between; font-size: 13px; color: ' + (dark ? "#d4d4d8" : "#5e5e65") + '"><span>•••• ' + o.depts + ' département' + (o.depts > 1 ? "s" : "") + '</span><b style="color: ' + (dark ? "#ffffff" : "#111113") + '; font-size: 18px">' + esc(o.target) + "</b></div></div>";
+      const nd = objDeptCount(o), ni = (o.indicators || []).length;
+      const meta = [nd + (nd > 1 ? " départements" : " département"), ni ? ni + (ni > 1 ? " indicateurs" : " indicateur") : null, o.horizon || null].filter(Boolean).join(" · ");
+      return '<div style="border-radius: 22px; padding: 20px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; gap: 12px"><div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px"><span style="font-size: 12.5px; font-weight: 600; letter-spacing: 0.06em">' + esc(o.cat.toUpperCase()) + " · POIDS " + o.weight + ' %</span><button type="button" data-objdel="' + i + '" aria-label="Retirer" style="border: none; background: transparent; color: inherit; font: inherit; font-size: 16px; cursor: pointer; line-height: 1">×</button></div><span style="font-size: 16px; font-weight: 600">' + esc(o.title) + '</span><div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; font-size: 13px; color: #d4d4d8"><span>•••• ' + esc(meta) + '</span><b style="color: #ffffff; font-size: 18px; white-space: nowrap">' + esc(o.target || "—") + "</b></div></div>";
     }).join("");
   }
-  function objTarget() { const op = $("#obj-op").value, a = $("#obj-min").value.trim(), b = $("#obj-max").value.trim(), u = $("#obj-unit").value.trim(); return (op === "↔" && b ? a + " à " + b : (op === "↔" ? "" : op + " ") + a).trim() + " " + u; }
-  function initObjectives() {
-    if (!$("#obj-add")) return;
-    chipGroup("#obj-cats", (t) => t === D.objForm.cat, (t) => { D.objForm.cat = t; save(); });
-    $$("#obj-depts button").forEach((b) => (b.dataset.check = "1"));
-    chipGroup("#obj-depts", (t) => D.objForm.depts.includes(t), (t) => { const i = D.objForm.depts.indexOf(t); if (i < 0) D.objForm.depts.push(t); else D.objForm.depts.splice(i, 1); save(); });
-    $("#obj-add").addEventListener("click", () => { const title = $("#obj-title").value.trim(); if (!title) { toast("Donnez un nom à l’objectif.", false); return; }
-      D.objectives.forEach((o) => { if (o.status === "creating") o.status = "active"; });
-      D.objectives.unshift({ cat: D.objForm.cat, weight: Math.max(5, Math.round(100 / (D.objectives.length + 1))), title, depts: D.objForm.depts.length, target: objTarget(), status: "creating", horizon: $("#obj-horizon").value });
-      save(); renderObjectives(); toast("Objectif « " + title + " » ajouté"); });
-    $("#obj-list").addEventListener("click", (e) => { const b = e.target.closest("[data-objdel]"); if (!b) return; D.objectives.splice(+b.dataset.objdel, 1); save(); renderObjectives(); toast("Objectif retiré"); });
-    $("#ind-add").addEventListener("click", () => dialog({ title: "Nouvel indicateur", fields: [{ name: "dept", label: "Département", options: deptNames() }, { name: "name", label: "Indicateur", placeholder: "Ex. : Délai de facturation" }, { name: "target", label: "Cible", placeholder: "Ex. : 10 j / dossier" }], ok: "Ajouter" })
-      .then((v) => { if (!v || !v.name) return; D.indicators.push(v); save(); renderIndicators(); toast("Indicateur ajouté"); }));
-    renderIndicators(); renderObjectives();
+  function objTarget() { const op = $("#obj-op").value, a = $("#obj-min").value.trim(), b = $("#obj-max").value.trim(), u = $("#obj-unit").value.trim(), per = $("#obj-per").value.trim();
+    if (!a && !b) return ""; const core = op === "↔" ? (a && b ? a + " à " + b : a || b) : op + " " + (a || b); return (core + " " + u).trim() + (per ? " / " + per : ""); }
+  function objWeights() { const n = D.objectives.length; if (!n) return; const w = Math.floor(100 / n); D.objectives.forEach((o, i) => { o.weight = w + (i < 100 - w * n ? 1 : 0); }); }
+  const DEPT_ON = "display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #111113; background: #111113; color: #ffffff; font: inherit; font-size: 13.5px; cursor: pointer";
+  const DEPT_OFF = "min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #dcdce0; background: #ffffff; color: #111113; font: inherit; font-size: 13.5px; cursor: pointer";
+  function renderObjDepts() {
+    const box = $("#obj-depts"); if (!box) return;
+    D.objForm.depts = D.objForm.depts.filter((d) => deptNames().includes(d));
+    box.innerHTML = D.departments.length ? D.departments.map((d) => { const on = D.objForm.depts.includes(d.name); return '<button type="button" data-dept="' + esc(d.name) + '" style="' + (on ? DEPT_ON : DEPT_OFF) + '">' + (on ? "✓ " : "") + esc(d.name) + "</button>"; }).join("")
+      : '<span style="font-size: 13.5px; color: #5e5e65">Aucun département : créez-les à l’étape 1.</span>';
   }
-  function renderIndicators() {
-    const box = $("#ind-rows"); if (!box) return; $$("[data-extra]", box).forEach((n) => n.remove());
-    D.indicators.forEach((i) => box.insertAdjacentHTML("beforeend", '<div data-extra="1" style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 150px; gap: 12px; align-items: center; padding: 12px 16px; border-top: 1px solid #ececef; font-size: 14px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em">' + esc(i.dept.toUpperCase().slice(0, 11)) + "</span><span>" + esc(i.name) + '</span>' + (i.target ? '<span style="justify-self: end; font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #e4e4e8">' + esc(i.target) + "</span>" : '<span style="justify-self: end; font-size: 12.5px; font-style: italic; padding: 3px 9px; border-radius: 999px; border: 1.5px dashed #b9b9bf; color: #5e5e65">cible à définir</span>') + "</div>"));
+  function renderIndRows() {
+    const box = $("#ind-rows"); if (!box) return;
+    const ds = D.objForm.depts;
+    if (!ds.length) { box.innerHTML = '<div style="padding: 16px; font-size: 13.5px; color: #5e5e65; text-align: center">Sélectionnez des départements pour définir l’indicateur de chacun.</div>'; return; }
+    const F = "height: 42px; box-sizing: border-box; border-radius: 10px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 14px; font-weight: 400; color: #111113; background: #ffffff; min-width: 0; width: 100%";
+    box.innerHTML = '<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 170px; gap: 12px; align-items: center; padding: 10px 16px; background: #fafafb; font-size: 12.5px; color: #5e5e65"><span>Département</span><span>Indicateur</span><span>Cible</span></div>' +
+      ds.map((d, i) => { const v = D.objForm.inds[d] || {}; return '<div style="display: grid; grid-template-columns: 150px minmax(0, 1fr) 170px; gap: 12px; align-items: center; padding: 10px 16px; border-top: 1px solid #ececef; font-size: 14px"><span style="font-size: 12px; font-weight: 700; letter-spacing: 0.1em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap" title="' + esc(d) + '">' + esc(d.toUpperCase()) + '</span><input data-ind-name="' + esc(d) + '" value="' + esc(v.name || "") + '" placeholder="Ex. : Délai de soumission" style="' + F + '"><input data-ind-target="' + esc(d) + '" value="' + esc(v.target || "") + '" placeholder="Ex. : 6 j / dossier" style="' + F + '"></div>'; }).join("");
+  }
+  function objFormOpen(open) { const f = $("#obj-form"), e = $("#obj-empty"), btn = $("#obj-open"); if (!f) return; f.style.display = open ? "flex" : "none"; e.style.display = open ? "none" : "flex"; btn.style.visibility = open ? "hidden" : "visible";
+    if (!open && D.objectives.length) { e.querySelector("b").textContent = D.objectives.length + (D.objectives.length > 1 ? " objectifs enregistrés" : " objectif enregistré"); e.querySelector("span").textContent = "Ajoutez-en un autre ou terminez la configuration pour ouvrir le tableau de bord."; }
+    if (open) { renderObjDepts(); renderIndRows(); $("#obj-title").focus(); } }
+  function objFormReset() { D.objForm = { cat: "Financier", depts: [], inds: {} }; save(); ["#obj-title", "#obj-min", "#obj-max", "#obj-unit", "#obj-per"].forEach((s) => { $(s).value = ""; }); $("#obj-op").value = "↔"; $("#obj-max").style.display = ""; $("#obj-sep").style.display = ""; $("#obj-horizon").selectedIndex = 0; renderObjDepts(); renderIndRows();
+    $$("#obj-cats button").forEach((b, i) => { b.style.background = i === 0 ? "#111113" : "#f1f1f3"; b.style.color = i === 0 ? "#ffffff" : "#111113"; }); }
+  function initObjectives() {
+    if (!$("#obj-open")) return;
+    chipGroup("#obj-cats", (t) => t === D.objForm.cat, (t) => { D.objForm.cat = t; save(); });
+    $("#obj-depts").addEventListener("click", (e) => { const b = e.target.closest("button[data-dept]"); if (!b) return; const d = b.dataset.dept; const i = D.objForm.depts.indexOf(d); if (i < 0) D.objForm.depts.push(d); else D.objForm.depts.splice(i, 1); save(); renderObjDepts(); renderIndRows(); });
+    $("#ind-rows").addEventListener("input", (e) => { const t = e.target; const d = t.dataset.indName || t.dataset.indTarget; if (!d) return; const v = D.objForm.inds[d] || (D.objForm.inds[d] = {}); if (t.dataset.indName != null) v.name = t.value; else v.target = t.value; save(); });
+    $("#obj-op").addEventListener("change", () => { const range = $("#obj-op").value === "↔"; $("#obj-max").style.display = range ? "" : "none"; $("#obj-sep").style.display = range ? "" : "none"; });
+    $("#obj-open").addEventListener("click", () => objFormOpen(true));
+    $("#obj-cancel").addEventListener("click", () => { objFormReset(); objFormOpen(false); });
+    $("#obj-save").addEventListener("click", () => {
+      const title = $("#obj-title").value.trim(); if (!title) { toast("Donnez un nom à l’objectif.", false); $("#obj-title").focus(); return; }
+      if (!D.objForm.depts.length) { toast("Sélectionnez au moins un département lié à cet objectif.", false); return; }
+      const id = Date.now();
+      const indicators = D.objForm.depts.map((d) => { const v = D.objForm.inds[d] || {}; return v.name && v.name.trim() ? { dept: d, name: v.name.trim(), target: (v.target || "").trim(), obj: id } : null; }).filter(Boolean);
+      D.objectives.push({ id, cat: D.objForm.cat, title, depts: D.objForm.depts.slice(), target: objTarget(), horizon: $("#obj-horizon").value, status: "active", indicators, weight: 0 });
+      objWeights(); indicators.forEach((x) => D.indicators.push(x)); save(); renderObjectives(); objFormReset(); objFormOpen(false); toast("Objectif « " + title + " » enregistré"); });
+    $("#obj-list").addEventListener("click", (e) => { const b = e.target.closest("[data-objdel]"); if (!b) return; const o = D.objectives.splice(+b.dataset.objdel, 1)[0]; if (o && o.id) D.indicators = D.indicators.filter((x) => x.obj !== o.id); objWeights(); save(); renderObjectives(); objFormOpen($("#obj-form").style.display !== "none"); toast("Objectif retiré"); });
+    renderObjectives(); objFormOpen(false);
   }
 
   // ───────────────────────── écran 5 : nouveau diagnostic ─────────────────────────
@@ -461,7 +489,7 @@
   });
 
   // ───────────────────────── démarrage ─────────────────────────
-  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "accueil") { applyCompany(); renderMapList(); renderHR(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
+  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "accueil") { applyCompany(); renderMapList(); renderHR(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
   function init() {
     initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initDiag(); initHome(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
     window.addEventListener("hashchange", refresh); refresh();
