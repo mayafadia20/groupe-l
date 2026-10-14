@@ -38,10 +38,10 @@
             { title: "Obtenir les prix", dur: "attente 1,5 j", who: "A. Côté", sys: "Outlook" }, { title: "Monter la soumission", dur: "30 min", who: "J. Tremblay", sys: "Word" }],
     fiche: {}, ficheSaved: false,
     projects: [
-      { name: "Automatiser la reprise des quantités Revit → Excel", dept: "Estimation", resp: "J. Tremblay", gain: "14 h / sem", status: "En cours" },
-      { name: "Approbation des achats en deux niveaux", dept: "Approvisionnement", resp: "A. Côté", gain: "9 h / sem", status: "À faire" },
-      { name: "Feuilles de temps saisies une seule fois", dept: "Opérations", resp: "S. Roy", gain: "7 h / sem", status: "À faire" },
-      { name: "Relances clients automatisées", dept: "Finance", resp: "L. Gagnon", gain: "4 h / sem", status: "Terminé" }],
+      { name: "Automatiser la reprise des quantités Revit → Excel", dept: "Estimation", resp: "J. Tremblay", gain: "14 h / sem", status: "En cours", start: "2026-09", end: "2026-12" },
+      { name: "Approbation des achats en deux niveaux", dept: "Approvisionnement", resp: "A. Côté", gain: "9 h / sem", status: "À faire", start: "2026-11", end: "2027-01" },
+      { name: "Feuilles de temps saisies une seule fois", dept: "Opérations", resp: "S. Roy", gain: "7 h / sem", status: "À faire", start: "2027-01", end: "2027-03" },
+      { name: "Relances clients automatisées", dept: "Finance", resp: "L. Gagnon", gain: "4 h / sem", status: "Terminé", start: "2026-06", end: "2026-09" }],
     realOverrides: {}, period: "T3 2026", chartMode: "monthly", sysMode: "usage", dashObj: 0,
   };
   let D = load();
@@ -131,7 +131,7 @@
         '<input data-k="n" aria-label="Employés" value="' + esc(d.n) + '" style="' + IN(false, false) + '">' +
         '<button type="button" data-del="' + i + '" aria-label="Supprimer" style="width: 36px; height: 36px; border-radius: 50%; border: none; background: #f1f1f3; font: inherit; cursor: pointer">×</button></div>';
     }).join("");
-    renderTree(); renderInvites(); renderMapList();
+    renderTree(); renderInvites();
   }
   function renderTree() {
     const tree = $("#dep-tree"); if (!tree) return;
@@ -353,80 +353,84 @@
     f.addEventListener("input", (e) => { const i = ficheInputs().indexOf(e.target); if (i >= 0) { D.fiche[i] = e.target.value; D.ficheSaved = false; } ficheCompute(); });
     f.addEventListener("change", () => save());
     $("#fiche-save").addEventListener("click", () => { D.ficheSaved = true; save(); const r = ficheCompute(); toast("Fiche enregistrée · cycle ≈ " + fr(r.cycle, 1) + " j · utilisation " + r.util + " %"); });
-    $("#diag-validate").addEventListener("click", () => { D.procValidated = true; save(); toast("Diagnostic validé · visible sur l’accueil et le tableau de bord"); });
+    $("#diag-validate").addEventListener("click", () => { D.procValidated = true; save(); toast("Diagnostic validé · visible sur le tableau de bord"); });
     $("#diag-rerecord").addEventListener("click", () => { D.rec = { elapsed: 0, paused: false, running: true, clicks: 0, captures: 0, actions: [{ t: 0, label: "Nouvel enregistrement", tag: "Lens", kind: "f" }], total: null, pool: 0 }; save(); renderRec(); });
     ficheCompute(); renderProcesses();
   }
 
-  // ───────────────────────── écran 8 : accueil ─────────────────────────
-  function renderMapList() {
-    const wrap = $("#map-wrap"); if (!wrap) return; let list = $("#map-listview");
-    if (!list) { list = document.createElement("div"); list.id = "map-listview"; list.hidden = true; wrap.parentNode.insertBefore(list, wrap.nextSibling); }
-    const cov = (d) => Math.min(100, Math.round(((D.users.filter((u) => u.dept === d.name && u.status !== "todo").length + 2) / Math.max(1, d.n)) * 100));
-    list.innerHTML = '<table style="width: 100%; border-collapse: collapse; font-size: 14px"><thead><tr style="color: #5e5e65; font-size: 12.5px; text-align: left"><th style="font-weight: 500; padding: 6px 8px 10px 0">Département</th><th style="font-weight: 500; padding: 6px 8px 10px">Responsable</th><th style="font-weight: 500; padding: 6px 8px 10px">Relève de</th><th style="font-weight: 500; padding: 6px 8px 10px">Employés</th><th style="font-weight: 500; padding: 6px 0 10px 8px; text-align: right">Couverture</th></tr></thead><tbody>' +
-      D.departments.map((d) => '<tr style="border-top: 1px solid #ececef"><td style="padding: 11px 8px 11px 0"><b>' + esc(d.name) + '</b></td><td style="padding: 11px 8px">' + esc(d.resp) + '</td><td style="padding: 11px 8px; color: #5e5e65">' + esc(d.parent || "—") + '</td><td style="padding: 11px 8px">' + d.n + '</td><td style="padding: 11px 0 11px 8px; text-align: right"><b>' + cov(d) + " %</b></td></tr>").join("") + "</tbody></table>";
-  }
-  function renderHR() {
-    const rows = $("#rh-rows"); if (!rows) return;
-    const total = totalEmployees(); const users = D.users;
-    const active = users.filter((u) => u.status === "active").length, sent = users.filter((u) => u.status === "sent").length, todo = users.filter((u) => u.status === "todo").length;
-    const accounts = Math.min(total, active + sent + (Number(D.extraInvited) || 0));
-    const engaged = total ? Math.round((accounts / total) * 100) : 0;
-    $("#rh-kicker").textContent = "RESSOURCES HUMAINES · " + D.departments.length + " DÉPARTEMENTS · " + total + " EMPLOYÉS";
-    const tile = (v, l, dark) => '<div style="border-radius: 20px; padding: 16px; min-height: 92px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; gap: 4px; background: ' + (dark ? GRADC : "#f4f4f6") + "; color: " + (dark ? "#ffffff" : "#111113") + '"><b style="font-size: 26px; line-height: 1">' + v + '</b><span style="font-size: 12.5px; color: ' + (dark ? "#d4d4d8" : "#5e5e65") + '">' + l + "</span></div>";
-    $("#rh-kpis").innerHTML = tile(total, "employés", true) + tile(accounts, "comptes Lens") + tile(sent, sent > 1 ? "invitations en attente" : "invitation en attente") + tile(todo, "encore à inviter") + tile(engaged + " %", "de l’équipe engagée");
-    const max = Math.max(1, ...D.departments.map((d) => Number(d.n) || 0));
-    const COLS = "minmax(140px, 1.2fr) minmax(0, 2fr) 90px 110px";
-    rows.innerHTML = '<div style="display: grid; grid-template-columns: ' + COLS + '; gap: 12px; align-items: center; padding: 8px 0 10px; font-size: 12.5px; color: #5e5e65"><span>Département</span><span>Effectif</span><span style="text-align: right">Comptes actifs</span><span style="text-align: right">Responsable</span></div>' +
-      D.departments.map((d) => { const n = Number(d.n) || 0; const us = users.filter((u) => u.dept === d.name); const act = us.filter((u) => u.status === "active").length;
-        return '<div style="display: grid; grid-template-columns: ' + COLS + '; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid #ececef; font-size: 14px"><span style="display: flex; flex-direction: column; gap: 2px"><b>' + esc(d.name) + "</b>" + (d.parent ? '<span style="font-size: 12px; color: #5e5e65">Relève de ' + esc(d.parent) + "</span>" : "") + '</span><span style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; display: block; height: 10px; border-radius: 10px; background: #e4e4e8"><span style="display: block; width: ' + Math.round((n / max) * 100) + '%; height: 10px; border-radius: 10px; background: #111113"></span></span><b style="min-width: 56px; font-size: 13px">' + n + ' empl.</b></span><span style="text-align: right">' + act + " / " + us.length + '</span><span style="text-align: right; color: #5e5e65">' + esc(d.resp) + "</span></div>"; }).join("");
-  }
-  function initHome() {
-    if (!$("#home-name")) return; applyCompany(); renderMapList(); renderHR();
-    $("#rh-invite").addEventListener("click", () => { location.hash = "utilisateurs"; });
-    const seg = (on, off) => { on.style.background = "#111113"; on.style.color = "#fff"; off.style.background = "transparent"; off.style.color = "#111113"; };
-    $("#map-global").addEventListener("click", () => { $("#map-wrap").hidden = false; $("#map-listview").hidden = true; seg($("#map-global"), $("#map-list")); });
-    $("#map-list").addEventListener("click", () => { renderMapList(); $("#map-wrap").hidden = true; $("#map-listview").hidden = false; seg($("#map-list"), $("#map-global")); });
-    $("#map-add-dept").addEventListener("click", () => { location.hash = "departements"; });
-    $("#struct-edit").addEventListener("click", () => { location.hash = "departements"; });
-    $("#part-invite").addEventListener("click", () => { location.hash = "utilisateurs"; });
-    const add = $('#accueil a[href="#tableau"]'); if (add && /Ajouter/.test(add.textContent)) add.setAttribute("href", "#objectifs");
-    $$(".map-dept").forEach((b) => b.addEventListener("click", () => { const d = D.departments.find((x) => x.name === b.dataset.dept); const pct = b.querySelector("span") ? b.querySelector("span").textContent : "";
-      dialog({ title: b.dataset.dept, text: (d ? "Responsable : " + d.resp + " · " + d.n + " employés · " : "") + "couverture du diagnostic " + pct + ". Ouvrir les diagnostics de ce département ?", ok: "Voir les diagnostics" }).then((ok) => { if (!ok) return; const i = D.processes.findIndex((p) => p.dept.toLowerCase() === b.dataset.dept.toLowerCase()); if (i >= 0) D.activeProc = i; save(); renderProcesses(); location.hash = "diagnostic"; }); }));
-    $("#home-search").addEventListener("input", (e) => { const q = e.target.value.trim().toLowerCase(); $$(".map-dept").forEach((b) => { b.style.opacity = !q || b.dataset.dept.toLowerCase().includes(q) ? "1" : "0.25"; }); });
-    $("#home-search").addEventListener("keydown", (e) => { if (e.key !== "Enter") return; const q = e.target.value.trim().toLowerCase(); if (!q) return;
-      const p = D.processes.find((x) => x.title.toLowerCase().includes(q)); if (p) { D.activeProc = D.processes.indexOf(p); save(); renderProcesses(); location.hash = "diagnostic"; return; }
-      const u = D.users.find((x) => x.name.toLowerCase().includes(q)); if (u) { location.hash = "utilisateurs"; toast(u.name + " · " + u.dept + " · " + u.role); return; } toast("Aucun résultat pour « " + e.target.value.trim() + " »", false); });
-    $$("#accueil nav > div:last-child, #tableau nav > div:last-child").forEach((card) => { if (/Diagnostic en cours/.test(card.textContent)) { card.style.cursor = "pointer"; card.addEventListener("click", () => { location.hash = "diagnostic"; }); } });
-  }
+  // ───────────────────────── diagramme des utilisateurs (tableau de bord) ─────────────────────────
+  function initStruct() { const b = $("#struct-edit"); if (b) b.addEventListener("click", () => { location.hash = "departements"; }); }
   function initNotifs() { $$(".notif-btn").forEach((b) => b.addEventListener("click", () => { const pending = D.users.filter((u) => u.status === "sent").length; const todo = D.users.filter((u) => u.status === "todo").length;
     const items = ["Goulot confirmé : « Estimer les quantités » à 112 % d’utilisation", pending + " invitation" + (pending > 1 ? "s" : "") + " en attente de réponse", todo ? todo + " employé" + (todo > 1 ? "s" : "") + " encore à inviter" : null, D.rec && D.rec.running ? "Un enregistrement est en cours (" + mmss(D.rec.elapsed) + ")" : null, D.procValidated ? "Processus « " + (D.processes[D.activeProc] || {}).title + " » validé" : "Le processus « " + (D.processes[D.activeProc] || {}).title + " » attend votre validation"].filter(Boolean);
     dialog({ title: "Notifications", text: items.map((s) => "• " + s).join("\n"), ok: "Fermer" }); $("#dlg-text").style.whiteSpace = "pre-line"; })); }
 
   // ───────────────────────── écran 9 : tableau de bord ─────────────────────────
   const DASH = [{ cat: "FINANCIER", val: "14 à 16 %", desc: "de profitabilité sur les contrats de construction", real: "Réel 10 à 12 % · écart −4 pts" }, { cat: "OPÉRATIONNEL", val: "6 j", desc: "de délai de soumission par dossier", real: "Réel 9,2 j · écart +3,2 j" }, { cat: "HUMAIN", val: "80 %", desc: "de charge moyenne des équipes", real: "Réel 92 % · écart +12 pts" }];
-  const CHARTS = { monthly: { labels: ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep"], v: [64, -24, 88, 132, -14, 104, 72, -34, 56], total: "−48 600 $" }, weekly: { labels: ["S27", "S28", "S29", "S30", "S31", "S32", "S33", "S34", "S35", "S36", "S37", "S38"], v: [40, 58, -12, 76, 92, -30, 64, 48, -18, 70, 36, 54], total: "−12 300 $" } };
-  function renderChart() {
-    const c = $("#chart"); if (!c) return; const d = CHARTS[D.chartMode]; const per = D.period === "T2 2026" ? 0.8 : D.period === "Année 2026" ? 1.15 : 1;
-    c.style.gridTemplateColumns = "repeat(" + d.labels.length + ", minmax(0, 1fr))";
-    c.innerHTML = d.labels.map((l, i) => { const v = Math.round(d.v[i] * per); const up = v > 0; return '<div style="display: flex; flex-direction: column; align-items: center">' + (up ? '<div style="height: 150px; width: 100%; display: flex; align-items: flex-end; justify-content: center"><span style="width: 100%; max-width: 46px; height: ' + Math.min(150, v) + 'px; border-radius: 14px; background: #111113"></span></div><div style="height: 44px; width: 100%; border-top: 1px solid #d8d8dc"></div>' : '<div style="height: 150px; width: 100%"></div><div style="height: 44px; width: 100%; border-top: 1px solid #d8d8dc; display: flex; justify-content: center"><span style="width: 100%; max-width: 46px; height: ' + Math.min(44, -v) + 'px; border-radius: 0 0 12px 12px; border: 2px solid #111113; border-top: none; box-sizing: border-box"></span></div>') + '<span style="font-size: 12px; color: #5e5e65; margin-top: 6px">' + l + "</span></div>"; }).join("");
-    const t = $("#chart-total"); if (t) t.textContent = (per === 1 ? d.total : "−" + fr(Math.round(num(d.total) * per / 100) * 100, 0) + " $").replace(/ /g, " ");
-    const seg = (on, off) => { on.style.background = "#111113"; on.style.color = "#fff"; off.style.background = "transparent"; off.style.color = "#111113"; }; seg($(D.chartMode === "weekly" ? "#chart-weekly" : "#chart-monthly"), $(D.chartMode === "weekly" ? "#chart-monthly" : "#chart-weekly"));
-  }
   function renderSys() { $$(".sys-sub").forEach((t) => { const n = parseInt(t.dataset.usage, 10) || 0; t.textContent = D.sysMode === "cost" ? fr(n * 35, 0) + " $ / mois" : t.dataset.usage; }); const seg = (on, off) => { on.style.background = "#111113"; on.style.color = "#fff"; off.style.background = "transparent"; off.style.color = "#111113"; }; if ($("#sys-usage")) seg($(D.sysMode === "cost" ? "#sys-cost" : "#sys-usage"), $(D.sysMode === "cost" ? "#sys-usage" : "#sys-cost")); }
   function renderDashGlobal() { const g = $("#dash-global"); if (!g) return; const o = DASH[D.dashObj] || DASH[0]; const sp = $$(":scope > span, :scope > b", g); sp[0].textContent = "OBJECTIF GLOBAL · " + o.cat; sp[1].textContent = o.val; sp[2].textContent = o.desc; sp[3].textContent = o.real; }
   function applyReal() { Object.keys(D.realOverrides).forEach((k) => { const a = $$('#tableau .ind[data-ind="' + CSS.escape(k) + '"]')[0]; if (!a) return; const r = D.realOverrides[k]; const dark = $$("div", a).find((d) => /RÉEL/.test(d.textContent) && /radial-gradient/.test(d.getAttribute("style") || "")); if (dark) { const b = dark.querySelector("b"); if (b) b.textContent = r.value; const units = $$("span > span", dark).filter((s) => /rgba\(255, 255, 255, 0.14\)/.test(s.getAttribute("style") || "")); if (units[0] && r.unit) units[0].textContent = r.unit; } }); }
+  // Écart défavorable pour l'entreprise → case en rouge. Un indicateur « plus bas = mieux » (délai, heures, coût…) est en
+  // défaut quand l'écart est positif ; les autres (profitabilité, escompte…) quand il est négatif.
+  const RED = "#c62828", RED_BG = "#fdecea";
+  function paintGaps() {
+    $$("#tableau .ind").forEach((a) => {
+      const box = $$("div", a).find((d) => /^ÉCART/.test(d.textContent.trim())); if (!box) return; const b = box.querySelector("b"); if (!b) return;
+      const txt = b.textContent.trim(); if (!/^[−\-+]?\d/.test(txt)) return;
+      const lowerBetter = /délai|heure|écart|coût|cout|attente|temps|charge|retard|erreur|rebut/i.test(a.dataset.ind || "");
+      const bad = lowerBetter ? /^\+/.test(txt) : /^[−\-]/.test(txt);
+      const lab = box.querySelector("span"); const chips = $$(":scope > span > span", box);
+      if (bad) { box.style.borderColor = RED; box.style.background = RED_BG; box.title = "Écart défavorable pour l’entreprise"; if (lab) lab.style.color = RED; b.style.background = RED; b.style.color = "#ffffff"; chips.forEach((c) => { c.style.background = "#ffffff"; c.style.color = RED; }); }
+      else { box.style.borderColor = "#111113"; box.style.background = ""; box.title = ""; if (lab) lab.style.color = "#3a3a3f"; b.style.background = "#111113"; b.style.color = "#ffffff"; chips.forEach((c) => { c.style.background = "#f1f1f3"; c.style.color = ""; }); }
+    });
+  }
+  // ─── Gantt des projets d'amélioration continue ───
+  const MONTHS_FR = ["Jan", "Fév", "Mar", "Avr", "Mai", "Juin", "Juil", "Août", "Sep", "Oct", "Nov", "Déc"];
+  const ym = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+  const ymIdx = (k) => { const [y, m] = k.split("-").map(Number); return y * 12 + (m - 1); };
+  const addMonths = (k, n) => { const i = ymIdx(k) + n; return Math.floor(i / 12) + "-" + String((i % 12) + 1).padStart(2, "0"); };
+  function prjDates(p) {   // projets anciens ou créés sans dates : 3 mois à partir de ce mois-ci (terminé : les 3 derniers mois)
+    if (!/^\d{4}-\d{2}$/.test(p.start || "")) p.start = p.status === "Terminé" ? addMonths(ym(new Date()), -3) : ym(new Date());
+    if (!/^\d{4}-\d{2}$/.test(p.end || "") || ymIdx(p.end) < ymIdx(p.start)) p.end = addMonths(p.start, p.status === "Terminé" ? 2 : 3);
+    return p;
+  }
+  function renderGantt() {
+    const g = $("#gantt"); if (!g) return;
+    if (!D.projects.length) { g.innerHTML = '<div style="border-radius: 20px; padding: 24px; background: #f4f4f6; text-align: center; font-size: 14px; color: #5e5e65">Aucun projet d’amélioration pour l’instant. Ajoutez-en un avec « + Projet ».</div>'; return; }
+    D.projects.forEach(prjDates); save();
+    const now = new Date(); const today = ym(now);
+    let first = Math.min(ymIdx(today), ...D.projects.map((p) => ymIdx(p.start))), last = Math.max(ymIdx(today), ...D.projects.map((p) => ymIdx(p.end)));
+    if (last - first + 1 < 6) last = first + 5; if (last - first + 1 > 18) first = last - 17;
+    const n = last - first + 1; const months = Array.from({ length: n }, (_, i) => first + i);
+    const LABEL = "240px";
+    const head = '<div style="display: grid; grid-template-columns: ' + LABEL + ' minmax(0, 1fr); gap: 16px; align-items: end; padding: 0 0 10px"><span style="font-size: 12.5px; color: #5e5e65">Projet</span><div style="display: grid; grid-template-columns: repeat(' + n + ', minmax(0, 1fr))">' +
+      months.map((m) => '<span style="font-size: 12px; color: #5e5e65; text-align: center; border-left: 1px solid #ececef; padding: 2px 0">' + MONTHS_FR[m % 12] + (m % 12 === 0 || m === first ? '<br><b style="color: #111113">' + Math.floor(m / 12) + "</b>" : "") + "</span>").join("") + "</div></div>";
+    const todayPct = ((ymIdx(today) - first + (now.getDate() - 1) / 31) / n) * 100;
+    const rows = D.projects.map((p, i) => {
+      const a = Math.max(0, ymIdx(p.start) - first), b = Math.min(n, ymIdx(p.end) - first + 1); const left = (a / n) * 100, width = Math.max(((b - a) / n) * 100, 3);
+      let bar;
+      if (p.status === "Terminé") bar = "background: #c9c9ce; color: #111113";
+      else if (p.status === "En cours") bar = "background: " + GRADC + "; color: #ffffff; box-shadow: 0 10px 20px -12px rgba(0, 0, 0, 0.6)";
+      else bar = "background: #ffffff; color: #111113; border: 1.5px solid #111113";
+      let prog = "";
+      if (p.status === "En cours") { const pct = Math.max(0, Math.min(100, ((todayPct - left) / width) * 100)); prog = '<span style="position: absolute; left: 0; top: 0; bottom: 0; width: ' + pct.toFixed(1) + '%; border-radius: 12px; background: rgba(255, 255, 255, 0.18)"></span>'; }
+      return '<div style="display: grid; grid-template-columns: ' + LABEL + ' minmax(0, 1fr); gap: 16px; align-items: center; padding: 10px 0; border-top: 1px solid #ececef"><span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><b style="font-size: 14px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap" title="' + esc(p.name) + '">' + esc(p.name) + '</b><span style="font-size: 12px; color: #5e5e65">' + esc(p.dept) + " · " + esc(p.resp) + '</span></span><div style="position: relative; height: 40px; background: repeating-linear-gradient(90deg, #ececef 0 1px, transparent 1px calc(100% / ' + n + '))"><span style="position: absolute; top: 0; bottom: 0; left: ' + todayPct.toFixed(2) + '%; width: 1.5px; background: #111113; opacity: 0.6"></span><button type="button" data-gantt="' + i + '" title="' + esc(p.name + " · " + p.status + " · " + p.start + " → " + p.end) + '" style="position: absolute; top: 5px; height: 30px; left: ' + left.toFixed(2) + "%; width: " + width.toFixed(2) + '%; box-sizing: border-box; border: none; border-radius: 12px; padding: 0 12px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; overflow: hidden; white-space: nowrap; ' + bar + '">' + prog + '<span style="position: relative">' + esc(p.gain) + '</span><span style="position: relative; font-weight: 500; opacity: 0.8">' + esc(p.status) + "</span></button></div></div>";
+    }).join("");
+    g.innerHTML = head + rows;
+  }
   function initDash() {
     if (!$("#dash-period")) return; $("#dash-period").value = D.period; $("#dash-obj").selectedIndex = D.dashObj;
-    $("#dash-period").addEventListener("change", (e) => { D.period = e.target.value; save(); renderChart(); toast("Période : " + D.period); });
+    $("#dash-period").addEventListener("change", (e) => { D.period = e.target.value; save(); toast("Période : " + D.period); });
     $("#dash-obj").addEventListener("change", (e) => { D.dashObj = e.target.selectedIndex; save(); renderDashGlobal(); });
-    $("#chart-weekly").addEventListener("click", () => { D.chartMode = "weekly"; save(); renderChart(); }); $("#chart-monthly").addEventListener("click", () => { D.chartMode = "monthly"; save(); renderChart(); });
     $("#sys-usage").addEventListener("click", () => { D.sysMode = "usage"; save(); renderSys(); }); $("#sys-cost").addEventListener("click", () => { D.sysMode = "cost"; save(); renderSys(); });
     $("#dash-ind-add").addEventListener("click", () => dialog({ title: "Nouvel indicateur", fields: [{ name: "dept", label: "Département", options: deptNames() }, { name: "name", label: "Indicateur" }, { name: "target", label: "Cible", placeholder: "Ex. : 5 j / dossier" }, { name: "desc", label: "Pourquoi il compte", type: "textarea" }], ok: "Ajouter" }).then((v) => { if (!v || !v.name) return; D.indicators.push(v); save(); addDashInd(v); toast("Indicateur ajouté au tableau de bord"); }));
     $("#dash-cols").addEventListener("click", (e) => { const b = e.target.closest(".ind-plus"); if (!b) return; const art = b.closest(".ind"); const name = art.dataset.ind;
       dialog({ title: "Nouvelle mesure · " + name, text: "Saisissez la valeur réelle observée sur la période.", fields: [{ name: "value", label: "Valeur réelle" }, { name: "unit", label: "Unité", placeholder: "%, jours, h…" }, { name: "src", label: "Source", options: ["Mesurée", "Estimée", "Donnée système"] }], ok: "Enregistrer" }).then((v) => { if (!v || !v.value) return; D.realOverrides[name] = v; save(); applyReal(); toast("Mesure enregistrée pour « " + name + " »"); }); });
-    $$(".cat-btn").forEach((b) => b.addEventListener("click", () => { $$(".cat-btn").forEach((x) => { x.style.background = "#f4f4f6"; x.style.color = "#111113"; x.style.boxShadow = "none"; $$("svg", x).forEach((s) => s.setAttribute("stroke", "#111113")); $$("span span", x).forEach((s) => (s.style.color = "#5e5e65")); }); b.style.background = GRADC; b.style.color = "#fff"; $$("svg", b).forEach((s) => s.setAttribute("stroke", "#ffffff")); $$("span span", b).forEach((s) => (s.style.color = "#d4d4d8")); const i = DASH.findIndex((d) => d.cat === b.dataset.cat.toUpperCase()); if (i >= 0) { D.dashObj = i; $("#dash-obj").selectedIndex = i; save(); renderDashGlobal(); } toast("Catégorie : " + b.dataset.cat); }));
-    D.indicators.forEach(addDashInd); renderChart(); renderSys(); renderDashGlobal(); applyReal();
+    $("#gantt").addEventListener("click", (e) => { const b = e.target.closest("[data-gantt]"); if (!b) return; const p = D.projects[+b.dataset.gantt]; if (!p) return;
+      dialog({ title: p.name, text: p.dept + " · " + p.resp + " · gain visé " + p.gain, fields: [{ name: "status", label: "Statut", options: ["À faire", "En cours", "Terminé"], value: p.status }, { name: "start", label: "Début", type: "month", value: p.start }, { name: "end", label: "Fin", type: "month", value: p.end }], ok: "Enregistrer" })
+        .then((v) => { if (!v) return; p.status = v.status; if (v.start) p.start = v.start; if (v.end) p.end = v.end; prjDates(p); save(); renderGantt(); renderProjects(); toast("Projet mis à jour"); }); });
+    $("#gantt-add").addEventListener("click", () => newProjectDialog().then((ok) => { if (ok) renderGantt(); }));
+    $$("#tableau nav > div:last-child").forEach((card) => { if (/Diagnostic en cours/.test(card.textContent)) { card.style.cursor = "pointer"; card.addEventListener("click", () => { location.hash = "diagnostic"; }); } });
+    D.indicators.forEach(addDashInd); renderSys(); renderDashGlobal(); applyReal(); paintGaps(); renderGantt();
   }
   function addDashInd(v) {
     const cols = $("#dash-cols"); if (!cols) return; let col = $$(":scope > div", cols).find((c) => c.textContent.trim().toUpperCase().startsWith(v.dept.toUpperCase()));
@@ -466,7 +470,12 @@
     $("#prj-filters").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; prjFilter = b.dataset.filter; $$("button", $("#prj-filters")).forEach((x) => { x.style.background = x === b ? "#111113" : "#f1f1f3"; x.style.color = x === b ? "#fff" : "#111113"; }); renderProjects(); });
     $("#prj-body").addEventListener("change", (e) => { const s = e.target.closest("[data-st]"); if (!s) return; D.projects[+s.dataset.st].status = s.value; save(); toast("Statut mis à jour"); renderProjects(); });
     $("#prj-body").addEventListener("click", (e) => { const b = e.target.closest("[data-prjdel]"); if (!b) return; D.projects.splice(+b.dataset.prjdel, 1); save(); renderProjects(); toast("Projet supprimé"); });
-    $("#prj-add").addEventListener("click", () => dialog({ title: "Nouveau projet", fields: [{ name: "name", label: "Projet" }, { name: "dept", label: "Département", options: deptNames() }, { name: "resp", label: "Responsable" }, { name: "gain", label: "Gain visé", placeholder: "Ex. : 6 h / sem" }], ok: "Créer" }).then((v) => { if (!v || !v.name) return; D.projects.unshift({ name: v.name, dept: v.dept, resp: v.resp || (D.departments.find((d) => d.name === v.dept) || {}).resp || "", gain: v.gain || "à estimer", status: "À faire" }); save(); renderProjects(); toast("Projet créé"); }));
+    $("#prj-add").addEventListener("click", () => newProjectDialog());
+  }
+  function newProjectDialog() {
+    const start = ym(new Date());
+    return dialog({ title: "Nouveau projet", fields: [{ name: "name", label: "Projet" }, { name: "dept", label: "Département", options: deptNames() }, { name: "resp", label: "Responsable" }, { name: "gain", label: "Gain visé", placeholder: "Ex. : 6 h / sem" }, { name: "start", label: "Début", type: "month", value: start }, { name: "end", label: "Fin", type: "month", value: addMonths(start, 3) }], ok: "Créer" })
+      .then((v) => { if (!v || !v.name) return false; D.projects.unshift(prjDates({ name: v.name, dept: v.dept, resp: v.resp || (D.departments.find((d) => d.name === v.dept) || {}).resp || "", gain: v.gain || "à estimer", status: "À faire", start: v.start, end: v.end })); save(); renderProjects(); toast("Projet créé"); return true; });
   }
   function initSettings() {
     if (!$("#set-save")) return; const f = { name: $("#set-name"), sector: $("#set-sector"), size: $("#set-size"), email: $("#set-email"), first: $("#set-first"), day: $("#set-day") };
@@ -489,9 +498,9 @@
   });
 
   // ───────────────────────── démarrage ─────────────────────────
-  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "accueil") { applyCompany(); renderMapList(); renderHR(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
+  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
   function init() {
-    initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initDiag(); initHome(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
+    initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initDiag(); initStruct(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
     window.addEventListener("hashchange", refresh); refresh();
     const dlg = $("#dlg"); if (dlg) dlg.addEventListener("close", () => { $("#dlg-text").style.whiteSpace = ""; });
   }
