@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lens | Groupe Lounici</title>
 <meta name="robots" content="noindex">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="icon" href="favicon.ico?v=3" sizes="16x16 32x32 48x48">
 <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png?v=3">
 <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=3">
@@ -1590,6 +1593,9 @@ body:not(:has(.screen:target)) #connexion{display:block}
   });
 })();
 </script>
-<script src="lens.js?v=2"></script>
+<script>
+  // lens.js est chargé avec un horodatage unique : le navigateur et le CDN ne servent jamais une version périmée
+  (function () { var s = document.createElement('script'); s.src = 'lens.js?t=' + Date.now(); s.async = false; document.body.appendChild(s); })();
+</script>
 </body>
 </html>
