@@ -49,9 +49,13 @@
   function load() {
     try { const s = localStorage.getItem(KEY); if (s) { const saved = JSON.parse(s);
       if ((saved.v || 1) < 2) { delete saved.objectives; delete saved.objForm; delete saved.indicators; saved.v = 2; }   // repart avec des objectifs vides
-      return Object.assign(JSON.parse(JSON.stringify(DEF)), saved); } } catch (_) {}
+      return normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), saved)); } } catch (_) {}
     return JSON.parse(JSON.stringify(DEF));
   }
+  // un diagramme importé (clé « epc » à la racine, ancien format) est rattaché au premier processus
+  function normalize(d) { if (d.epc && d.processes[0] && !d.processes[0].epc) d.processes[0].epc = d.epc; d.epc = null; return d; }
+  const activeProc = () => D.processes[D.activeProc] || null;
+  const activeEpc = () => (activeProc() || {}).epc || null;
   function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} }
   const deptNames = () => D.departments.map((d) => d.name);
   const totalEmployees = () => D.departments.reduce((a, d) => a + (Number(d.n) || 0), 0);
@@ -311,6 +315,56 @@
       save(); renderProcesses(); applyTask(); toast("Enregistrement terminé · processus proposé à partir de " + D.rec.clicks + " clics"); });
   }
 
+  // ───────────────────────── écran 5 : enregistrement réel de l'écran (curseur inclus) ─────────────────────────
+  const SCR = { stream: null, rec: null, chunks: [], elapsed: 0, paused: false, timer: null, mime: "" };
+  function scrUI() {
+    const on = !!SCR.rec; const show = (id, d) => { const el = $(id); if (el) el.style.display = d; };
+    show("#scr-start", on ? "none" : "flex"); show("#scr-live", on ? "flex" : "none"); show("#scr-pause", on ? "inline-block" : "none"); show("#scr-finish", on ? "inline-block" : "none");
+    show("#scr-preview", on ? "block" : "none"); show("#scr-hint", on ? "none" : "block");
+    const t = $("#scr-timer"); if (t) t.textContent = (SCR.paused ? "En pause · " : "Enregistrement · ") + mmss(SCR.elapsed);
+    const dot = $("#scr-dot"); if (dot) dot.style.background = SCR.paused ? "#9a9aa1" : "#c62828";
+    const pb = $("#scr-pause"); if (pb) pb.textContent = SCR.paused ? "Reprendre" : "Pause";
+  }
+  async function scrStart() {
+    if (SCR.rec) return;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) { toast("Ce navigateur ne permet pas d’enregistrer l’écran (utilisez Chrome ou Edge, en https).", false); return; }
+    let stream;
+    try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 10, max: 15 }, cursor: "always" }, audio: false, selfBrowserSurface: "exclude", surfaceSwitching: "include", monitorTypeSurfaces: "include" }); }
+    catch (e) { toast(e && e.name === "NotAllowedError" ? "Enregistrement annulé : aucun écran choisi." : "Impossible de démarrer l’enregistrement : " + (e && e.message || e), false); return; }
+    SCR.mime = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm", "video/mp4"].find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+    let rec; try { rec = new MediaRecorder(stream, SCR.mime ? { mimeType: SCR.mime, videoBitsPerSecond: 2500000 } : undefined); } catch (e) { stream.getTracks().forEach((t) => t.stop()); toast("Enregistreur vidéo indisponible : " + e.message, false); return; }
+    SCR.stream = stream; SCR.rec = rec; SCR.chunks = []; SCR.elapsed = 0; SCR.paused = false;
+    rec.ondataavailable = (e) => { if (e.data && e.data.size) SCR.chunks.push(e.data); };
+    rec.onstop = scrSave;
+    stream.getVideoTracks()[0].addEventListener("ended", () => { if (SCR.rec && SCR.rec.state !== "inactive") SCR.rec.stop(); });   // « Arrêter le partage » du navigateur
+    const v = $("#scr-preview"); if (v) { v.srcObject = stream; }
+    rec.start(1000);
+    SCR.timer = setInterval(() => { if (!SCR.paused) { SCR.elapsed++; scrUI(); } }, 1000);
+    D.rec = { elapsed: 0, paused: false, running: true, clicks: 0, captures: 0, actions: [{ t: 0, label: "Démarrage de l’enregistrement de l’écran", tag: "Lens", kind: "f" }], total: null, pool: 0 }; save();
+    scrUI(); toast("Enregistrement de l’écran démarré");
+  }
+  function scrPause() { if (!SCR.rec) return; if (SCR.paused) { SCR.rec.resume(); SCR.paused = false; } else { SCR.rec.pause(); SCR.paused = true; } D.rec.actions.push({ t: SCR.elapsed, label: SCR.paused ? "Pause" : "Reprise", tag: "Lens", kind: "f" }); save(); scrUI(); }
+  function scrFinish() { if (!SCR.rec) return; if (SCR.rec.state !== "inactive") SCR.rec.stop(); else scrSave(); }
+  function scrSave() {
+    clearInterval(SCR.timer); SCR.timer = null;
+    const blob = new Blob(SCR.chunks, { type: SCR.mime || "video/webm" }); const ext = /mp4/.test(SCR.mime) ? "mp4" : "webm";
+    const stamp = new Date().toISOString().slice(0, 16).replace("T", "_").replace(":", "-");
+    const name = "lens-" + (D.task.name || "enregistrement").normalize("NFD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase() + "-" + stamp + "." + ext;
+    if (blob.size) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+    if (SCR.stream) SCR.stream.getTracks().forEach((t) => t.stop()); const v = $("#scr-preview"); if (v) v.srcObject = null;
+    const total = SCR.elapsed; SCR.rec = null; SCR.stream = null; SCR.chunks = []; SCR.paused = false;
+    D.rec = Object.assign(D.rec || { actions: [] }, { elapsed: total, paused: false, running: false, total: total, video: name, taille: blob.size });
+    D.rec.actions.push({ t: total, label: "Fin de l’enregistrement · " + name + " (" + fr(blob.size / 1048576, 1) + " Mo)", tag: "Lens", kind: "f" });
+    let p = D.processes.find((x) => x.title === D.task.name); if (p) p.recs++; else { D.processes.unshift({ dept: (D.task.dept || "").toUpperCase(), ver: "v1", title: D.task.name, steps: 0, recs: 1, epc: null }); p = D.processes[0]; }
+    D.activeProc = Math.max(0, D.processes.indexOf(p)); D.procValidated = false; save(); scrUI(); renderProcesses(); renderRec();
+    toast(blob.size ? "Vidéo enregistrée : " + name + " (" + mmss(total) + ")" : "Enregistrement arrêté sans vidéo", !!blob.size); location.hash = "diagnostic";
+  }
+  function initScreenRec() {
+    if (!$("#scr-start")) return; scrUI();
+    $("#scr-start").addEventListener("click", scrStart); $("#scr-pause").addEventListener("click", scrPause); $("#scr-finish").addEventListener("click", scrFinish);
+    window.addEventListener("beforeunload", (e) => { if (SCR.rec) { e.preventDefault(); e.returnValue = ""; } });
+  }
+
   // ───────────────────────── écran 7 : diagnostic ─────────────────────────
   function procCard(p, i, on) {
     return '<button type="button" data-proc="' + i + '" style="border: none; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; ' + (on ? "background: " + GRADC + "; color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)" : "background: #ffffff; color: #111113; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)") + '"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>' + esc(p.dept) + "</span><span>" + esc(p.ver) + '</span></span><span style="font-size: 17px; font-weight: 600">' + esc(p.title) + '</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: ' + (on ? "#d4d4d8" : "#5e5e65") + '"><span>•••• ' + p.steps + " étapes</span><span>" + p.recs + " enregistrement" + (p.recs > 1 ? "s" : "") + "</span></span></button>";
@@ -319,8 +373,10 @@
     const box = $("#proc-cards"); if (!box) return; box.innerHTML = D.processes.map((p, i) => procCard(p, i, i === D.activeProc)).join("");
     const t = $$("#diagnostic .task-title"); const p = D.processes[D.activeProc]; if (p) t.forEach((el) => (el.textContent = p.title));
     const sub = $("#diagnostic .task-sub"); if (sub && p) sub.textContent = "Diagnostic · " + p.dept[0] + p.dept.slice(1).toLowerCase();
-    const tot = $("#diagnostic .rec-total"); if (tot) tot.textContent = D.rec && D.rec.total != null ? mmss(D.rec.total) : "12:48";
+    const tot = $("#diagnostic .rec-total"); if (tot) { const none = !(D.rec && D.rec.total != null) && p && !p.recs; const txt = Array.from(tot.parentElement.childNodes).find((n) => n.nodeType === 3 && /Enregistrement|Aucun/.test(n.textContent));
+      if (txt) txt.textContent = none ? "Aucun enregistrement" : "Enregistrement terminé · "; tot.style.display = none ? "none" : ""; tot.textContent = D.rec && D.rec.total != null ? mmss(D.rec.total) : "12:48"; }
     const v = $("#epc-validate"); if (v) { v.textContent = D.procValidated ? "Processus validé ✓" : "Valider le processus"; }
+    if (typeof renderEPC === "function") renderEPC();
   }
   // ─── diagramme EPC construit à partir de D.epc (mêmes formes que la maquette : événement, étape, qui, documents, système) ───
   const EPC_HEX = "width: 250px; min-height: 54px; box-sizing: border-box; padding: 8px 34px; clip-path: polygon(13% 0, 87% 0, 100% 50%, 87% 100%, 13% 100%, 0 50%); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center";
@@ -337,12 +393,13 @@
     return '<div style="display: flex; align-items: center">' + who + epcLine + '<div style="' + EPC_DOC + '">' + epcList(s.in, "ENTRANT", "aucun") + "</div>" + epcRight + step + epcRight + '<div style="' + EPC_DOC + '">' + epcList(s.out, "SORTANT", "aucun") + "</div>" + epcLine + sys + "</div>";
   }
   function renderEPC() {
-    const box = $("#epc"); if (!box || !D.epc) return; const e = D.epc;
+    const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); if (e) ficheClear();
+    if (!e) { if (p && !p.steps && !p.recs) { ficheClear(); const fl = $("#fiche-step-label"), ft = $("#fiche-step-title"); if (fl && ft) { fl.textContent = "FICHE DE DONNÉES"; ft.textContent = "En attente d’un enregistrement"; } const av0 = $$("#diagnostic header span").find((x) => /^[A-ZÀ-Ý]{1,2}$/.test(x.textContent.trim()) && /border-radius: 50%/.test(x.getAttribute("style") || "")); if (av0) av0.textContent = initials(D.company.first || "L"); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Réenregistrer » pour enregistrer l’écran, puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
     let h = '<div style="' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
     (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1) + epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">ÉVÉNEMENT</span><span style="font-size: 13px">' + esc(s.event || (i === e.steps.length - 1 ? e.result || "Terminé" : "Étape terminée")) + "</span></div>"; });
     if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
     box.innerHTML = h;
-    const sub = $("#epc-sub"); const p = D.processes[D.activeProc]; const src = e.source || {};
+    const sub = $("#epc-sub"); const src = e.source || {};
     if (sub) sub.textContent = ((p && p.dept) || "").toUpperCase() + " · PROPOSÉ PAR LENS À PARTIR DE " + (src.clicks != null ? src.clicks + " CLICS" : "L’ENREGISTREMENT") + (src.qui ? " · " + src.qui.toUpperCase() : "");
     const s1 = (e.steps || [])[0]; const fl = $("#fiche-step-label"), ft = $("#fiche-step-title");
     if (fl && ft && s1) { fl.textContent = "ÉTAPE 1 · FICHE DE DONNÉES"; ft.textContent = s1.title; }
@@ -358,6 +415,8 @@
     if (av && src.qui) av.textContent = initials(src.qui);
   }
   function ficheInputs() { return $$("#fiche input, #fiche select, #fiche textarea"); }
+  // espace réel (processus importé ou neuf) : les valeurs de démonstration de la fiche sont effacées, la personne la remplit
+  function ficheClear() { if (Object.keys(D.fiche).length) return; ficheInputs().forEach((inp) => { if (inp.tagName !== "SELECT") inp.value = ""; }); ficheCompute(); }
   function ficheCompute() {
     const row = (k) => $('#fiche .f-row[data-f="' + k + '"]'); const val = (k) => { const r = row(k); if (!r) return 0; const ins = $$("input", r); const a = num(ins[0].value); const b = ins.length > 3 ? num(ins[1].value) : a; return (a + b) / 2; };
     const unitOf = (k) => { const r = row(k); if (!r) return ""; const ins = $$("input", r); return (ins[ins.length - 2].value || "").toLowerCase(); };
@@ -377,7 +436,7 @@
     $("#epc-validate").addEventListener("click", () => { D.procValidated = true; const p = D.processes[D.activeProc]; if (p) p.ver = "v" + (parseInt(p.ver.slice(1), 10) + 1); save(); renderProcesses(); toast("Processus validé · nouvelle version publiée"); });
     $("#epc-addstep").addEventListener("click", () => dialog({ title: "Étape hors écran", text: "Une étape réalisée sans ordinateur (appel, visite de chantier, signature…).", fields: [{ name: "title", label: "Étape" }, { name: "dur", label: "Durée", placeholder: "Ex. : 15 min" }, { name: "who", label: "Qui exécute", value: D.users[0] ? D.users[0].name : "" }, { name: "sys", label: "Support", value: "Téléphone" }], ok: "Ajouter" })
       .then((v) => { if (!v || !v.title) return; D.steps.push(v); const p = D.processes[D.activeProc]; if (p) p.steps = D.steps.length;
-        if (D.epc) { (D.epc.steps = D.epc.steps || []).push({ title: v.title, dur: v.dur || "hors écran", who: v.who, sys: v.sys ? [v.sys] : [], in: [], out: [], event: "" }); }
+        if (activeEpc()) { (activeEpc().steps = activeEpc().steps || []).push({ title: v.title, dur: v.dur || "hors écran", who: v.who, sys: v.sys ? [v.sys] : [], in: [], out: [], event: "" }); }
         $("#epc").insertAdjacentHTML("beforeend", '<div style="display: flex; flex-direction: column; align-items: center"><span style="width: 1.5px; height: 22px; background: #111113"></span><span style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #111113"></span></div><div style="display: flex; align-items: center"><div style="width: 100px; min-height: 74px; box-sizing: border-box; border: 1.5px solid #6b6b72; border-radius: 50%; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">QUI</span><span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(v.who) + '</span></div><span style="width: 14px; height: 1.5px; background: #111113"></span><div style="width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px"><span style="font-size: 11px; color: #c9c9ce">Étape ' + D.steps.length + " · " + esc(v.dur || "hors écran") + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(v.title) + '</b></div><span style="width: 14px; height: 1.5px; background: #111113"></span><div style="width: 100px; min-height: 52px; box-sizing: border-box; border: 1.5px solid #111113; border-left: 6px solid #111113; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px"><span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em; color: #5e5e65">SUPPORT</span><span style="font-size: 12px">' + esc(v.sys) + "</span></div></div>");
         save(); renderProcesses(); toast("Étape « " + v.title + " » ajoutée au processus"); }));
     $("#epc-export").addEventListener("click", () => { const p = D.processes[D.activeProc] || { title: D.task.name }; const id = (s) => s.normalize("NFD").replace(/[^\w]/g, "_");
@@ -386,21 +445,23 @@
       x += '    <bpmn:endEvent id="end" name="Terminé"/>\n'; const nodes = ["start"].concat(D.steps.map((_, i) => "t" + (i + 1))).concat(["end"]);
       for (let i = 0; i < nodes.length - 1; i++) x += '    <bpmn:sequenceFlow id="f' + i + '" sourceRef="' + nodes[i] + '" targetRef="' + nodes[i + 1] + '"/>\n';
       x += "  </bpmn:process>\n</bpmn:definitions>\n"; download(id(p.title) + ".bpmn", x, "application/xml"); toast("Fichier BPMN téléchargé"); });
-    if (D.epc && !Object.keys(D.fiche).length) ficheInputs().forEach((inp) => { if (inp.tagName !== "SELECT") inp.value = ""; });   // espace importé : fiche à remplir
     renderEPC();
     const f = $("#fiche"); ficheInputs().forEach((inp, i) => { if (D.fiche[i] != null) inp.value = D.fiche[i]; });
     f.addEventListener("input", (e) => { const i = ficheInputs().indexOf(e.target); if (i >= 0) { D.fiche[i] = e.target.value; D.ficheSaved = false; } ficheCompute(); });
     f.addEventListener("change", () => save());
     $("#fiche-save").addEventListener("click", () => { D.ficheSaved = true; save(); const r = ficheCompute(); toast("Fiche enregistrée · cycle ≈ " + fr(r.cycle, 1) + " j · utilisation " + r.util + " %"); });
     $("#diag-validate").addEventListener("click", () => { D.procValidated = true; save(); toast("Diagnostic validé · visible sur le tableau de bord"); });
-    $("#diag-rerecord").addEventListener("click", () => { D.rec = { elapsed: 0, paused: false, running: true, clicks: 0, captures: 0, actions: [{ t: 0, label: "Nouvel enregistrement", tag: "Lens", kind: "f" }], total: null, pool: 0 }; save(); renderRec(); });
+    $("#diag-rerecord").addEventListener("click", () => { const p = activeProc(); if (p) { D.task.name = p.title; D.task.dept = p.dept[0] + p.dept.slice(1).toLowerCase(); save(); applyTask(); } });
+    $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [{ name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Préparer une soumission" }, { name: "dept", label: "Département", options: deptNames().length ? deptNames() : ["Direction"] }], ok: "Créer" })
+      .then((v) => { if (!v || !v.title) return; D.processes.unshift({ dept: v.dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0, epc: null }); D.activeProc = 0; D.procValidated = false;
+        D.task = { name: v.title, dept: v.dept, proc: "Nouveau processus", freq: "", windows: [] }; D.rec = null; save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » créé · enregistrez l’écran"); }); });
     ficheCompute(); renderProcesses();
   }
 
   // ───────────────────────── diagramme des utilisateurs (tableau de bord) ─────────────────────────
   function initStruct() { const b = $("#struct-edit"); if (b) b.addEventListener("click", () => { location.hash = "departements"; }); }
   function initNotifs() { $$(".notif-btn").forEach((b) => b.addEventListener("click", () => { const pending = D.users.filter((u) => u.status === "sent").length; const todo = D.users.filter((u) => u.status === "todo").length;
-    const items = [D.epc ? null : "Goulot confirmé : « Estimer les quantités » à 112 % d’utilisation", pending + " invitation" + (pending > 1 ? "s" : "") + " en attente de réponse", todo ? todo + " employé" + (todo > 1 ? "s" : "") + " encore à inviter" : null, D.rec && D.rec.running ? "Un enregistrement est en cours (" + mmss(D.rec.elapsed) + ")" : null, D.procValidated ? "Processus « " + (D.processes[D.activeProc] || {}).title + " » validé" : "Le processus « " + (D.processes[D.activeProc] || {}).title + " » attend votre validation"].filter(Boolean);
+    const items = [activeEpc() ? null : "Goulot confirmé : « Estimer les quantités » à 112 % d’utilisation", pending + " invitation" + (pending > 1 ? "s" : "") + " en attente de réponse", todo ? todo + " employé" + (todo > 1 ? "s" : "") + " encore à inviter" : null, D.rec && D.rec.running ? "Un enregistrement est en cours (" + mmss(D.rec.elapsed) + ")" : null, D.procValidated ? "Processus « " + (D.processes[D.activeProc] || {}).title + " » validé" : "Le processus « " + (D.processes[D.activeProc] || {}).title + " » attend votre validation"].filter(Boolean);
     dialog({ title: "Notifications", text: items.map((s) => "• " + s).join("\n"), ok: "Fermer" }); $("#dlg-text").style.whiteSpace = "pre-line"; })); }
 
   // ───────────────────────── écran 9 : tableau de bord ─────────────────────────
@@ -480,7 +541,7 @@
 
   // ───────────────────────── écrans 10 à 12 : analyses, projets, paramètres ─────────────────────────
   function insights() {
-    if (D.epc && D.epc.constats && D.epc.constats.length) return D.epc.constats.map((c) => ({ t: c.titre, d: c.detail, gain: c.gain || "à estimer", dept: c.dept || (D.processes[D.activeProc] || {}).dept || "", pri: c.gravite === "forte" ? 1 : c.gravite === "moyenne" ? 2 : 3 })).sort((a, b) => a.pri - b.pri);
+    if (activeEpc() && activeEpc().constats && activeEpc().constats.length) return activeEpc().constats.map((c) => ({ t: c.titre, d: c.detail, gain: c.gain || "à estimer", dept: c.dept || (D.processes[D.activeProc] || {}).dept || "", pri: c.gravite === "forte" ? 1 : c.gravite === "moyenne" ? 2 : 3 })).sort((a, b) => a.pri - b.pri);
     const r = $("#fiche") ? ficheCompute() : { util: 112, cycle: 1.6 }; const pending = D.users.filter((u) => u.status === "sent").length; const todo = D.users.filter((u) => u.status === "todo").length;
     const list = [
       { t: "Goulot : « Estimer les quantités »", d: "Utilisation à " + r.util + " % pour " + fr(r.cycle, 1) + " j de cycle. La saisie des quantités est refaite à la main depuis Revit.", gain: "14 h / sem", dept: "Estimation", pri: 1 },
@@ -525,7 +586,7 @@
     fill();
     $("#set-save").addEventListener("click", () => { D.company.name = f.name.value.trim() || D.company.name; D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = f.email.value.trim(); D.company.first = f.first.value.trim() || "Maya"; D.company.day = Math.min(24, Math.max(1, parseInt(f.day.value, 10) || 8)); save(); applyCompany(); fill(); if ($("#fiche")) ficheCompute(); toast("Paramètres enregistrés"); });
     $("#set-export").addEventListener("click", () => { download("lens-" + D.company.name.replace(/[^\w]+/g, "-").toLowerCase() + ".json", JSON.stringify(D, null, 2), "application/json"); toast("Espace exporté"); });
-    $("#set-import").addEventListener("click", () => pickFile(".json").then((txt) => { if (!txt) return; try { const o = JSON.parse(txt); if (!o.company) throw 0; if (!o.departments) o.departments = []; D = Object.assign(JSON.parse(JSON.stringify(DEF)), o); if (!o.epc) D.epc = null; save(); toast("Espace importé · rechargement"); setTimeout(() => location.reload(), 600); } catch (_) { toast("Fichier JSON invalide", false); } }));
+    $("#set-import").addEventListener("click", () => pickFile(".json").then((txt) => { if (!txt) return; try { const o = JSON.parse(txt); if (!o.company) throw 0; if (!o.departments) o.departments = []; D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), o)); save(); toast("Espace importé · rechargement"); setTimeout(() => location.reload(), 600); } catch (_) { toast("Fichier JSON invalide", false); } }));
     $("#set-reset").addEventListener("click", () => dialog({ title: "Réinitialiser la démonstration ?", text: "Toutes les données saisies dans ce navigateur seront remplacées par celles de départ.", ok: "Réinitialiser" }).then((ok) => { if (!ok) return; try { localStorage.removeItem(KEY); } catch (_) {} location.hash = "connexion"; location.reload(); }));
     $("#set-logout").addEventListener("click", () => { try { sessionStorage.removeItem("portail"); } catch (_) {} location.href = "index.html"; });
   }
@@ -540,7 +601,7 @@
   // ───────────────────────── démarrage ─────────────────────────
   function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
   function init() {
-    initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initDiag(); initStruct(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
+    initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initScreenRec(); initDiag(); initStruct(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
     window.addEventListener("hashchange", refresh); refresh();
     const dlg = $("#dlg"); if (dlg) dlg.addEventListener("close", () => { $("#dlg-text").style.whiteSpace = ""; });
   }

@@ -322,73 +322,26 @@ body:not(:has(.screen:target)) #connexion{display:block}
 <div style="min-height: 100vh; box-sizing: border-box; padding: 24px; background: #e8e8eb; color: #111113; font-family: 'Space Grotesk', 'Helvetica Neue', sans-serif">
 <div style="max-width: 1392px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
 
-  <header style="box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 16px 22px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-    <div style="display: flex; align-items: center; gap: 12px">
-      <img src="assets/logo-blanc.png" alt="Lens" style="width: 40px; height: 40px; object-fit: contain; filter: invert(1)">
-      <span class="co-sub" data-sub="Construction Boréal inc. · Estimation · Julie Tremblay" style="font-size: 13px; color: #5e5e65">Construction Boréal inc. · Estimation · Julie Tremblay</span>
+  <header style="border-radius: 28px; padding: 22px 24px; background: radial-gradient(120% 220% at 85% -40%, #55555a 0%, #1c1c1f 38%, #060607 100%); color: #ffffff; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.5)">
+    <div style="display: flex; align-items: center; gap: 14px; min-width: 0">
+      <a href="#diagnostic" aria-label="Retour au diagnostic" style="width: 46px; height: 46px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center; color: #ffffff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span class="task-sub" style="font-size: 13px; color: #c9c9ce">Diagnostic · Estimation</span>
+        <h1 class="task-title" style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Préparer une soumission</h1>
+      </div>
     </div>
-    <a href="#tableau" style="display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px 0 10px; border-radius: 999px; background: #f1f1f3; color: #111113; text-decoration: none; font-size: 13.5px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>Retour au tableau de bord</a>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+      <span id="scr-live" style="display: none; align-items: center; gap: 10px; min-height: 46px; padding: 0 18px; border-radius: 999px; background: #ffffff; color: #111113; font-size: 15px; font-weight: 600"><i id="scr-dot" style="width: 12px; height: 12px; border-radius: 50%; background: #c62828; box-shadow: 0 0 0 4px #f3c6c6"></i><span id="scr-timer">Enregistrement · 00:00</span></span>
+      <button type="button" id="scr-pause" style="display: none; min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); background: transparent; color: #ffffff; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Pause</button>
+      <button type="button" id="scr-finish" style="display: none; min-height: 46px; padding: 0 22px; border-radius: 999px; border: none; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Terminer</button>
+      <button type="button" id="scr-start" style="display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 22px; border-radius: 999px; border: none; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><i style="width: 12px; height: 12px; border-radius: 50%; background: #c62828"></i>Enregistrer l'écran</button>
+    </div>
   </header>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
-
-    <section aria-label="Créer un diagnostic" style="flex: 3 1 560px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 30px; display: flex; flex-direction: column; gap: 22px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-      <div style="display: flex; flex-direction: column; gap: 6px">
-        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">NOUVEAU DIAGNOSTIC · PARTICIPER À UN DIAGNOSTIC</span>
-        <h1 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em">Quelle tâche allez-vous exécuter ?</h1>
-        <p style="margin: 0; font-size: 14.5px; line-height: 1.5; color: #5e5e65; max-width: 640px">Pas de questionnaire : donnez un nom à la tâche, appuyez sur Enregistrer et travaillez normalement. Lens cartographie le processus à partir de ce que vous faites à l'écran.</p>
-      </div>
-
-      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600">Nom de la tâche<input id="task-name" value="Préparer une soumission" style="height: 60px; box-sizing: border-box; border-radius: 16px; border: 2px solid #111113; padding: 0 18px; font: inherit; font-size: 20px; font-weight: 600; color: #111113"></label>
-
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Département<select id="task-dept" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 10px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff"><option>Estimation</option><option>Opérations</option></select></label>
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Processus<select id="task-proc" style="height: 48px; box-sizing: border-box; border-radius: 12px; border: 1.5px solid #dcdce0; padding: 0 10px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff"><option>Nouveau processus</option><option>Soumissions</option></select></label>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 13px; font-weight: 600">À quelle fréquence faites-vous cette tâche ?</span>
-        <div id="task-freq" style="display: flex; flex-wrap: wrap; gap: 8px">
-          <button type="button" style="min-height: 42px; padding: 0 16px; border-radius: 12px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 14px; cursor: pointer">Chaque jour</button>
-          <button type="button" style="min-height: 42px; padding: 0 16px; border-radius: 12px; border: none; background: #111113; color: #ffffff; font: inherit; font-size: 14px; cursor: pointer">Plusieurs fois par semaine</button>
-          <button type="button" style="min-height: 42px; padding: 0 16px; border-radius: 12px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 14px; cursor: pointer">Chaque mois</button>
-          <button type="button" style="min-height: 42px; padding: 0 16px; border-radius: 12px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 14px; cursor: pointer">Par dossier</button>
-        </div>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 13px; font-weight: 600">Fenêtres à capter</span>
-        <div id="task-win" style="display: flex; flex-wrap: wrap; gap: 8px">
-          <span style="display: flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px; background: #111113; color: #ffffff; font-size: 13.5px">✓ Excel</span>
-          <span style="display: flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px; background: #111113; color: #ffffff; font-size: 13.5px">✓ Revit</span>
-          <span style="display: flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px; background: #111113; color: #ffffff; font-size: 13.5px">✓ Outlook</span>
-          <span style="display: flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px; background: #111113; color: #ffffff; font-size: 13.5px">✓ Word</span>
-          <span style="display: flex; align-items: center; gap: 6px; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1.5px dashed #6b6b72; color: #5e5e65; font-size: 13.5px">Messagerie personnelle · exclue</span>
-        </div>
-      </div>
-
-      <label style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #f4f4f6; font-size: 13.5px; line-height: 1.45"><input id="task-consent" type="checkbox" checked style="width: 20px; height: 20px; margin: 1px 0 0; accent-color: #111113; flex: none">J'accepte l'enregistrement de cette session. Les données sensibles sont floutées automatiquement et les captures sont supprimées après validation.</label>
-
-      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 22px; padding-top: 8px">
-        <a id="rec-start" href="#enregistrement" aria-label="Démarrer l'enregistrement" style="width: 104px; height: 104px; border-radius: 50%; background: radial-gradient(120% 120% at 70% 10%, #55555a 0%, #1a1a1d 45%, #070708 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 8px #e4e4e8, 0 20px 36px -16px rgba(0, 0, 0, 0.6); text-decoration: none"><span style="width: 34px; height: 34px; border-radius: 50%; background: #ffffff"></span></a>
-        <div style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 22px">Enregistrer</b><span style="font-size: 14px; color: #5e5e65">Lancez l'enregistrement, puis exécutez la tâche du début à la fin.</span></div>
-      </div>
-    </section>
-
-    <section aria-label="Comment ça fonctionne" style="flex: 2 1 320px; min-width: 0; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
-      <div style="background: #ffffff; border-radius: 28px; padding: 26px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-        <h2 style="margin: 0; font-size: 18px; font-weight: 600">Comment ça fonctionne</h2>
-        <div style="display: flex; gap: 14px"><b style="flex: none; width: 34px; height: 34px; border-radius: 50%; background: #111113; color: #ffffff; display: flex; align-items: center; justify-content: center">1</b><span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Vous enregistrez</b><span style="font-size: 13.5px; line-height: 1.45; color: #5e5e65">Vous exécutez la tâche comme d'habitude. Vous pouvez mettre en pause ou ajouter une note vocale.</span></span></div>
-        <div style="display: flex; gap: 14px"><b style="flex: none; width: 34px; height: 34px; border-radius: 50%; background: #e4e4e8; display: flex; align-items: center; justify-content: center">2</b><span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Lens cartographie</b><span style="font-size: 13.5px; line-height: 1.45; color: #5e5e65">La reconnaissance d'image identifie les étapes, les documents, les systèmes et les personnes : le processus EPC apparaît.</span></span></div>
-        <div style="display: flex; gap: 14px"><b style="flex: none; width: 34px; height: 34px; border-radius: 50%; background: #e4e4e8; display: flex; align-items: center; justify-content: center">3</b><span style="display: flex; flex-direction: column; gap: 2px"><b style="font-size: 15px">Vous complétez la fiche</b><span style="font-size: 13.5px; line-height: 1.45; color: #5e5e65">Temps, volumes, capacité et qualité de chaque étape : la plupart des champs sont déjà préremplis.</span></span></div>
-      </div>
-      <div style="border-radius: 28px; padding: 24px; background: radial-gradient(130% 160% at 90% -10%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; display: flex; flex-direction: column; gap: 8px">
-        <b style="font-size: 15px">Confidentialité</b>
-        <span style="font-size: 13.5px; line-height: 1.5; color: #d4d4d8">Lens mesure des processus, pas la productivité individuelle. Aucun suivi en dehors des sessions que vous lancez.</span>
-      </div>
-    </section>
-  </div>
-
+  <section aria-label="Enregistrement de l'écran" style="min-height: 460px; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
+    <p id="scr-hint" style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5e5e65; text-align: center; max-width: 560px">Cliquez sur « Enregistrer l'écran », choisissez l'écran à partager, puis exécutez la tâche comme d'habitude. Le curseur est enregistré avec l'image. À la fin, la vidéo est sauvegardée sur votre ordinateur.</p>
+    <video id="scr-preview" autoplay muted playsinline style="display: none; width: 100%; max-height: 70vh; border-radius: 18px; background: #111113"></video>
+  </section>
 
 </div>
 </div>
@@ -498,8 +451,8 @@ body:not(:has(.screen:target)) #connexion{display:block}
       </div>
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
         <span style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); font-size: 14px; font-weight: 500"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Enregistrement terminé · <span class="rec-total">12:48</span></span>
-        <a href="#nouveau-diagnostic" style="display: flex; align-items: center; min-height: 44px; padding: 0 18px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 500">Nouveau diagnostic</a>
-        <a id="diag-rerecord" href="#enregistrement" style="display: flex; align-items: center; min-height: 44px; padding: 0 18px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 500">Réenregistrer</a>
+        <a id="diag-new" href="#" style="display: flex; align-items: center; min-height: 44px; padding: 0 18px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 500">Nouveau diagnostic</a>
+        <a id="diag-rerecord" href="#nouveau-diagnostic" style="display: flex; align-items: center; min-height: 44px; padding: 0 18px; box-sizing: border-box; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 500">Réenregistrer</a>
         <a href="#tableau" style="display: flex; align-items: center; min-height: 44px; padding: 0 20px; box-sizing: border-box; border-radius: 999px; background: #ffffff; color: #111113; text-decoration: none; font-size: 14px; font-weight: 600" id="diag-validate">Valider le diagnostic</a>
         <span style="width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(160deg, #e9e9ec, #c9c9ce); color: #111113; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; border: 3px solid rgba(255, 255, 255, 0.9); box-sizing: border-box">JT</span>
       </div>
