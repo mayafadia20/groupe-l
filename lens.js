@@ -470,7 +470,9 @@
 
   // ───────────────────────── écran 7 : diagnostic ─────────────────────────
   function procCard(p, i, on) {
-    return '<button type="button" data-proc="' + i + '" style="border: none; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; ' + (on ? "background: " + GRADC + "; color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)" : "background: #ffffff; color: #111113; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)") + '"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>' + esc(p.dept) + "</span><span>" + esc(p.ver) + '</span></span><span style="font-size: 17px; font-weight: 600">' + esc(p.title) + '</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: ' + (on ? "#d4d4d8" : "#5e5e65") + '"><span>•••• ' + p.steps + " étapes</span><span>" + p.recs + " enregistrement" + (p.recs > 1 ? "s" : "") + "</span></span></button>";
+    return '<button type="button" data-proc="' + i + '" style="border: none; padding: 0; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; background: ' + GRADC + '; color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)' + (on ? "; outline: 2px solid #111113; outline-offset: 3px" : "") + '">' +
+      '<span style="display: block; width: 100%; box-sizing: border-box; padding: 10px 20px; background: #ffffff; color: #111113; font-size: 12px; font-weight: 700; letter-spacing: 0.08em">' + esc(p.dept) + "</span>" +
+      '<span style="display: flex; align-items: center; flex: 1; padding: 18px 20px 22px; font-size: 17px; font-weight: 600; line-height: 1.25">' + esc(p.title) + "</span></button>";
   }
   function renderProcesses() {
     const box = $("#proc-cards"); if (!box) return; box.innerHTML = D.processes.map((p, i) => procCard(p, i, i === D.activeProc)).join("");
