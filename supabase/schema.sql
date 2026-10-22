@@ -58,6 +58,21 @@ create table if not exists public.enregistrements (
 );
 create index if not exists enregistrements_entreprise_idx on public.enregistrements (entreprise_id, cree_le desc);
 
+create table if not exists public.documents (
+  id             uuid primary key default gen_random_uuid(),
+  entreprise_id  uuid not null references public.entreprises(id) on delete cascade,
+  processus      text,
+  diagnostic     text,
+  nom            text not null,
+  fichier        text not null,                 -- chemin dans le bucket « documents » : <entreprise_id>/documents/<nom>
+  taille         bigint,
+  type           text,
+  texte          text,                          -- texte extrait (rempli plus tard par l'analyse)
+  cree_par       uuid default auth.uid(),
+  cree_le        timestamptz not null default now()
+);
+create index if not exists documents_entreprise_idx on public.documents (entreprise_id, cree_le desc);
+
 -- ───────────────────────── fonctions d'accès ─────────────────────────
 create or replace function public.mon_role() returns text
 language sql stable security definer set search_path = public as $$
@@ -143,6 +158,7 @@ alter table public.acces_autorises  enable row level security;
 alter table public.membres          enable row level security;
 alter table public.espaces          enable row level security;
 alter table public.enregistrements  enable row level security;
+alter table public.documents        enable row level security;
 
 drop policy if exists "entreprises_lecture"  on public.entreprises;
 drop policy if exists "entreprises_gestion"  on public.entreprises;
@@ -185,6 +201,14 @@ create policy "enr_ecriture" on public.enregistrements for all to authenticated
   using (public.est_lounici() or entreprise_id = public.mon_entreprise())
   with check (public.est_lounici() or entreprise_id = public.mon_entreprise());
 
+drop policy if exists "doc_lecture"  on public.documents;
+drop policy if exists "doc_ecriture" on public.documents;
+create policy "doc_lecture" on public.documents for select to authenticated
+  using (public.est_lounici() or entreprise_id = public.mon_entreprise());
+create policy "doc_ecriture" on public.documents for all to authenticated
+  using (public.est_lounici() or entreprise_id = public.mon_entreprise())
+  with check (public.est_lounici() or entreprise_id = public.mon_entreprise());
+
 -- updated_at / updated_by des espaces
 create or replace function public.espaces_touch() returns trigger language plpgsql as $$
 begin new.updated_at := now(); new.updated_by := auth.uid(); return new; end $$;
@@ -195,6 +219,20 @@ create trigger espaces_touch before insert or update on public.espaces for each 
 insert into storage.buckets (id, name, public, file_size_limit)
   values ('enregistrements', 'enregistrements', false, 52428800)     -- 50 Mo par fichier (limite du forfait gratuit)
   on conflict (id) do update set public = false;
+
+-- documents de contexte (PDF, Excel, Word, Markdown…) : bucket privé « documents »
+insert into storage.buckets (id, name, public, file_size_limit)
+  values ('documents', 'documents', false, 52428800)
+  on conflict (id) do update set public = false;
+drop policy if exists "docs_lecture"     on storage.objects;
+drop policy if exists "docs_ajout"       on storage.objects;
+drop policy if exists "docs_suppression" on storage.objects;
+create policy "docs_lecture" on storage.objects for select to authenticated
+  using (bucket_id = 'documents' and (public.est_lounici() or (storage.foldername(name))[1] = public.mon_entreprise()::text));
+create policy "docs_ajout" on storage.objects for insert to authenticated
+  with check (bucket_id = 'documents' and (public.est_lounici() or (storage.foldername(name))[1] = public.mon_entreprise()::text));
+create policy "docs_suppression" on storage.objects for delete to authenticated
+  using (bucket_id = 'documents' and (public.est_lounici() or (storage.foldername(name))[1] = public.mon_entreprise()::text));
 
 drop policy if exists "videos_lecture"     on storage.objects;
 drop policy if exists "videos_ajout"       on storage.objects;

@@ -417,10 +417,37 @@
       console.error(e); toast("Envoi impossible (" + e.message + ") : la vidéo est téléchargée sur cet ordinateur.", false); download(name, blob, blob.type);
     }
   }
+  const docIcon = (nom) => /\.pdf$/i.test(nom) ? "PDF" : /\.xlsx?$|\.csv$/i.test(nom) ? "XLS" : /\.docx?$/i.test(nom) ? "DOC" : /\.pptx?$/i.test(nom) ? "PPT" : /\.md$/i.test(nom) ? "MD" : "TXT";
+  async function renderDocs() {
+    const box = $("#scr-docs-list"); if (!box) return;
+    if (!CLOUD || !ME || !ME.entreprise_id) { box.style.display = "none"; return; }
+    let rows = []; try { rows = await LensCloud.listDocuments(ME.entreprise_id, D.task.proc || D.task.name || null); } catch (e) { console.warn(e); box.style.display = "none"; return; }
+    if (!rows.length) { box.style.display = "none"; return; }
+    box.style.display = "flex";
+    box.innerHTML = '<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">DOCUMENTS DU PROCESSUS · ' + rows.length + "</span>" + rows.map((r) => '<div style="display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #f4f4f6"><span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; padding: 6px 0; border-radius: 8px; background: #111113; color: #fff; text-align: center">' + docIcon(r.nom) + '</span><span style="display: flex; flex-direction: column; min-width: 0"><a href="#" data-doc-open="' + esc(r.fichier) + '" style="font-weight: 600; font-size: 14px; color: #111113; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">' + esc(r.nom) + '</a><span style="font-size: 12px; color: #5e5e65">' + fr((r.taille || 0) / 1048576, 1) + " Mo · " + new Date(r.cree_le).toLocaleDateString("fr-CA") + (r.diagnostic ? " · " + esc(r.diagnostic) : "") + '</span></span><button type="button" data-doc-open="' + esc(r.fichier) + '" style="min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1.5px solid #111113; background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">Ouvrir</button><button type="button" data-doc-del="' + esc(r.id) + '" data-doc-path="' + esc(r.fichier) + '" data-doc-name="' + esc(r.nom) + '" aria-label="Retirer" style="width: 34px; height: 34px; border-radius: 50%; border: none; background: #e4e4e8; font: inherit; cursor: pointer">×</button></div>').join("");
+  }
   function initScreenRec() {
     if (!$("#scr-start")) return; scrUI();
     $("#scr-start").addEventListener("click", scrStart);
-    $("#scr-quiz").addEventListener("click", () => toast("Questionnaire : à venir. Il complétera l’enregistrement par quelques questions sur la tâche.", false)); $("#scr-pause").addEventListener("click", scrPause); $("#scr-finish").addEventListener("click", scrFinish);
+    $("#scr-quiz").addEventListener("click", () => toast("Questionnaire : à venir. Il complétera l’enregistrement par quelques questions sur la tâche.", false));
+    $("#scr-docs").addEventListener("click", () => { if (!CLOUD || !ME || !ME.entreprise_id) { toast("L’import de documents demande la base en ligne.", false); return; } $("#scr-docs-in").value = ""; $("#scr-docs-in").click(); });
+    $("#scr-docs-in").addEventListener("change", async (e) => {
+      const files = Array.from(e.target.files || []); if (!files.length) return;
+      const ok = /\.(pdf|docx?|xlsx?|csv|pptx?|md|txt)$/i; let n = 0;
+      for (const f of files) {
+        if (!ok.test(f.name)) { toast("« " + f.name + " » : format non pris en charge (PDF, Word, Excel, PowerPoint, CSV, Markdown, texte).", false); continue; }
+        if (f.size > 50 * 1048576) { toast("« " + f.name + " » dépasse 50 Mo.", false); continue; }
+        try { await LensCloud.uploadDocument(ME.entreprise_id, f, { processus: D.task.proc || D.task.name || null, diagnostic: D.task.name || null }); n++; }
+        catch (ex) { toast(ex.message, false); }
+      }
+      if (n) toast(n + (n > 1 ? " documents importés" : " document importé") + " · ils serviront à l’analyse du processus");
+      renderDocs();
+    });
+    $("#scr-docs-list").addEventListener("click", async (e) => {
+      const open = e.target.closest("[data-doc-open]"), del = e.target.closest("[data-doc-del]");
+      if (open) { e.preventDefault(); try { const url = await LensCloud.documentUrl(open.dataset.docOpen); window.open(url, "_blank", "noopener"); } catch (ex) { toast(ex.message, false); } }
+      if (del) { const ok = await dialog({ title: "Retirer ce document ?", text: del.dataset.docName, ok: "Retirer" }); if (!ok) return; try { await LensCloud.deleteDocument(del.dataset.docDel, del.dataset.docPath); toast("Document retiré"); renderDocs(); } catch (ex) { toast(ex.message, false); } }
+    }); $("#scr-pause").addEventListener("click", scrPause); $("#scr-finish").addEventListener("click", scrFinish);
     window.addEventListener("beforeunload", (e) => { if (SCR.rec) { e.preventDefault(); e.returnValue = ""; } });
   }
 
@@ -717,7 +744,7 @@
   });
 
   // ───────────────────────── démarrage ─────────────────────────
-  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); renderDash(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
+  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "nouveau-diagnostic") renderDocs(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); renderDash(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
   function init() {
     initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initScreenRec(); initDiag(); initStruct(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
     window.addEventListener("hashchange", refresh); refresh();

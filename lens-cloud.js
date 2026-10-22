@@ -58,6 +58,25 @@
     async invite(email, entrepriseNom, nom) { const c = await sb(); const { error } = await c.from("acces_autorises").upsert({ email: String(email).trim().toLowerCase(), role: "admin", entreprise_nom: entrepriseNom || null, nom: nom || null }, { onConflict: "email" }); if (error) fail(error, "Invitation impossible"); },
     async invitations() { const c = await sb(); const { data, error } = await c.from("acces_autorises").select("email, role, nom, entreprise_nom, entreprise_id, ajoute_le, entreprises(nom)").order("ajoute_le", { ascending: false }); if (error) fail(error, "Lecture des invitations impossible"); return data || []; },
 
+    // ───── documents de contexte (PDF, Excel, Word, Markdown…) rattachés à un processus ─────
+    async uploadDocument(entrepriseId, file, meta) {
+      const c = await sb();
+      const safe = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\w.\-]+/g, "_");
+      const path = entrepriseId + "/documents/" + Date.now().toString(36) + "-" + safe;
+      const { error } = await c.storage.from("documents").upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false });
+      if (error) fail(error, "Envoi du document impossible");
+      const { data, error: e2 } = await c.from("documents").insert(Object.assign({ entreprise_id: entrepriseId, nom: file.name, fichier: path, taille: file.size, type: file.type || "" }, meta || {})).select("id").single();
+      if (e2) fail(e2, "Fiche du document impossible");
+      return { id: data.id, path };
+    },
+    async listDocuments(entrepriseId, processus) {
+      const c = await sb(); let q = c.from("documents").select("id, nom, fichier, taille, type, processus, diagnostic, cree_le").eq("entreprise_id", entrepriseId).order("cree_le", { ascending: false });
+      if (processus) q = q.eq("processus", processus);
+      const { data, error } = await q; if (error) fail(error, "Lecture des documents impossible"); return data || [];
+    },
+    async documentUrl(path, seconds) { const c = await sb(); const { data, error } = await c.storage.from("documents").createSignedUrl(path, seconds || 3600); if (error) fail(error, "Lien du document impossible"); return data.signedUrl; },
+    async deleteDocument(id, path) { const c = await sb(); await c.storage.from("documents").remove([path]); const { error } = await c.from("documents").delete().eq("id", id); if (error) fail(error, "Suppression impossible"); },
+
     // ───── gestion des accès (Groupe Lounici et administrateurs d'entreprise) ─────
     async allowEmail(email, entrepriseId, role, nom) { const c = await sb(); const { error } = await c.from("acces_autorises").upsert({ email: String(email).trim().toLowerCase(), entreprise_id: entrepriseId, role: role || "membre", nom: nom || null }, { onConflict: "email" }); if (error) fail(error, "Ajout à la liste des accès impossible"); },
     async signUpOther(email, password, nom) {
