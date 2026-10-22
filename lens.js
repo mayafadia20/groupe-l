@@ -51,6 +51,12 @@
   const activeEpc = () => (activeProc() || {}).epc || null;
   function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} cloudSave(); }
   const deptNames = () => D.departments.map((d) => d.name);
+  /** Nom canonique d'un département ; le crée (sans responsable ni effectif) s'il n'existe pas encore. */
+  function ensureDept(name) {
+    const n = String(name || "").trim(); if (!n) return "";
+    const found = D.departments.find((d) => d.name.toLowerCase() === n.toLowerCase()); if (found) return found.name;
+    D.departments.push({ name: n, resp: "", parent: "", n: 0 }); save(); if ($("#dep-rows")) renderDepts(); toast("Département « " + n + " » créé"); return n;
+  }
   const totalEmployees = () => D.departments.reduce((a, d) => a + (Number(d.n) || 0), 0);
   const initials = (n) => n.split(/\s+/).map((w) => w[0] || "").join("").slice(0, 2).toUpperCase();
   const mmss = (s) => String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
@@ -74,12 +80,27 @@
       (o.fields || []).forEach((f) => {
         const lab = document.createElement("label"); lab.style.cssText = "display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600";
         lab.appendChild(document.createTextNode(f.label));
-        let el;
-        if (f.options) { el = document.createElement("select"); f.options.forEach((v) => { const op = document.createElement("option"); op.textContent = v; el.appendChild(op); }); if (f.value) el.value = f.value; }
+        let el, wrap = null;
+        if (f.combo) {
+          wrap = document.createElement("div"); wrap.style.cssText = "display: flex; flex-direction: column; gap: 4px";
+          el = document.createElement("input"); el.type = "text"; el.value = f.value || ""; el.placeholder = f.placeholder || ""; el.autocomplete = "off";
+          const list = document.createElement("div"); list.style.cssText = "display: none; flex-direction: column; gap: 2px; max-height: 190px; overflow: auto; padding: 4px; border: 1.5px solid #dcdce0; border-radius: 12px; background: #fff";
+          const norm = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+          const item = (txt, label, strong) => '<button type="button" data-pick="' + esc(txt) + '" style="text-align: left; border: none; background: transparent; border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 14px; font-weight: ' + (strong ? 600 : 400) + '; cursor: pointer">' + label + "</button>";
+          const render = () => { const q = norm(el.value); const opts = f.combo.filter((o) => !q || norm(o).includes(q)); const exact = f.combo.some((o) => norm(o) === q);
+            const items = opts.map((o) => item(o, esc(o), false)); if (q && !exact) items.push(item(el.value.trim(), "Créer « " + esc(el.value.trim()) + " »", true));
+            list.innerHTML = items.join(""); list.style.display = items.length ? "flex" : "none"; };
+          el.addEventListener("input", render); el.addEventListener("focus", render);
+          list.addEventListener("mousedown", (e) => { const b = e.target.closest("[data-pick]"); if (!b) return; e.preventDefault(); el.value = b.dataset.pick; list.style.display = "none"; });
+          list.addEventListener("click", (e) => e.preventDefault());
+          el.addEventListener("blur", () => setTimeout(() => { list.style.display = "none"; }, 150));
+          wrap.appendChild(el); wrap.appendChild(list);
+        }
+        else if (f.options) { el = document.createElement("select"); f.options.forEach((v) => { const op = document.createElement("option"); op.textContent = v; el.appendChild(op); }); if (f.value) el.value = f.value; }
         else if (f.type === "textarea") { el = document.createElement("textarea"); el.rows = 3; el.value = f.value || ""; }
         else { el = document.createElement("input"); el.type = f.type || "text"; el.value = f.value || ""; if (f.placeholder) el.placeholder = f.placeholder; }
         el.name = f.name; el.style.cssText = INPUT + (f.type === "textarea" ? "; height: auto; padding: 10px 12px; resize: vertical" : ""); el.style.fontWeight = "400";
-        lab.appendChild(el); box.appendChild(lab);
+        lab.appendChild(wrap || el); box.appendChild(lab);
       });
       const form = $("#dlg-form");
       const done = (v) => { dlg.close(); form.onsubmit = null; $("#dlg-cancel").onclick = null; resolve(v); };
@@ -474,7 +495,7 @@
   function initDiag() {
     if (!$("#proc-cards")) return;
     $("#proc-cards").addEventListener("click", (e) => { const b = e.target.closest("[data-proc]"); if (!b) return; D.activeProc = +b.dataset.proc; D.procValidated = false; save(); renderProcesses(); });
-    $("#proc-new").addEventListener("click", () => dialog({ title: "Nouveau processus", fields: [{ name: "dept", label: "Département", options: deptNames() }, { name: "title", label: "Nom du processus", placeholder: "Ex. : Clôturer un chantier" }], ok: "Créer" }).then((v) => { if (!v || !v.title) return; D.processes.unshift({ dept: v.dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0 }); D.activeProc = 0; D.procValidated = false; save(); renderProcesses(); toast("Processus créé · enregistrez une tâche pour le cartographier"); }));
+    $("#proc-new").addEventListener("click", () => dialog({ title: "Nouveau processus", fields: [{ name: "title", label: "Nom du processus", placeholder: "Ex. : Clôturer un chantier" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" }).then((v) => { if (!v || !v.title) return; const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez un département.", false); return; } D.processes.unshift({ dept: dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0 }); D.activeProc = 0; D.procValidated = false; save(); renderProcesses(); toast("Processus créé · enregistrez une tâche pour le cartographier"); }));
     $("#epc-validate").addEventListener("click", () => { D.procValidated = true; const p = D.processes[D.activeProc]; if (p) p.ver = "v" + (parseInt(p.ver.slice(1), 10) + 1); save(); renderProcesses(); toast("Processus validé · nouvelle version publiée"); });
     $("#epc-addstep").addEventListener("click", () => dialog({ title: "Étape hors écran", text: "Une étape réalisée sans ordinateur (appel, visite de chantier, signature…).", fields: [{ name: "title", label: "Étape" }, { name: "dur", label: "Durée", placeholder: "Ex. : 15 min" }, { name: "who", label: "Qui exécute", value: D.users[0] ? D.users[0].name : "" }, { name: "sys", label: "Support", value: "Téléphone" }], ok: "Ajouter" })
       .then((v) => { if (!v || !v.title) return; D.steps.push(v); const p = D.processes[D.activeProc]; if (p) p.steps = D.steps.length;
@@ -496,9 +517,9 @@
       ficheLabels(st, (e.source || {}).qui, i + 1); const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); } });
     $("#fiche-close").addEventListener("click", () => { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; });
     $("#epc-record").addEventListener("click", (e) => { const p = activeProc(); if (!p) { e.preventDefault(); $("#diag-new").click(); return; } D.task.name = p.title; D.task.dept = p.dept[0] + p.dept.slice(1).toLowerCase(); save(); applyTask(); });
-    $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [{ name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Préparer une soumission" }, { name: "dept", label: "Département", options: deptNames().length ? deptNames() : ["Direction"] }], ok: "Créer" })
-      .then((v) => { if (!v || !v.title) return; D.processes.unshift({ dept: v.dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0, epc: null }); D.activeProc = 0; D.procValidated = false;
-        D.task = { name: v.title, dept: v.dept, proc: "Nouveau processus", freq: "", windows: [] }; D.rec = null; save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » créé · enregistrez l’écran"); }); });
+    $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [{ name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Préparer une soumission" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" })
+      .then((v) => { if (!v || !v.title) return; const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez un département.", false); return; } D.processes.unshift({ dept: dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0, epc: null }); D.activeProc = 0; D.procValidated = false;
+        D.task = { name: v.title, dept: dept, proc: "Nouveau processus", freq: "", windows: [] }; D.rec = null; save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » créé · enregistrez l’écran"); }); });
     ficheCompute(); renderProcesses();
   }
 
