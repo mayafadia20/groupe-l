@@ -37,6 +37,7 @@
     steps: [{ title: "Lire les plans", dur: "20 min", who: "J. Tremblay", sys: "Revit" }, { title: "Estimer les quantités", dur: "45 min", who: "J. Tremblay", sys: "Excel" },
             { title: "Obtenir les prix", dur: "attente 1,5 j", who: "A. Côté", sys: "Outlook" }, { title: "Monter la soumission", dur: "30 min", who: "J. Tremblay", sys: "Word" }],
     fiche: {}, ficheSaved: false,
+    epc: null,   // processus importé depuis l'agent d'enregistrement (déclencheur, étapes, documents, systèmes, constats) ; null = démonstration
     projects: [
       { name: "Automatiser la reprise des quantités Revit → Excel", dept: "Estimation", resp: "J. Tremblay", gain: "14 h / sem", status: "En cours", start: "2026-09", end: "2026-12" },
       { name: "Approbation des achats en deux niveaux", dept: "Approvisionnement", resp: "A. Côté", gain: "9 h / sem", status: "À faire", start: "2026-11", end: "2027-01" },
@@ -292,7 +293,7 @@
   function renderRec() {
     const timer = $("#rec-timer"); if (!timer) return;
     if (!D.rec) { timer.textContent = "Enregistrement · 00:00"; $("#rec-actions").innerHTML = '<li style="padding: 10px 0; font-size: 13.5px; color: #5e5e65">Aucun enregistrement en cours. Lancez-en un depuis « Créer un diagnostic ».</li>'; return; }
-    timer.textContent = (D.rec.paused ? "En pause · " : "Enregistrement · ") + mmss(D.rec.elapsed);
+    timer.textContent = (!D.rec.running ? "Terminé · " : D.rec.paused ? "En pause · " : "Enregistrement · ") + mmss(D.rec.elapsed);
     $("#rec-dot").style.background = D.rec.paused ? "#9a9aa1" : "#111113"; $("#rec-pause").textContent = D.rec.paused ? "Reprendre" : "Pause";
     $("#rec-counter").textContent = D.rec.clicks + " clics · " + D.rec.captures + " captures";
     const live = D.rec.running ? [{ t: D.rec.elapsed, label: "Saisie des quantités en cours…", tag: ($("#task-win") ? (D.task.windows[0] || "Écran") : "Excel") + " · en direct", kind: "live" }] : [];
@@ -321,6 +322,41 @@
     const tot = $("#diagnostic .rec-total"); if (tot) tot.textContent = D.rec && D.rec.total != null ? mmss(D.rec.total) : "12:48";
     const v = $("#epc-validate"); if (v) { v.textContent = D.procValidated ? "Processus validé ✓" : "Valider le processus"; }
   }
+  // ─── diagramme EPC construit à partir de D.epc (mêmes formes que la maquette : événement, étape, qui, documents, système) ───
+  const EPC_HEX = "width: 250px; min-height: 54px; box-sizing: border-box; padding: 8px 34px; clip-path: polygon(13% 0, 87% 0, 100% 50%, 87% 100%, 13% 100%, 0 50%); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center";
+  const EPC_DOC = "width: 100px; min-height: 52px; box-sizing: border-box; border: 1.5px solid #111113; border-radius: 3px 3px 16px 3px; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px";
+  const EPC_LBL = "font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em; color: #5e5e65";
+  const epcDown = '<div style="display: flex; flex-direction: column; align-items: center"><span style="width: 1.5px; height: 22px; background: #111113"></span><span style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #111113"></span></div>';
+  const epcRight = '<span style="display: flex; align-items: center"><span style="width: 8px; height: 1.5px; background: #111113"></span><span style="width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 6px solid #111113"></span></span>';
+  const epcLine = '<span style="width: 14px; height: 1.5px; background: #111113"></span>';
+  const epcList = (items, label, empty) => (items && items.length ? items : [empty]).map((x, i) => (i ? '<span style="' + EPC_LBL + '; margin-top: 3px">' : '<span style="' + EPC_LBL + '">') + label + (items && items.length ? " " + (i + 1) : "") + '</span><span style="font-size: 12px' + (items && items.length ? "" : "; color: #9a9aa1; font-style: italic") + '">' + esc(x) + "</span>").join("");
+  function epcStep(s, n) {
+    const who = '<div style="width: 100px; min-height: ' + (s.dept ? 92 : 74) + 'px; box-sizing: border-box; border: 1.5px solid #6b6b72; border-radius: 50%; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">QUI</span><span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.who || "—") + "</span>" + (s.dept ? '<span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.dept) + "</span>" : "") + "</div>";
+    const step = '<div style="width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: ' + (s.bottleneck ? 4 : 2) + "px" + (s.bottleneck ? "; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113" : "") + '"><span style="font-size: 11px; color: #c9c9ce">Étape ' + n + " · " + esc(s.dur || "—") + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(s.title) + "</b>" + (s.bottleneck ? '<span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #111113">Goulot probable</span>' : "") + "</div>";
+    const sys = '<div style="width: 100px; min-height: 52px; box-sizing: border-box; border: 1.5px solid #111113; border-left: 6px solid #111113; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px">' + epcList(s.sys, "SYSTÈME", "hors écran") + "</div>";
+    return '<div style="display: flex; align-items: center">' + who + epcLine + '<div style="' + EPC_DOC + '">' + epcList(s.in, "ENTRANT", "aucun") + "</div>" + epcRight + step + epcRight + '<div style="' + EPC_DOC + '">' + epcList(s.out, "SORTANT", "aucun") + "</div>" + epcLine + sys + "</div>";
+  }
+  function renderEPC() {
+    const box = $("#epc"); if (!box || !D.epc) return; const e = D.epc;
+    let h = '<div style="' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
+    (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1) + epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">ÉVÉNEMENT</span><span style="font-size: 13px">' + esc(s.event || (i === e.steps.length - 1 ? e.result || "Terminé" : "Étape terminée")) + "</span></div>"; });
+    if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
+    box.innerHTML = h;
+    const sub = $("#epc-sub"); const p = D.processes[D.activeProc]; const src = e.source || {};
+    if (sub) sub.textContent = ((p && p.dept) || "").toUpperCase() + " · PROPOSÉ PAR LENS À PARTIR DE " + (src.clicks != null ? src.clicks + " CLICS" : "L’ENREGISTREMENT") + (src.qui ? " · " + src.qui.toUpperCase() : "");
+    const s1 = (e.steps || [])[0]; const fl = $("#fiche-step-label"), ft = $("#fiche-step-title");
+    if (fl && ft && s1) { fl.textContent = "ÉTAPE 1 · FICHE DE DONNÉES"; ft.textContent = s1.title; }
+    if (s1) {
+      const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+      set("#fiche-in1", (s1.in || [])[0] || "aucun"); set("#fiche-out1", (s1.out || [])[0] || "aucun"); set("#fiche-sys1", (s1.sys || [])[0] || "hors écran");
+      set("#fiche-role", (s1.who || "—") + (s1.dept ? " · " + s1.dept : "")); set("#fiche-double", s1.bottleneck ? "Copier-coller entre deux logiciels détecté" : "Aucune saisie double détectée pendant l’enregistrement");
+      const other = $("#fiche-other"); if (other) other.style.display = "none";
+    }
+    $$(".side-proc-title").forEach((el) => (el.textContent = (p || {}).title || "—"));
+    $$(".side-proc-sub").forEach((el) => (el.textContent = ((p && p.dept) ? p.dept[0] + p.dept.slice(1).toLowerCase() : "") + " · " + (src.qui || "1 participant")));
+    const av = $$("#diagnostic header span").find((x) => /^[A-ZÀ-Ý]{1,2}$/.test(x.textContent.trim()) && /border-radius: 50%/.test(x.getAttribute("style") || ""));
+    if (av && src.qui) av.textContent = initials(src.qui);
+  }
   function ficheInputs() { return $$("#fiche input, #fiche select, #fiche textarea"); }
   function ficheCompute() {
     const row = (k) => $('#fiche .f-row[data-f="' + k + '"]'); const val = (k) => { const r = row(k); if (!r) return 0; const ins = $$("input", r); const a = num(ins[0].value); const b = ins.length > 3 ? num(ins[1].value) : a; return (a + b) / 2; };
@@ -341,6 +377,7 @@
     $("#epc-validate").addEventListener("click", () => { D.procValidated = true; const p = D.processes[D.activeProc]; if (p) p.ver = "v" + (parseInt(p.ver.slice(1), 10) + 1); save(); renderProcesses(); toast("Processus validé · nouvelle version publiée"); });
     $("#epc-addstep").addEventListener("click", () => dialog({ title: "Étape hors écran", text: "Une étape réalisée sans ordinateur (appel, visite de chantier, signature…).", fields: [{ name: "title", label: "Étape" }, { name: "dur", label: "Durée", placeholder: "Ex. : 15 min" }, { name: "who", label: "Qui exécute", value: D.users[0] ? D.users[0].name : "" }, { name: "sys", label: "Support", value: "Téléphone" }], ok: "Ajouter" })
       .then((v) => { if (!v || !v.title) return; D.steps.push(v); const p = D.processes[D.activeProc]; if (p) p.steps = D.steps.length;
+        if (D.epc) { (D.epc.steps = D.epc.steps || []).push({ title: v.title, dur: v.dur || "hors écran", who: v.who, sys: v.sys ? [v.sys] : [], in: [], out: [], event: "" }); }
         $("#epc").insertAdjacentHTML("beforeend", '<div style="display: flex; flex-direction: column; align-items: center"><span style="width: 1.5px; height: 22px; background: #111113"></span><span style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #111113"></span></div><div style="display: flex; align-items: center"><div style="width: 100px; min-height: 74px; box-sizing: border-box; border: 1.5px solid #6b6b72; border-radius: 50%; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">QUI</span><span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(v.who) + '</span></div><span style="width: 14px; height: 1.5px; background: #111113"></span><div style="width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px"><span style="font-size: 11px; color: #c9c9ce">Étape ' + D.steps.length + " · " + esc(v.dur || "hors écran") + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(v.title) + '</b></div><span style="width: 14px; height: 1.5px; background: #111113"></span><div style="width: 100px; min-height: 52px; box-sizing: border-box; border: 1.5px solid #111113; border-left: 6px solid #111113; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px"><span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em; color: #5e5e65">SUPPORT</span><span style="font-size: 12px">' + esc(v.sys) + "</span></div></div>");
         save(); renderProcesses(); toast("Étape « " + v.title + " » ajoutée au processus"); }));
     $("#epc-export").addEventListener("click", () => { const p = D.processes[D.activeProc] || { title: D.task.name }; const id = (s) => s.normalize("NFD").replace(/[^\w]/g, "_");
@@ -349,6 +386,8 @@
       x += '    <bpmn:endEvent id="end" name="Terminé"/>\n'; const nodes = ["start"].concat(D.steps.map((_, i) => "t" + (i + 1))).concat(["end"]);
       for (let i = 0; i < nodes.length - 1; i++) x += '    <bpmn:sequenceFlow id="f' + i + '" sourceRef="' + nodes[i] + '" targetRef="' + nodes[i + 1] + '"/>\n';
       x += "  </bpmn:process>\n</bpmn:definitions>\n"; download(id(p.title) + ".bpmn", x, "application/xml"); toast("Fichier BPMN téléchargé"); });
+    if (D.epc && !Object.keys(D.fiche).length) ficheInputs().forEach((inp) => { if (inp.tagName !== "SELECT") inp.value = ""; });   // espace importé : fiche à remplir
+    renderEPC();
     const f = $("#fiche"); ficheInputs().forEach((inp, i) => { if (D.fiche[i] != null) inp.value = D.fiche[i]; });
     f.addEventListener("input", (e) => { const i = ficheInputs().indexOf(e.target); if (i >= 0) { D.fiche[i] = e.target.value; D.ficheSaved = false; } ficheCompute(); });
     f.addEventListener("change", () => save());
@@ -361,7 +400,7 @@
   // ───────────────────────── diagramme des utilisateurs (tableau de bord) ─────────────────────────
   function initStruct() { const b = $("#struct-edit"); if (b) b.addEventListener("click", () => { location.hash = "departements"; }); }
   function initNotifs() { $$(".notif-btn").forEach((b) => b.addEventListener("click", () => { const pending = D.users.filter((u) => u.status === "sent").length; const todo = D.users.filter((u) => u.status === "todo").length;
-    const items = ["Goulot confirmé : « Estimer les quantités » à 112 % d’utilisation", pending + " invitation" + (pending > 1 ? "s" : "") + " en attente de réponse", todo ? todo + " employé" + (todo > 1 ? "s" : "") + " encore à inviter" : null, D.rec && D.rec.running ? "Un enregistrement est en cours (" + mmss(D.rec.elapsed) + ")" : null, D.procValidated ? "Processus « " + (D.processes[D.activeProc] || {}).title + " » validé" : "Le processus « " + (D.processes[D.activeProc] || {}).title + " » attend votre validation"].filter(Boolean);
+    const items = [D.epc ? null : "Goulot confirmé : « Estimer les quantités » à 112 % d’utilisation", pending + " invitation" + (pending > 1 ? "s" : "") + " en attente de réponse", todo ? todo + " employé" + (todo > 1 ? "s" : "") + " encore à inviter" : null, D.rec && D.rec.running ? "Un enregistrement est en cours (" + mmss(D.rec.elapsed) + ")" : null, D.procValidated ? "Processus « " + (D.processes[D.activeProc] || {}).title + " » validé" : "Le processus « " + (D.processes[D.activeProc] || {}).title + " » attend votre validation"].filter(Boolean);
     dialog({ title: "Notifications", text: items.map((s) => "• " + s).join("\n"), ok: "Fermer" }); $("#dlg-text").style.whiteSpace = "pre-line"; })); }
 
   // ───────────────────────── écran 9 : tableau de bord ─────────────────────────
@@ -441,6 +480,7 @@
 
   // ───────────────────────── écrans 10 à 12 : analyses, projets, paramètres ─────────────────────────
   function insights() {
+    if (D.epc && D.epc.constats && D.epc.constats.length) return D.epc.constats.map((c) => ({ t: c.titre, d: c.detail, gain: c.gain || "à estimer", dept: c.dept || (D.processes[D.activeProc] || {}).dept || "", pri: c.gravite === "forte" ? 1 : c.gravite === "moyenne" ? 2 : 3 })).sort((a, b) => a.pri - b.pri);
     const r = $("#fiche") ? ficheCompute() : { util: 112, cycle: 1.6 }; const pending = D.users.filter((u) => u.status === "sent").length; const todo = D.users.filter((u) => u.status === "todo").length;
     const list = [
       { t: "Goulot : « Estimer les quantités »", d: "Utilisation à " + r.util + " % pour " + fr(r.cycle, 1) + " j de cycle. La saisie des quantités est refaite à la main depuis Revit.", gain: "14 h / sem", dept: "Estimation", pri: 1 },
@@ -485,7 +525,7 @@
     fill();
     $("#set-save").addEventListener("click", () => { D.company.name = f.name.value.trim() || D.company.name; D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = f.email.value.trim(); D.company.first = f.first.value.trim() || "Maya"; D.company.day = Math.min(24, Math.max(1, parseInt(f.day.value, 10) || 8)); save(); applyCompany(); fill(); if ($("#fiche")) ficheCompute(); toast("Paramètres enregistrés"); });
     $("#set-export").addEventListener("click", () => { download("lens-" + D.company.name.replace(/[^\w]+/g, "-").toLowerCase() + ".json", JSON.stringify(D, null, 2), "application/json"); toast("Espace exporté"); });
-    $("#set-import").addEventListener("click", () => pickFile(".json").then((txt) => { if (!txt) return; try { const o = JSON.parse(txt); if (!o.company || !o.departments) throw 0; D = Object.assign(JSON.parse(JSON.stringify(DEF)), o); save(); toast("Espace importé · rechargement"); setTimeout(() => location.reload(), 600); } catch (_) { toast("Fichier JSON invalide", false); } }));
+    $("#set-import").addEventListener("click", () => pickFile(".json").then((txt) => { if (!txt) return; try { const o = JSON.parse(txt); if (!o.company) throw 0; if (!o.departments) o.departments = []; D = Object.assign(JSON.parse(JSON.stringify(DEF)), o); if (!o.epc) D.epc = null; save(); toast("Espace importé · rechargement"); setTimeout(() => location.reload(), 600); } catch (_) { toast("Fichier JSON invalide", false); } }));
     $("#set-reset").addEventListener("click", () => dialog({ title: "Réinitialiser la démonstration ?", text: "Toutes les données saisies dans ce navigateur seront remplacées par celles de départ.", ok: "Réinitialiser" }).then((ok) => { if (!ok) return; try { localStorage.removeItem(KEY); } catch (_) {} location.hash = "connexion"; location.reload(); }));
     $("#set-logout").addEventListener("click", () => { try { sessionStorage.removeItem("portail"); } catch (_) {} location.href = "index.html"; });
   }
