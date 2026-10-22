@@ -408,8 +408,8 @@
   }
   function renderProcesses() {
     const box = $("#proc-cards"); if (!box) return; box.innerHTML = D.processes.map((p, i) => procCard(p, i, i === D.activeProc)).join("");
-    const t = $$("#diagnostic .task-title"); const p = D.processes[D.activeProc]; t.forEach((el) => (el.textContent = p ? p.title : "Aucun diagnostic"));
-    const sub = $("#diagnostic .task-sub"); if (sub) sub.textContent = p ? "Diagnostic · " + p.dept[0] + p.dept.slice(1).toLowerCase() : "Diagnostic";
+    const p = D.processes[D.activeProc]; const detail = $("#diag-detail"); if (detail) detail.style.display = p ? "flex" : "none";
+    $$("#diagnostic .task-title").forEach((el) => (el.textContent = p ? p.title : ""));
     if (!p) { box.innerHTML = '<div style="grid-column: 1 / -1; border-radius: 22px; padding: 24px; background: #ffffff; text-align: center; font-size: 14px; color: #5e5e65; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">Aucun processus. Créez votre premier diagnostic avec le bouton « Nouveau diagnostic ».</div>'; }
     const tot = $("#diagnostic .rec-total"); if (tot) { const none = !(D.rec && D.rec.total != null) && (!p || !p.recs); const txt = Array.from(tot.parentElement.childNodes).find((n) => n.nodeType === 3 && /Enregistrement|Aucun/.test(n.textContent));
       if (txt) txt.textContent = none ? "Aucun enregistrement" : "Enregistrement terminé · "; tot.style.display = none ? "none" : ""; tot.textContent = D.rec && D.rec.total != null ? mmss(D.rec.total) : "12:48"; }
@@ -445,7 +445,7 @@
   function renderEPC() {
     const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); ficheClear();
     if (!p) { box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun processus pour l’instant. Cliquez sur « Nouveau diagnostic », donnez-lui un nom, puis enregistrez l’écran.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = "EN ATTENTE D’UN PREMIER DIAGNOSTIC"; ficheLabels(null); return; }
-    if (!e) { if (p && !p.steps && !p.recs) { ficheLabels(null); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Réenregistrer » pour enregistrer l’écran, puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
+    if (!e) { if (p && !p.steps && !p.recs) { ficheLabels(null); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Enregistrer l’écran », puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
     let h = '<div style="' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
     (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1) + epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">ÉVÉNEMENT</span><span style="font-size: 13px">' + esc(s.event || (i === e.steps.length - 1 ? e.result || "Terminé" : "Étape terminée")) + "</span></div>"; });
     if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
@@ -492,8 +492,7 @@
     f.addEventListener("input", (e) => { const i = ficheInputs().indexOf(e.target); if (i >= 0) { D.fiche[i] = e.target.value; D.ficheSaved = false; } ficheCompute(); });
     f.addEventListener("change", () => save());
     $("#fiche-save").addEventListener("click", () => { D.ficheSaved = true; save(); const r = ficheCompute(); toast("Fiche enregistrée · cycle ≈ " + fr(r.cycle, 1) + " j · utilisation " + r.util + " %"); });
-    $("#diag-validate").addEventListener("click", () => { D.procValidated = true; save(); toast("Diagnostic validé · visible sur le tableau de bord"); });
-    $("#diag-rerecord").addEventListener("click", (e) => { const p = activeProc(); if (!p) { e.preventDefault(); $("#diag-new").click(); return; } D.task.name = p.title; D.task.dept = p.dept[0] + p.dept.slice(1).toLowerCase(); save(); applyTask(); });
+    $("#epc-record").addEventListener("click", (e) => { const p = activeProc(); if (!p) { e.preventDefault(); $("#diag-new").click(); return; } D.task.name = p.title; D.task.dept = p.dept[0] + p.dept.slice(1).toLowerCase(); save(); applyTask(); });
     $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [{ name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Préparer une soumission" }, { name: "dept", label: "Département", options: deptNames().length ? deptNames() : ["Direction"] }], ok: "Créer" })
       .then((v) => { if (!v || !v.title) return; D.processes.unshift({ dept: v.dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0, epc: null }); D.activeProc = 0; D.procValidated = false;
         D.task = { name: v.title, dept: v.dept, proc: "Nouveau processus", freq: "", windows: [] }; D.rec = null; save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » créé · enregistrez l’écran"); }); });
