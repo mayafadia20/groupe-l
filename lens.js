@@ -368,7 +368,7 @@
   function scrUI() {
     const on = !!SCR.rec; const show = (id, d) => { const el = $(id); if (el) el.style.display = d; };
     show("#scr-start", on ? "none" : "flex"); show("#scr-live", on ? "flex" : "none"); show("#scr-pause", on ? "inline-block" : "none"); show("#scr-finish", on ? "inline-block" : "none");
-    show("#scr-preview", on ? "block" : "none"); show("#scr-hint", on ? "none" : "block");
+    show("#scr-preview", on ? "block" : "none"); show("#scr-hint", on ? "none" : "block"); if (on) show("#scr-card", "flex"); else if (activeEpc()) show("#scr-card", "none");
     const t = $("#scr-timer"); if (t) t.textContent = (SCR.paused ? "En pause · " : "Enregistrement · ") + mmss(SCR.elapsed);
     const dot = $("#scr-dot"); if (dot) dot.style.background = SCR.paused ? "#9a9aa1" : "#c62828";
     const pb = $("#scr-pause"); if (pb) pb.textContent = SCR.paused ? "Reprendre" : "Pause";
@@ -420,15 +420,27 @@
   const docIcon = (nom) => /\.pdf$/i.test(nom) ? "PDF" : /\.xlsx?$|\.csv$/i.test(nom) ? "XLS" : /\.docx?$/i.test(nom) ? "DOC" : /\.pptx?$/i.test(nom) ? "PPT" : /\.md$/i.test(nom) ? "MD" : "TXT";
   async function renderDocs() {
     const box = $("#scr-docs-list"); if (!box) return;
-    if (!CLOUD || !ME || !ME.entreprise_id) { box.style.display = "none"; return; }
-    let rows = []; try { rows = await LensCloud.listDocuments(ME.entreprise_id, D.task.proc || D.task.name || null); } catch (e) { console.warn(e); box.style.display = "none"; return; }
-    if (!rows.length) { box.style.display = "none"; return; }
-    box.style.display = "flex";
-    box.innerHTML = '<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">DOCUMENTS DU PROCESSUS · ' + rows.length + " / 10</span>" + rows.map((r) => '<div style="display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #f4f4f6"><span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; padding: 6px 0; border-radius: 8px; background: #111113; color: #fff; text-align: center">' + docIcon(r.nom) + '</span><span style="display: flex; flex-direction: column; min-width: 0"><a href="#" data-doc-open="' + esc(r.fichier) + '" style="font-weight: 600; font-size: 14px; color: #111113; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">' + esc(r.nom) + '</a><span style="font-size: 12px; color: #5e5e65">' + fr((r.taille || 0) / 1048576, 1) + " Mo · " + new Date(r.cree_le).toLocaleDateString("fr-CA") + (r.diagnostic ? " · " + esc(r.diagnostic) : "") + '</span></span><button type="button" data-doc-open="' + esc(r.fichier) + '" style="min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1.5px solid #111113; background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">Ouvrir</button><button type="button" data-doc-del="' + esc(r.id) + '" data-doc-path="' + esc(r.fichier) + '" data-doc-name="' + esc(r.nom) + '" aria-label="Retirer" style="width: 34px; height: 34px; border-radius: 50%; border: none; background: #e4e4e8; font: inherit; cursor: pointer">×</button></div>').join("");
+    const vide = (m) => { box.innerHTML = '<div style="border-radius: 16px; padding: 18px 14px; background: #f4f4f6; text-align: center; font-size: 13px; line-height: 1.5; color: #5e5e65">' + m + "</div>"; };
+    if (!CLOUD || !ME || !ME.entreprise_id) { vide("L’import de documents demande la base en ligne."); return; }
+    let rows = []; try { rows = await LensCloud.listDocuments(ME.entreprise_id, D.task.proc || D.task.name || null); } catch (e) { console.warn(e); vide("Documents indisponibles : " + e.message); return; }
+    if (!rows.length) { vide("Aucun document pour l’instant. Cliquez sur « Importer des documents »."); return; }
+    box.innerHTML = '<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">' + rows.length + " / 10</span>" + rows.map((r) => '<div style="display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #f4f4f6"><span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; padding: 6px 0; border-radius: 8px; background: #111113; color: #fff; text-align: center">' + docIcon(r.nom) + '</span><span style="display: flex; flex-direction: column; min-width: 0"><a href="#" data-doc-open="' + esc(r.fichier) + '" style="font-weight: 600; font-size: 14px; color: #111113; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">' + esc(r.nom) + '</a><span style="font-size: 12px; color: #5e5e65">' + fr((r.taille || 0) / 1048576, 1) + " Mo · " + new Date(r.cree_le).toLocaleDateString("fr-CA") + (r.diagnostic ? " · " + esc(r.diagnostic) : "") + '</span></span><button type="button" data-doc-del="' + esc(r.id) + '" data-doc-path="' + esc(r.fichier) + '" data-doc-name="' + esc(r.nom) + '" aria-label="Retirer" style="width: 34px; height: 34px; border-radius: 50%; border: none; background: #e4e4e8; font: inherit; cursor: pointer">×</button></div>').join("");
+  }
+  /** Page d'un processus : en-tête, carte d'enregistrement tant qu'il n'y a rien, diagramme EPC dès qu'il y a de l'information, documents à gauche. */
+  function renderProcPage() {
+    if (!$("#pp-title")) return; const p = activeProc();
+    if (!p) { location.hash = "diagnostic"; return; }
+    const dept = p.dept ? p.dept[0] + p.dept.slice(1).toLowerCase() : "";
+    $("#pp-title").textContent = p.title;
+    $("#pp-sub").textContent = (D.task.name && D.task.name !== p.title ? "Diagnostic « " + D.task.name + " » · " : "Processus · ") + dept;
+    const e = activeEpc(); const detail = $("#diag-detail"), card = $("#scr-card");
+    if (detail) detail.style.display = e ? "flex" : "none";
+    if (card) card.style.display = e && !SCR.rec ? "none" : "flex";
+    const hint = $("#scr-hint"); if (hint && !SCR.rec) hint.textContent = (e ? "Nouvel enregistrement : " : "Aucun enregistrement pour ce processus. ") + "Cliquez sur « Enregistrer l’écran », choisissez l’écran à partager, puis exécutez la tâche comme d’habitude. Le curseur est enregistré avec l’image" + (CLOUD ? " et la vidéo est envoyée dans votre espace Lens." : ".");
+    renderEPC(); renderDocs();
   }
   function initScreenRec() {
     if (!$("#scr-start")) return; scrUI();
-    const hint = $("#scr-hint"); if (hint && CLOUD) hint.textContent = "Cliquez sur « Enregistrer l’écran », choisissez l’écran à partager, puis exécutez la tâche comme d’habitude. Le curseur est enregistré avec l’image. À la fin, la vidéo est envoyée dans votre espace Lens. Vous pouvez aussi joindre des documents (PDF, Excel, Word…) qui serviront à l’analyse.";
     $("#scr-start").addEventListener("click", scrStart);
     $("#scr-quiz").addEventListener("click", () => toast("Questionnaire : à venir. Il complétera l’enregistrement par quelques questions sur la tâche.", false));
     $("#scr-docs").addEventListener("click", () => { if (!CLOUD || !ME || !ME.entreprise_id) { toast("L’import de documents demande la base en ligne.", false); return; } $("#scr-docs-in").value = ""; $("#scr-docs-in").click(); });
@@ -462,8 +474,7 @@
   }
   function renderProcesses() {
     const box = $("#proc-cards"); if (!box) return; box.innerHTML = D.processes.map((p, i) => procCard(p, i, i === D.activeProc)).join("");
-    const p = D.processes[D.activeProc]; const detail = $("#diag-detail"); if (detail) detail.style.display = p ? "flex" : "none";
-    $$("#diagnostic .task-title").forEach((el) => (el.textContent = p ? p.title : ""));
+    const p = D.processes[D.activeProc];
     if (!p) { box.innerHTML = '<div style="grid-column: 1 / -1; border-radius: 22px; padding: 24px; background: #ffffff; text-align: center; font-size: 14px; color: #5e5e65; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">Aucun processus. Créez votre premier diagnostic avec le bouton « Nouveau diagnostic ».</div>'; }
     const tot = $("#diagnostic .rec-total"); if (tot) { const none = !(D.rec && D.rec.total != null) && (!p || !p.recs); const txt = Array.from(tot.parentElement.childNodes).find((n) => n.nodeType === 3 && /Enregistrement|Aucun/.test(n.textContent));
       if (txt) txt.textContent = none ? "Aucun enregistrement" : "Enregistrement terminé · "; tot.style.display = none ? "none" : ""; tot.textContent = D.rec && D.rec.total != null ? mmss(D.rec.total) : "12:48"; }
@@ -498,7 +509,7 @@
   }
   function renderEPC() {
     const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); ficheClear(); const fp = $("#fiche-panel"); if (fp) fp.style.display = "none";
-    if (!p) { box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun processus pour l’instant. Cliquez sur « Nouveau diagnostic », donnez-lui un nom, puis enregistrez l’écran.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = "EN ATTENTE D’UN PREMIER DIAGNOSTIC"; ficheLabels(null); return; }
+    if (!p) { ficheLabels(null); return; }
     if (!e) { if (p && !p.steps && !p.recs) { ficheLabels(null); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Enregistrer l’écran », puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
     let h = '<div style="' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
     (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1) + epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">ÉVÉNEMENT</span><span style="font-size: 13px">' + esc(s.event || (i === e.steps.length - 1 ? e.result || "Terminé" : "Étape terminée")) + "</span></div>"; });
@@ -527,7 +538,7 @@
   }
   function initDiag() {
     if (!$("#proc-cards")) return;
-    $("#proc-cards").addEventListener("click", (e) => { const b = e.target.closest("[data-proc]"); if (!b) return; D.activeProc = +b.dataset.proc; D.procValidated = false; save(); renderProcesses(); });
+    $("#proc-cards").addEventListener("click", (e) => { const b = e.target.closest("[data-proc]"); if (!b) return; D.activeProc = +b.dataset.proc; D.procValidated = false; const p = activeProc(); if (p) D.task = { name: p.title, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; save(); renderProcesses(); location.hash = "nouveau-diagnostic"; });
     $("#proc-new").addEventListener("click", () => dialog({ title: "Nouveau processus", fields: [{ name: "title", label: "Nom du processus", placeholder: "Ex. : Clôturer un chantier" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" }).then((v) => { if (!v || !v.title) return; const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez un département.", false); return; } D.processes.unshift({ dept: dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0 }); D.activeProc = 0; D.procValidated = false; save(); renderProcesses(); toast("Processus créé · enregistrez une tâche pour le cartographier"); }));
     $("#epc-validate").addEventListener("click", () => { D.procValidated = true; const p = D.processes[D.activeProc]; if (p) p.ver = "v" + (parseInt(p.ver.slice(1), 10) + 1); save(); renderProcesses(); toast("Processus validé · nouvelle version publiée"); });
     $("#epc-addstep").addEventListener("click", () => dialog({ title: "Étape hors écran", text: "Une étape réalisée sans ordinateur (appel, visite de chantier, signature…).", fields: [{ name: "title", label: "Étape" }, { name: "dur", label: "Durée", placeholder: "Ex. : 15 min" }, { name: "who", label: "Qui exécute", value: D.users[0] ? D.users[0].name : "" }, { name: "sys", label: "Support", value: "Téléphone" }], ok: "Ajouter" })
@@ -549,7 +560,6 @@
     $("#epc").addEventListener("click", (ev) => { const b = ev.target.closest("[data-step]"); if (!b) return; const e = activeEpc(); const i = +b.dataset.step - 1; const st = e && e.steps ? e.steps[i] : null; if (!st) return;
       ficheLabels(st, (e.source || {}).qui, i + 1); const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); } });
     $("#fiche-close").addEventListener("click", () => { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; });
-    $("#epc-record").addEventListener("click", (e) => { const p = activeProc(); if (!p) { e.preventDefault(); $("#diag-new").click(); return; } D.task = { name: p.title, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; save(); applyTask(); });
     $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [
         { name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Soumission du projet Laval" },
         { name: "proc", label: "Processus", combo: D.processes.map((p) => p.title), placeholder: "Tapez ou choisissez un processus" },
@@ -749,7 +759,7 @@
   });
 
   // ───────────────────────── démarrage ─────────────────────────
-  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "nouveau-diagnostic") renderDocs(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); renderDash(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
+  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "nouveau-diagnostic") renderProcPage(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); renderDash(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
   function init() {
     initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initScreenRec(); initDiag(); initStruct(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
     window.addEventListener("hashchange", refresh); refresh();

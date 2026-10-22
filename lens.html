@@ -371,8 +371,8 @@ body:not(:has(.screen:target)) #connexion{display:block}
     <div style="display: flex; align-items: center; gap: 14px; min-width: 0">
       <a href="#diagnostic" aria-label="Retour au diagnostic" style="width: 46px; height: 46px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); display: flex; align-items: center; justify-content: center; color: #ffffff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
       <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
-        <span class="task-sub" style="font-size: 13px; color: #c9c9ce">Diagnostic · Estimation</span>
-        <h1 class="task-title" style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Préparer une soumission</h1>
+        <span id="pp-sub" style="font-size: 13px; color: #c9c9ce">Processus</span>
+        <h1 id="pp-title" style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Processus</h1>
       </div>
     </div>
     <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
@@ -386,129 +386,24 @@ body:not(:has(.screen:target)) #connexion{display:block}
     </div>
   </header>
 
-  <section aria-label="Enregistrement de l'écran" style="min-height: 460px; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-    <p id="scr-hint" style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5e5e65; text-align: center; max-width: 560px">Cliquez sur « Enregistrer l'écran », choisissez l'écran à partager, puis exécutez la tâche comme d'habitude. Le curseur est enregistré avec l'image. À la fin, la vidéo est sauvegardée sur votre ordinateur.</p>
-    <div id="scr-docs-list" style="display: none; width: 100%; max-width: 760px; flex-direction: column; gap: 8px; margin-top: 10px"></div>
-    <video id="scr-preview" autoplay muted playsinline style="display: none; width: 100%; max-height: 70vh; border-radius: 18px; background: #111113"></video>
-  </section>
-
-</div>
-</div>
-
-</section>
-<section class="screen" id="enregistrement" data-index="5">
-<div style="min-height: 100vh; box-sizing: border-box; padding: 24px; background: #e8e8eb; color: #111113; font-family: 'Space Grotesk', 'Helvetica Neue', sans-serif">
-<div style="max-width: 1392px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
-
-  <header style="border-radius: 28px; padding: 22px 24px; background: radial-gradient(120% 220% at 85% -40%, #55555a 0%, #1c1c1f 38%, #060607 100%); color: #ffffff; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.5)">
-    <div style="display: flex; align-items: center; gap: 14px; min-width: 0">
-      <img src="assets/logo-blanc.png" alt="Lens" style="width: 46px; height: 46px; object-fit: contain">
-      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
-        <span class="task-sub" style="font-size: 13px; color: #c9c9ce">Diagnostic · Estimation · Julie Tremblay</span>
-        <h1 class="task-title" style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Préparer une soumission</h1>
-      </div>
-    </div>
-    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
-      <span style="display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 18px; border-radius: 999px; background: #ffffff; color: #111113; font-size: 15px; font-weight: 600"><i id="rec-dot" style="width: 12px; height: 12px; border-radius: 50%; background: #111113; box-shadow: 0 0 0 4px #d6d6db"></i><span id="rec-timer">Enregistrement · 00:00</span></span>
-      <button type="button" style="min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); background: transparent; color: #ffffff; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="rec-pause">Pause</button>
-      <button type="button" style="min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); background: transparent; color: #ffffff; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="rec-note">Note vocale</button>
-      <a id="rec-finish" href="#diagnostic" style="display: flex; align-items: center; min-height: 46px; padding: 0 22px; box-sizing: border-box; border-radius: 999px; background: #ffffff; color: #111113; text-decoration: none; font-size: 14px; font-weight: 600">Terminer</a>
-    </div>
-  </header>
-
   <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
 
-    <section aria-label="Aperçu de la capture" style="flex: 3 1 560px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
-        <div style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 18px; font-weight: 600">Ce que Lens capte en ce moment</h2><span style="font-size: 13px; color: #5e5e65">Capture à chaque clic · données sensibles floutées avant tout stockage</span></div>
-        <span id="rec-counter" style="font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: #f1f1f3">214 clics · 37 captures</span>
+    <aside id="proc-docs" aria-label="Documents du processus" style="flex: 1 1 260px; max-width: 360px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 22px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">DOCUMENTS</span>
+        <h2 style="margin: 0; font-size: 18px; font-weight: 600">Documents du processus</h2>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #5e5e65">Gabarits, procédures, grilles de prix : ce que la personne utilise pendant la tâche. Lens s’en servira pour l’analyse. Au plus 10 par processus.</p>
       </div>
+      <div id="scr-docs-list" style="display: flex; flex-direction: column; gap: 8px"></div>
+    </aside>
 
-      <div style="border-radius: 18px; border: 1.5px solid #dcdce0; overflow: hidden">
-        <div style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f4f4f6; border-bottom: 1px solid #e4e4e8; font-size: 12.5px; color: #3a3a3f"><i style="width: 10px; height: 10px; border-radius: 50%; background: #c4c4ca"></i><i style="width: 10px; height: 10px; border-radius: 50%; background: #c4c4ca"></i><i style="width: 10px; height: 10px; border-radius: 50%; background: #c4c4ca"></i><span style="margin-left: 8px; font-weight: 600">Estimation_Projet-Laval.xlsx · Excel</span></div>
-        <div style="position: relative; padding: 14px; background: #ffffff">
-          <div style="display: grid; grid-template-columns: 34px minmax(0, 2.2fr) repeat(4, minmax(0, 1fr)); font-size: 12px; border-top: 1px solid #ececef; border-left: 1px solid #ececef">
-            <span style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Élément</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Quantité</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Unité</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Prix unit.</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Total</b>
-            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">1</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Béton 30 MPa</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">142</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">m³</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span>
-            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">2</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Armature 15M</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; outline: 2px solid #111113; outline-offset: -2px">8,6</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">t</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span>
-            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">3</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Coffrage mural</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">610</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">m²</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span>
-            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">4</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Membrane</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #8a8a92">…</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span>
-            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">5</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span>
-          </div>
-          <span style="position: absolute; left: 36%; top: 92px; width: 26px; height: 26px; border-radius: 50%; background: #111113; color: #ffffff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px rgba(17, 17, 19, 0.15)">12</span>
-          <span style="position: absolute; left: 30%; top: 150px; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 1.5px solid #111113; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">13</span>
-        </div>
-      </div>
+    <div style="flex: 3 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+      <section id="scr-card" aria-label="Enregistrement de l'écran" style="min-height: 360px; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 26px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
+        <p id="scr-hint" style="margin: 0; font-size: 14.5px; line-height: 1.55; color: #5e5e65; text-align: center; max-width: 560px">Aucun enregistrement pour ce processus. Cliquez sur « Enregistrer l’écran », choisissez l’écran à partager, puis exécutez la tâche comme d’habitude.</p>
+        <video id="scr-preview" autoplay muted playsinline style="display: none; width: 100%; max-height: 70vh; border-radius: 18px; background: #111113"></video>
+      </section>
 
-      <div style="display: flex; flex-direction: column; gap: 10px">
-        <span style="font-size: 13px; font-weight: 600">Étapes déjà reconnues</span>
-        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-          <span style="display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 12px; background: #111113; color: #ffffff; font-size: 13.5px; font-weight: 600">1 · Lire les plans<span style="font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.18)">Revit</span></span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e5e65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-          <span style="display: flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 12px; border: 1.5px solid #111113; font-size: 13.5px; font-weight: 600">2 · Estimer les quantités<span style="font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 999px; background: #f1f1f3">Excel · en cours</span></span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e5e65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
-          <span style="padding: 8px 13px; border-radius: 12px; border: 1.5px dashed #b9b9bf; color: #5e5e65; font-size: 13.5px">étape suivante…</span>
-        </div>
-      </div>
-    </section>
-
-    <section aria-label="Actions détectées" style="flex: 2 1 320px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-      <h2 style="margin: 0; font-size: 18px; font-weight: 600">Actions détectées en direct</h2>
-      <ol id="rec-actions" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
-        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">00:12</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Courriel reçu : demande de soumission</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Outlook · déclencheur</span></span></li>
-        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">00:47</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Ouverture de Plans_Laval.pdf</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Document entrant</span></span></li>
-        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">02:10</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Mesures prises dans la maquette</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Revit · 46 clics</span></span></li>
-        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">07:31</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Création de Estimation_Projet-Laval.xlsx</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Excel · document sortant</span></span></li>
-        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">09:02</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Quantités ressaisies depuis Revit</span><span style="align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #111113; color: #ffffff">Saisie double détectée</span></span></li>
-        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; font-weight: 700">12:48</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px; font-weight: 600">Saisie des quantités en cours…</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; border: 1.5px solid #111113">Excel · en direct</span></span></li>
-      </ol>
-      <p style="margin: 0; font-size: 12.5px; line-height: 1.5; color: #5e5e65">Cliquez sur Terminer quand la tâche est finie : Lens propose le processus cartographié en quelques minutes.</p>
-    </section>
-  </div>
-
-
-</div>
-</div>
-
-</section>
-<section class="screen" id="diagnostic" data-index="6">
-<div style="min-height: 100vh; box-sizing: border-box; padding: 24px; background: #e8e8eb; color: #111113; font-family: 'Space Grotesk', 'Helvetica Neue', sans-serif">
-<div style="max-width: 1392px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
-
-  <nav aria-label="Navigation principale" style="flex: 1 1 232px; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 24px 16px; display: flex; flex-direction: column; gap: 28px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-    <div style="display: flex; align-items: center; gap: 12px; padding: 0 10px">
-      <img src="assets/logo-blanc.png" alt="Lens" style="width: 44px; height: 44px; object-fit: contain; filter: invert(1)">
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 4px">
-      <a href="#tableau" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Tableau de bord</a>
-      <a href="#diagnostic" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; background: #111113; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Diagnostics</a>
-      <a href="#analyses" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></svg>Analyses IA</a>
-      <a href="#projets" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h6"/></svg>Projets</a>
-      <a href="#parametres" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Paramètres</a>
-    </div>
-  </nav>
-
-  <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
-
-    <header style="border-radius: 28px; padding: 22px 24px; background: radial-gradient(120% 220% at 85% -40%, #55555a 0%, #1c1c1f 38%, #060607 100%); color: #ffffff; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.5)">
-      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; margin-left: auto">
-      <button type="button" id="proc-new" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 999px; border: none; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nouveau processus</button>
-      <a id="diag-new" href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; box-sizing: border-box; border-radius: 999px; background: #ffffff; color: #111113; text-decoration: none; font-size: 14px; font-weight: 600"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nouveau diagnostic</a>
-      </div>
-    </header>
-
-    <section aria-label="Sélectionnez le processus" style="display: flex; flex-direction: column; gap: 14px">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px">
-        <h2 style="margin: 0; font-size: 18px; font-weight: 600">Sélectionnez le processus</h2>
-      </div>
-      <div id="proc-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px">
-        <button type="button" style="border: none; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; background: radial-gradient(130% 160% at 90% -10%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>ESTIMATION</span><span>v3</span></span><span style="font-size: 17px; font-weight: 600">Préparer une soumission</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: #d4d4d8"><span>•••• 4 étapes</span><span>3 enregistrements</span></span></button>
-        <button type="button" style="border: none; text-align: left; font: inherit; color: #111113; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; background: #ffffff; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>APPROVISIONNEMENT</span><span>v1</span></span><span style="font-size: 17px; font-weight: 600">Commander les matériaux</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: #5e5e65"><span>•••• 5 étapes</span><span>1 enregistrement</span></span></button>
-        <button type="button" style="border: none; text-align: left; font: inherit; color: #111113; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; background: #ffffff; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>FINANCE</span><span>v2</span></span><span style="font-size: 17px; font-weight: 600">Facturer un projet</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: #5e5e65"><span>•••• 4 étapes</span><span>2 enregistrements</span></span></button>
-      </div>
-    </section>
-
-    <div id="diag-detail" style="display: none; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+    <div id="diag-detail" style="display: none; flex-wrap: wrap; gap: 24px; align-items: flex-start; width: 100%">
 
       <section aria-label="Processus capturé" style="flex: 3 1 560px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 26px 22px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
         <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 4px">
@@ -590,7 +485,6 @@ body:not(:has(.screen:target)) #connexion{display:block}
         </div>
 
         <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px">
-          <a id="epc-record" href="#nouveau-diagnostic" style="display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 20px; box-sizing: border-box; border-radius: 999px; background: #111113; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 500"><i style="width: 10px; height: 10px; border-radius: 50%; background: #e53935"></i>Enregistrer l’écran</a>
           <button type="button" style="min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1.5px solid #111113; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="epc-validate">Valider le processus</button>
           <button type="button" style="min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1.5px solid #111113; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="epc-addstep">Ajouter une étape hors écran</button>
           <button type="button" style="min-height: 46px; padding: 0 20px; border-radius: 999px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="epc-export">Exporter en BPMN</button>
@@ -795,6 +689,124 @@ body:not(:has(.screen:target)) #connexion{display:block}
       </section>
 
     </div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+</section>
+<section class="screen" id="enregistrement" data-index="5">
+<div style="min-height: 100vh; box-sizing: border-box; padding: 24px; background: #e8e8eb; color: #111113; font-family: 'Space Grotesk', 'Helvetica Neue', sans-serif">
+<div style="max-width: 1392px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px">
+
+  <header style="border-radius: 28px; padding: 22px 24px; background: radial-gradient(120% 220% at 85% -40%, #55555a 0%, #1c1c1f 38%, #060607 100%); color: #ffffff; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.5)">
+    <div style="display: flex; align-items: center; gap: 14px; min-width: 0">
+      <img src="assets/logo-blanc.png" alt="Lens" style="width: 46px; height: 46px; object-fit: contain">
+      <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+        <span class="task-sub" style="font-size: 13px; color: #c9c9ce">Diagnostic · Estimation · Julie Tremblay</span>
+        <h1 class="task-title" style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.01em">Préparer une soumission</h1>
+      </div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+      <span style="display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 18px; border-radius: 999px; background: #ffffff; color: #111113; font-size: 15px; font-weight: 600"><i id="rec-dot" style="width: 12px; height: 12px; border-radius: 50%; background: #111113; box-shadow: 0 0 0 4px #d6d6db"></i><span id="rec-timer">Enregistrement · 00:00</span></span>
+      <button type="button" style="min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); background: transparent; color: #ffffff; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="rec-pause">Pause</button>
+      <button type="button" style="min-height: 46px; padding: 0 18px; border-radius: 999px; border: 1.5px solid rgba(255, 255, 255, 0.6); background: transparent; color: #ffffff; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="rec-note">Note vocale</button>
+      <a id="rec-finish" href="#diagnostic" style="display: flex; align-items: center; min-height: 46px; padding: 0 22px; box-sizing: border-box; border-radius: 999px; background: #ffffff; color: #111113; text-decoration: none; font-size: 14px; font-weight: 600">Terminer</a>
+    </div>
+  </header>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+    <section aria-label="Aperçu de la capture" style="flex: 3 1 560px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px">
+        <div style="display: flex; flex-direction: column; gap: 2px"><h2 style="margin: 0; font-size: 18px; font-weight: 600">Ce que Lens capte en ce moment</h2><span style="font-size: 13px; color: #5e5e65">Capture à chaque clic · données sensibles floutées avant tout stockage</span></div>
+        <span id="rec-counter" style="font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: #f1f1f3">214 clics · 37 captures</span>
+      </div>
+
+      <div style="border-radius: 18px; border: 1.5px solid #dcdce0; overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f4f4f6; border-bottom: 1px solid #e4e4e8; font-size: 12.5px; color: #3a3a3f"><i style="width: 10px; height: 10px; border-radius: 50%; background: #c4c4ca"></i><i style="width: 10px; height: 10px; border-radius: 50%; background: #c4c4ca"></i><i style="width: 10px; height: 10px; border-radius: 50%; background: #c4c4ca"></i><span style="margin-left: 8px; font-weight: 600">Estimation_Projet-Laval.xlsx · Excel</span></div>
+        <div style="position: relative; padding: 14px; background: #ffffff">
+          <div style="display: grid; grid-template-columns: 34px minmax(0, 2.2fr) repeat(4, minmax(0, 1fr)); font-size: 12px; border-top: 1px solid #ececef; border-left: 1px solid #ececef">
+            <span style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Élément</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Quantité</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Unité</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Prix unit.</b><b style="padding: 7px; background: #f4f4f6; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Total</b>
+            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">1</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Béton 30 MPa</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">142</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">m³</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span>
+            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">2</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Armature 15M</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; outline: 2px solid #111113; outline-offset: -2px">8,6</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">t</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span>
+            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">3</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Coffrage mural</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">610</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">m²</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; background: repeating-linear-gradient(45deg, #e4e4e8 0 4px, #f4f4f6 4px 8px); color: #5e5e65">masqué</span>
+            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">4</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef">Membrane</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #8a8a92">…</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span>
+            <span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef; color: #5e5e65">5</span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span><span style="padding: 7px; border-right: 1px solid #ececef; border-bottom: 1px solid #ececef"></span>
+          </div>
+          <span style="position: absolute; left: 36%; top: 92px; width: 26px; height: 26px; border-radius: 50%; background: #111113; color: #ffffff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 4px rgba(17, 17, 19, 0.15)">12</span>
+          <span style="position: absolute; left: 30%; top: 150px; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 1.5px solid #111113; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center">13</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 13px; font-weight: 600">Étapes déjà reconnues</span>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+          <span style="display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 12px; background: #111113; color: #ffffff; font-size: 13.5px; font-weight: 600">1 · Lire les plans<span style="font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.18)">Revit</span></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e5e65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          <span style="display: flex; align-items: center; gap: 8px; padding: 8px 13px; border-radius: 12px; border: 1.5px solid #111113; font-size: 13.5px; font-weight: 600">2 · Estimer les quantités<span style="font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 999px; background: #f1f1f3">Excel · en cours</span></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5e5e65" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          <span style="padding: 8px 13px; border-radius: 12px; border: 1.5px dashed #b9b9bf; color: #5e5e65; font-size: 13.5px">étape suivante…</span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="Actions détectées" style="flex: 2 1 320px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
+      <h2 style="margin: 0; font-size: 18px; font-weight: 600">Actions détectées en direct</h2>
+      <ol id="rec-actions" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">00:12</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Courriel reçu : demande de soumission</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Outlook · déclencheur</span></span></li>
+        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">00:47</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Ouverture de Plans_Laval.pdf</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Document entrant</span></span></li>
+        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">02:10</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Mesures prises dans la maquette</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Revit · 46 clics</span></span></li>
+        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">07:31</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Création de Estimation_Projet-Laval.xlsx</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #f1f1f3">Excel · document sortant</span></span></li>
+        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; color: #5e5e65">09:02</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px">Quantités ressaisies depuis Revit</span><span style="align-self: flex-start; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #111113; color: #ffffff">Saisie double détectée</span></span></li>
+        <li style="display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-top: 1px solid #ececef"><span style="font-size: 12.5px; font-weight: 700">12:48</span><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 13.5px; font-weight: 600">Saisie des quantités en cours…</span><span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; border: 1.5px solid #111113">Excel · en direct</span></span></li>
+      </ol>
+      <p style="margin: 0; font-size: 12.5px; line-height: 1.5; color: #5e5e65">Cliquez sur Terminer quand la tâche est finie : Lens propose le processus cartographié en quelques minutes.</p>
+    </section>
+  </div>
+
+
+</div>
+</div>
+
+</section>
+<section class="screen" id="diagnostic" data-index="6">
+<div style="min-height: 100vh; box-sizing: border-box; padding: 24px; background: #e8e8eb; color: #111113; font-family: 'Space Grotesk', 'Helvetica Neue', sans-serif">
+<div style="max-width: 1392px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+  <nav aria-label="Navigation principale" style="flex: 1 1 232px; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 24px 16px; display: flex; flex-direction: column; gap: 28px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
+    <div style="display: flex; align-items: center; gap: 12px; padding: 0 10px">
+      <img src="assets/logo-blanc.png" alt="Lens" style="width: 44px; height: 44px; object-fit: contain; filter: invert(1)">
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <a href="#tableau" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Tableau de bord</a>
+      <a href="#diagnostic" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; background: #111113; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>Diagnostics</a>
+      <a href="#analyses" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></svg>Analyses IA</a>
+      <a href="#projets" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h6"/></svg>Projets</a>
+      <a href="#parametres" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 15px; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>Paramètres</a>
+    </div>
+  </nav>
+
+  <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px">
+
+
+    <section aria-label="Sélectionnez le processus" style="display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 4px">
+        <h2 style="margin: 0; font-size: 18px; font-weight: 600">Sélectionnez le processus</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px">
+          <button type="button" id="proc-new" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #111113; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nouveau processus</button>
+          <a id="diag-new" href="#" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; border: none; background: #111113; color: #ffffff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nouveau diagnostic</a>
+        </div>
+      </div>
+      <div id="proc-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px">
+        <button type="button" style="border: none; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; background: radial-gradient(130% 160% at 90% -10%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>ESTIMATION</span><span>v3</span></span><span style="font-size: 17px; font-weight: 600">Préparer une soumission</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: #d4d4d8"><span>•••• 4 étapes</span><span>3 enregistrements</span></span></button>
+        <button type="button" style="border: none; text-align: left; font: inherit; color: #111113; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; background: #ffffff; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>APPROVISIONNEMENT</span><span>v1</span></span><span style="font-size: 17px; font-weight: 600">Commander les matériaux</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: #5e5e65"><span>•••• 5 étapes</span><span>1 enregistrement</span></span></button>
+        <button type="button" style="border: none; text-align: left; font: inherit; color: #111113; cursor: pointer; border-radius: 22px; padding: 20px; min-height: 120px; display: flex; flex-direction: column; justify-content: space-between; gap: 14px; background: #ffffff; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)"><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; font-weight: 600; letter-spacing: 0.06em"><span>FINANCE</span><span>v2</span></span><span style="font-size: 17px; font-weight: 600">Facturer un projet</span><span style="display: flex; justify-content: space-between; width: 100%; font-size: 13px; color: #5e5e65"><span>•••• 4 étapes</span><span>2 enregistrements</span></span></button>
+      </div>
+    </section>
+
   </main>
 </div>
 </div>
