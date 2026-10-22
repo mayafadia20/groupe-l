@@ -28,9 +28,11 @@ body:not(:has(.screen:target)) #connexion{display:block}
 </style>
 </head>
 <body>
+<script src="lens-config.js?v=1"></script>
+<script src="lens-cloud.js?v=1"></script>
 <script>
-  // Accès réservé : il faut être passé par la fenêtre de connexion du portail client
-  (function () { var ok = false; try { ok = sessionStorage.getItem("portail") === "1"; } catch (e) {} if (!ok) { location.replace("index.html#portail"); } })();
+  // Accès réservé : session de la base en ligne (compte Lens) ou, en mode local, passage par la fenêtre de connexion du portail
+  (function () { var ok = false; try { ok = (window.LensCloud && LensCloud.enabled) ? LensCloud.hasLocalSession() : sessionStorage.getItem("portail") === "1"; } catch (e) {} if (!ok) { location.replace("index.html#portail"); } })();
 </script>
 <a id="retour-portail" href="portail.html" title="Retour au portail">← Portail</a>
 <section class="screen" id="connexion" data-index="0">

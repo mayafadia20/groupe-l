@@ -1,5 +1,7 @@
-// Lens — logique de l'application (état dans le navigateur, aucune dépendance)
-// Toutes les données vivent dans localStorage sous la clé « lens.data » ; « Réinitialiser la démo » les efface.
+// Lens — logique de l'application
+// Les données vivent dans localStorage sous la clé « lens.data » (copie de travail) et, quand lens-config.js est
+// rempli, dans la base en ligne (table « espaces », un document par entreprise) : chargement au démarrage,
+// sauvegarde à chaque modification. Les vidéos d'enregistrement partent dans le bucket « enregistrements ».
 (function () {
   "use strict";
   const $ = (s, r) => (r || document).querySelector(s);
@@ -46,6 +48,14 @@
     realOverrides: {}, period: "T3 2026", chartMode: "monthly", sysMode: "usage", dashObj: 0,
   };
   let D = load();
+  const CLOUD = !!(window.LensCloud && LensCloud.enabled);
+  let ME = null;            // profil en ligne : { user_id, entreprise_id, role, nom, email, entreprises: { nom } }
+  let cloudTimer = null, cloudDirty = false;
+  function cloudSave() {
+    if (!CLOUD || !ME || !ME.entreprise_id) return;
+    cloudDirty = true; clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(() => { cloudDirty = false; LensCloud.saveSpace(ME.entreprise_id, D).catch((e) => { cloudDirty = true; console.error(e); toast("Sauvegarde en ligne impossible : " + e.message, false); }); }, 600);
+  }
   function load() {
     try { const s = localStorage.getItem(KEY); if (s) { const saved = JSON.parse(s);
       if ((saved.v || 1) < 2) { delete saved.objectives; delete saved.objForm; delete saved.indicators; saved.v = 2; }   // repart avec des objectifs vides
@@ -56,7 +66,7 @@
   function normalize(d) { if (d.epc && d.processes[0] && !d.processes[0].epc) d.processes[0].epc = d.epc; d.epc = null; return d; }
   const activeProc = () => D.processes[D.activeProc] || null;
   const activeEpc = () => (activeProc() || {}).epc || null;
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} cloudSave(); }
   const deptNames = () => D.departments.map((d) => d.name);
   const totalEmployees = () => D.departments.reduce((a, d) => a + (Number(d.n) || 0), 0);
   const initials = (n) => n.split(/\s+/).map((w) => w[0] || "").join("").slice(0, 2).toUpperCase();
@@ -332,7 +342,7 @@
     try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 10, max: 15 }, cursor: "always" }, audio: false, selfBrowserSurface: "exclude", surfaceSwitching: "include", monitorTypeSurfaces: "include" }); }
     catch (e) { toast(e && e.name === "NotAllowedError" ? "Enregistrement annulé : aucun écran choisi." : "Impossible de démarrer l’enregistrement : " + (e && e.message || e), false); return; }
     SCR.mime = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm", "video/mp4"].find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
-    let rec; try { rec = new MediaRecorder(stream, SCR.mime ? { mimeType: SCR.mime, videoBitsPerSecond: 2500000 } : undefined); } catch (e) { stream.getTracks().forEach((t) => t.stop()); toast("Enregistreur vidéo indisponible : " + e.message, false); return; }
+    let rec; try { rec = new MediaRecorder(stream, SCR.mime ? { mimeType: SCR.mime, videoBitsPerSecond: 1200000 } : undefined); } catch (e) { stream.getTracks().forEach((t) => t.stop()); toast("Enregistreur vidéo indisponible : " + e.message, false); return; }
     SCR.stream = stream; SCR.rec = rec; SCR.chunks = []; SCR.elapsed = 0; SCR.paused = false;
     rec.ondataavailable = (e) => { if (e.data && e.data.size) SCR.chunks.push(e.data); };
     rec.onstop = scrSave;
@@ -350,14 +360,24 @@
     const blob = new Blob(SCR.chunks, { type: SCR.mime || "video/webm" }); const ext = /mp4/.test(SCR.mime) ? "mp4" : "webm";
     const stamp = new Date().toISOString().slice(0, 16).replace("T", "_").replace(":", "-");
     const name = "lens-" + (D.task.name || "enregistrement").normalize("NFD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase() + "-" + stamp + "." + ext;
-    if (blob.size) { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+    const total0 = SCR.elapsed;
+    if (blob.size) { if (CLOUD && ME && ME.entreprise_id) scrPublish(blob, name, total0); else download(name, blob, blob.type); }
     if (SCR.stream) SCR.stream.getTracks().forEach((t) => t.stop()); const v = $("#scr-preview"); if (v) v.srcObject = null;
     const total = SCR.elapsed; SCR.rec = null; SCR.stream = null; SCR.chunks = []; SCR.paused = false;
     D.rec = Object.assign(D.rec || { actions: [] }, { elapsed: total, paused: false, running: false, total: total, video: name, taille: blob.size });
     D.rec.actions.push({ t: total, label: "Fin de l’enregistrement · " + name + " (" + fr(blob.size / 1048576, 1) + " Mo)", tag: "Lens", kind: "f" });
     let p = D.processes.find((x) => x.title === D.task.name); if (p) p.recs++; else { D.processes.unshift({ dept: (D.task.dept || "").toUpperCase(), ver: "v1", title: D.task.name, steps: 0, recs: 1, epc: null }); p = D.processes[0]; }
     D.activeProc = Math.max(0, D.processes.indexOf(p)); D.procValidated = false; save(); scrUI(); renderProcesses(); renderRec();
-    toast(blob.size ? "Vidéo enregistrée : " + name + " (" + mmss(total) + ")" : "Enregistrement arrêté sans vidéo", !!blob.size); location.hash = "diagnostic";
+    toast(blob.size ? (CLOUD ? "Envoi de la vidéo à Lens… (" + fr(blob.size / 1048576, 1) + " Mo)" : "Vidéo enregistrée : " + name + " (" + mmss(total) + ")") : "Enregistrement arrêté sans vidéo", !!blob.size); location.hash = "diagnostic";
+  }
+  async function scrPublish(blob, name, total) {
+    try {
+      const r = await LensCloud.uploadRecording(ME.entreprise_id, blob, name, { processus: D.task.name, departement: D.task.dept, qui: ME.nom || D.company.first, duree_s: total });
+      if (D.rec) { D.rec.cloudId = r.id; D.rec.fichier = r.path; save(); }
+      toast("Vidéo envoyée à Lens · " + name + " (" + mmss(total) + ")");
+    } catch (e) {
+      console.error(e); toast("Envoi impossible (" + e.message + ") : la vidéo est téléchargée sur cet ordinateur.", false); download(name, blob, blob.type);
+    }
   }
   function initScreenRec() {
     if (!$("#scr-start")) return; scrUI();
@@ -581,14 +601,15 @@
   function initSettings() {
     if (!$("#set-save")) return; const f = { name: $("#set-name"), sector: $("#set-sector"), size: $("#set-size"), email: $("#set-email"), first: $("#set-first"), day: $("#set-day") };
     const fill = () => { f.name.value = D.company.name; f.sector.value = D.company.sector; f.size.value = D.company.size; f.email.value = D.company.email; f.first.value = D.company.first; f.day.value = D.company.day;
-      $("#set-stats").textContent = D.departments.length + " départements · " + totalEmployees() + " employés · " + D.users.length + " comptes · " + D.objectives.length + " objectifs · " + D.processes.length + " processus · " + D.projects.length + " projets. Données conservées dans ce navigateur seulement.";
-      $("#set-account").textContent = D.company.email + " · connecté par le portail client de Groupe Lounici."; };
+      $("#set-stats").textContent = D.departments.length + " départements · " + totalEmployees() + " employés · " + D.users.length + " comptes · " + D.objectives.length + " objectifs · " + D.processes.length + " processus · " + D.projects.length + " projets. " + (CLOUD ? "Données dans la base en ligne de Lens (Canada), partagées par toute l’équipe." : "Données conservées dans ce navigateur seulement.");
+      $("#set-account").textContent = CLOUD && ME ? (ME.email || "") + " · " + ((ME.entreprises && ME.entreprises.nom) || D.company.name) + (ME.role === "lounici" ? " · Groupe Lounici" : ME.role === "admin" ? " · administrateur·rice" : "") : D.company.email + " · connecté par le portail client de Groupe Lounici."; };
     fill();
     $("#set-save").addEventListener("click", () => { D.company.name = f.name.value.trim() || D.company.name; D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = f.email.value.trim(); D.company.first = f.first.value.trim() || "Maya"; D.company.day = Math.min(24, Math.max(1, parseInt(f.day.value, 10) || 8)); save(); applyCompany(); fill(); if ($("#fiche")) ficheCompute(); toast("Paramètres enregistrés"); });
     $("#set-export").addEventListener("click", () => { download("lens-" + D.company.name.replace(/[^\w]+/g, "-").toLowerCase() + ".json", JSON.stringify(D, null, 2), "application/json"); toast("Espace exporté"); });
     $("#set-import").addEventListener("click", () => pickFile(".json").then((txt) => { if (!txt) return; try { const o = JSON.parse(txt); if (!o.company) throw 0; if (!o.departments) o.departments = []; D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), o)); save(); toast("Espace importé · rechargement"); setTimeout(() => location.reload(), 600); } catch (_) { toast("Fichier JSON invalide", false); } }));
-    $("#set-reset").addEventListener("click", () => dialog({ title: "Réinitialiser la démonstration ?", text: "Toutes les données saisies dans ce navigateur seront remplacées par celles de départ.", ok: "Réinitialiser" }).then((ok) => { if (!ok) return; try { localStorage.removeItem(KEY); } catch (_) {} location.hash = "connexion"; location.reload(); }));
-    $("#set-logout").addEventListener("click", () => { try { sessionStorage.removeItem("portail"); } catch (_) {} location.href = "index.html"; });
+    $("#set-reset").addEventListener("click", () => dialog({ title: "Réinitialiser la démonstration ?", text: CLOUD ? "Toutes les données de l’espace en ligne de « " + D.company.name + " » seront remplacées par celles de départ, pour toute l’équipe." : "Toutes les données saisies dans ce navigateur seront remplacées par celles de départ.", ok: "Réinitialiser" })
+      .then(async (ok) => { if (!ok) return; try { localStorage.removeItem(KEY); } catch (_) {} if (CLOUD && ME && ME.entreprise_id) { try { await LensCloud.saveSpace(ME.entreprise_id, JSON.parse(JSON.stringify(DEF))); } catch (e) { toast(e.message, false); return; } } location.hash = "connexion"; location.reload(); }));
+    $("#set-logout").addEventListener("click", async () => { try { sessionStorage.removeItem("portail"); } catch (_) {} if (CLOUD) { try { localStorage.removeItem(KEY); } catch (_) {} await LensCloud.signOut(); } location.href = "index.html"; });
   }
 
   // ───────────────────────── bascules génériques Oui / Non et boutons de filtre ─────────────────────────
@@ -605,5 +626,20 @@
     window.addEventListener("hashchange", refresh); refresh();
     const dlg = $("#dlg"); if (dlg) dlg.addEventListener("close", () => { $("#dlg-text").style.whiteSpace = ""; });
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+  async function boot() {
+    if (CLOUD) {
+      try { ME = await LensCloud.me(); } catch (e) { console.error(e); }
+      if (!ME) { await LensCloud.signOut(); try { sessionStorage.removeItem("portail"); } catch (_) {} location.replace("index.html#portail"); return; }
+      if (ME.entreprise_id) {
+        try {
+          const sp = await LensCloud.loadSpace(ME.entreprise_id);
+          if (sp && sp.data && Object.keys(sp.data).length) { D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), sp.data)); try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} }
+          else { if (ME.entreprises && ME.entreprises.nom) D.company.name = ME.entreprises.nom; await LensCloud.saveSpace(ME.entreprise_id, D); }   // premier passage : l'espace de ce navigateur devient l'espace en ligne
+        } catch (e) { console.error(e); setTimeout(() => toast("Base en ligne inaccessible : " + e.message + " · données locales affichées", false), 400); }
+      }
+      window.addEventListener("beforeunload", (e) => { if (cloudDirty) { e.preventDefault(); e.returnValue = ""; } });
+    }
+    init();
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot); else boot();
 })();

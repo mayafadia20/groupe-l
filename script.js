@@ -195,6 +195,15 @@
       const courriel = form.querySelector("[name=identifiant]").value.trim().toLowerCase();
       const mdp = form.querySelector("[name=mot-de-passe]").value;
       if (!courriel || !mdp) { msg.textContent = t("m_msg_empty", "Veuillez saisir votre identifiant et votre mot de passe."); msg.hidden = false; return; }
+      if (window.LensCloud && LensCloud.enabled) {
+        // Base en ligne : comptes Supabase (courriel + mot de passe), réservés aux adresses autorisées
+        const btn = form.querySelector("button[type=submit]"); if (btn) btn.disabled = true;
+        try { await LensCloud.signIn(courriel, mdp); }
+        catch (err) { msg.textContent = t("m_msg_bad", "Identifiant ou mot de passe incorrect."); msg.hidden = false; if (btn) btn.disabled = false; return; }
+        if (btn) btn.disabled = false;
+        try { sessionStorage.setItem("portail", "1"); } catch (_) {}
+        window.location.href = "portail.html"; return;
+      }
       if ((await sha256(courriel + ":" + mdp)) !== EMPREINTE) {
         msg.textContent = t("m_msg_bad", "Identifiant ou mot de passe incorrect.");
         msg.hidden = false;
@@ -213,7 +222,7 @@
     try { ouvert = sessionStorage.getItem("portail") === "1"; } catch (_) {}
     if (!ouvert) { window.location.replace("index.html#portail"); return; }
     const sortie = document.getElementById("deconnexion");
-    if (sortie) sortie.addEventListener("click", () => { try { sessionStorage.removeItem("portail"); } catch (_) {} });
+    if (sortie) sortie.addEventListener("click", () => { try { sessionStorage.removeItem("portail"); } catch (_) {} if (window.LensCloud && LensCloud.enabled) LensCloud.signOut(); });
   }
 
   // Apparition au défilement et compteurs
