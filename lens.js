@@ -419,7 +419,8 @@
   }
   function initScreenRec() {
     if (!$("#scr-start")) return; scrUI();
-    $("#scr-start").addEventListener("click", scrStart); $("#scr-pause").addEventListener("click", scrPause); $("#scr-finish").addEventListener("click", scrFinish);
+    $("#scr-start").addEventListener("click", scrStart);
+    $("#scr-quiz").addEventListener("click", () => toast("Questionnaire : à venir. Il complétera l’enregistrement par quelques questions sur la tâche.", false)); $("#scr-pause").addEventListener("click", scrPause); $("#scr-finish").addEventListener("click", scrFinish);
     window.addEventListener("beforeunload", (e) => { if (SCR.rec) { e.preventDefault(); e.returnValue = ""; } });
   }
 
