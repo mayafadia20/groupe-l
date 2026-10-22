@@ -469,13 +469,21 @@
   }
 
   // ───────────────────────── écran 7 : diagnostic ─────────────────────────
-  function procCard(p, i, on) {
-    return '<button type="button" data-proc="' + i + '" style="border: none; padding: 0; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; background: ' + GRADC + '; color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)' + '">' +
-      '<span style="display: block; width: 100%; box-sizing: border-box; padding: 10px 20px; background: #ffffff; color: #111113; font-size: 12px; font-weight: 700; letter-spacing: 0.08em">' + esc(p.dept) + "</span>" +
-      '<span style="display: flex; align-items: center; flex: 1; padding: 18px 20px 22px; font-size: 17px; font-weight: 600; line-height: 1.25">' + esc(p.title) + "</span></button>";
+  /** Une carte par département : bandeau blanc avec le nom du département, puis ses processus l'un sous l'autre. */
+  function deptCard(dept, items) {
+    const rows = items.map(({ p, i }) => '<button type="button" data-proc="' + i + '" style="border: none; background: transparent; color: #ffffff; text-align: left; font: inherit; cursor: pointer; width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-top: 1px solid rgba(255, 255, 255, 0.12); font-size: 16px; font-weight: 600; line-height: 1.25' + (i === D.activeProc ? "; background: rgba(255, 255, 255, 0.1)" : "") + '">' +
+      '<span style="flex: none; width: 8px; height: 8px; border-radius: 50%; background: ' + (i === D.activeProc ? "#ffffff" : "rgba(255, 255, 255, 0.35)") + '"></span><span>' + esc(p.title) + "</span></button>").join("");
+    return '<div data-dept-card style="border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; background: ' + GRADC + '; color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)">' +
+      '<span style="display: flex; justify-content: space-between; align-items: center; width: 100%; box-sizing: border-box; padding: 10px 20px; background: #ffffff; color: #111113; font-size: 12px; font-weight: 700; letter-spacing: 0.08em"><span>' + esc(dept) + '</span><span style="font-weight: 600; color: #5e5e65; letter-spacing: 0">' + items.length + " processus</span></span>" +
+      '<div style="display: flex; flex-direction: column; padding-bottom: 6px">' + rows + "</div></div>";
+  }
+  function deptGroups() {
+    const groups = new Map();
+    D.processes.forEach((p, i) => { const k = String(p.dept || "SANS DÉPARTEMENT").toUpperCase(); if (!groups.has(k)) groups.set(k, []); groups.get(k).push({ p, i }); });
+    return Array.from(groups.entries());
   }
   function renderProcesses() {
-    const box = $("#proc-cards"); if (!box) return; box.innerHTML = D.processes.map((p, i) => procCard(p, i, i === D.activeProc)).join("");
+    const box = $("#proc-cards"); if (!box) return; box.innerHTML = deptGroups().map(([dept, items]) => deptCard(dept, items)).join("");
     const p = D.processes[D.activeProc];
     if (!p) { box.innerHTML = '<div style="grid-column: 1 / -1; border-radius: 22px; padding: 24px; background: #ffffff; text-align: center; font-size: 14px; color: #5e5e65; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">Aucun processus. Créez votre premier diagnostic avec le bouton « Nouveau diagnostic ».</div>'; }
     const tot = $("#diagnostic .rec-total"); if (tot) { const none = !(D.rec && D.rec.total != null) && (!p || !p.recs); const txt = Array.from(tot.parentElement.childNodes).find((n) => n.nodeType === 3 && /Enregistrement|Aucun/.test(n.textContent));
