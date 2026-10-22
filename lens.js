@@ -10,43 +10,24 @@
   const KEY = "lens.data";
 
   // ───────────────────────── données par défaut (celles de la démonstration) ─────────────────────────
+  // Aucune donnée de départ : l'espace se remplit avec ce que l'entreprise enregistre.
   const DEF = {
-    company: { name: "Construction Boréal inc.", sector: "Construction", size: "50 à 99 employés", email: "direction@constructionboreal.ca", first: "Maya", day: 8 },
-    departments: [
-      { name: "Direction", resp: "M. Lounici", parent: "", n: 4 }, { name: "Opérations", resp: "S. Roy", parent: "Direction", n: 14 },
-      { name: "Estimation", resp: "J. Tremblay", parent: "Opérations", n: 9 }, { name: "Approvisionnement", resp: "A. Côté", parent: "Opérations", n: 6 },
-      { name: "Finance", resp: "L. Gagnon", parent: "Direction", n: 5 }, { name: "Ressources humaines", resp: "N. Bouchard", parent: "Finance", n: 3 },
-      { name: "Technologies", resp: "K. Pelletier", parent: "Finance", n: 4 }, { name: "Ventes", resp: "É. Morin", parent: "Direction", n: 7 }],
-    users: [
-      { name: "Julie Tremblay", mail: "j.tremblay@constructionboreal.ca", dept: "Estimation", role: "Gestionnaire", status: "active" },
-      { name: "Simon Roy", mail: "s.roy@constructionboreal.ca", dept: "Opérations", role: "Gestionnaire", status: "active" },
-      { name: "Alexandre Côté", mail: "a.cote@constructionboreal.ca", dept: "Approvisionnement", role: "Gestionnaire", status: "sent" },
-      { name: "Louise Gagnon", mail: "l.gagnon@constructionboreal.ca", dept: "Finance", role: "Administratrice", status: "active" },
-      { name: "Marc Bélanger", mail: "m.belanger@constructionboreal.ca", dept: "Estimation", role: "Contributeur", status: "sent" },
-      { name: "Patricia Lavoie", mail: "p.lavoie@constructionboreal.ca", dept: "Estimation", role: "Contributrice", status: "todo" }],
-    extraInvited: 25,   // comptes invités hors de la liste affichée (démo : 31 sur 52)
-    v: 2,   // version des données : les objectifs de démonstration ont été retirés en v2
-    objForm: { cat: "Financier", depts: [], inds: {} },
-    objectives: [],
-    indicators: [],
-    task: { name: "Préparer une soumission", dept: "Estimation", proc: "Nouveau processus", freq: "Plusieurs fois par semaine", windows: ["Excel", "Revit", "Outlook", "Word"] },
-    rec: null,
-    processes: [
-      { dept: "ESTIMATION", ver: "v3", title: "Préparer une soumission", steps: 4, recs: 3 },
-      { dept: "APPROVISIONNEMENT", ver: "v1", title: "Commander les matériaux", steps: 5, recs: 1 },
-      { dept: "FINANCE", ver: "v2", title: "Facturer un projet", steps: 4, recs: 2 }],
-    activeProc: 0, procValidated: false,
-    steps: [{ title: "Lire les plans", dur: "20 min", who: "J. Tremblay", sys: "Revit" }, { title: "Estimer les quantités", dur: "45 min", who: "J. Tremblay", sys: "Excel" },
-            { title: "Obtenir les prix", dur: "attente 1,5 j", who: "A. Côté", sys: "Outlook" }, { title: "Monter la soumission", dur: "30 min", who: "J. Tremblay", sys: "Word" }],
+    company: { name: "", sector: "Construction", size: "", email: "", first: "", day: 8 },
+    departments: [], users: [], extraInvited: 0,
+    v: 3,   // version des données : v3 = plus aucune donnée de démonstration
+    objForm: { cat: "Financier", depts: [], inds: {} }, objectives: [], indicators: [],
+    task: { name: "", dept: "", proc: "Nouveau processus", freq: "", windows: [] },
+    rec: null, processes: [], activeProc: 0, procValidated: false, steps: [],
     fiche: {}, ficheSaved: false,
-    epc: null,   // processus importé depuis l'agent d'enregistrement (déclencheur, étapes, documents, systèmes, constats) ; null = démonstration
-    projects: [
-      { name: "Automatiser la reprise des quantités Revit → Excel", dept: "Estimation", resp: "J. Tremblay", gain: "14 h / sem", status: "En cours", start: "2026-09", end: "2026-12" },
-      { name: "Approbation des achats en deux niveaux", dept: "Approvisionnement", resp: "A. Côté", gain: "9 h / sem", status: "À faire", start: "2026-11", end: "2027-01" },
-      { name: "Feuilles de temps saisies une seule fois", dept: "Opérations", resp: "S. Roy", gain: "7 h / sem", status: "À faire", start: "2027-01", end: "2027-03" },
-      { name: "Relances clients automatisées", dept: "Finance", resp: "L. Gagnon", gain: "4 h / sem", status: "Terminé", start: "2026-06", end: "2026-09" }],
-    realOverrides: {}, period: "T3 2026", chartMode: "monthly", sysMode: "usage", dashObj: 0,
+    epc: null,   // ancien emplacement du diagramme importé (désormais dans chaque processus)
+    projects: [], realOverrides: {}, period: "T4 2026", chartMode: "monthly", sysMode: "usage", dashObj: 0,
   };
+  // Gabarit « Construction » proposé par le bouton de l'étape Départements (8 départements types)
+  const GABARIT = [
+    { name: "Direction", resp: "", parent: "", n: 0 }, { name: "Opérations", resp: "", parent: "Direction", n: 0 },
+    { name: "Estimation", resp: "", parent: "Opérations", n: 0 }, { name: "Approvisionnement", resp: "", parent: "Opérations", n: 0 },
+    { name: "Finance", resp: "", parent: "Direction", n: 0 }, { name: "Ressources humaines", resp: "", parent: "Finance", n: 0 },
+    { name: "Technologies", resp: "", parent: "Finance", n: 0 }, { name: "Ventes", resp: "", parent: "Direction", n: 0 }];
   let D = load();
   const CLOUD = !!(window.LensCloud && LensCloud.enabled);
   let ME = null;            // profil en ligne : { user_id, entreprise_id, role, nom, email, entreprises: { nom } }
@@ -58,7 +39,9 @@
   }
   function load() {
     try { const s = localStorage.getItem(KEY); if (s) { const saved = JSON.parse(s);
-      if ((saved.v || 1) < 2) { delete saved.objectives; delete saved.objForm; delete saved.indicators; saved.v = 2; }   // repart avec des objectifs vides
+      if ((saved.v || 1) < 3 && saved.company && saved.company.name === "Construction Boréal inc.") return JSON.parse(JSON.stringify(DEF));   // ancienne démonstration : on repart à vide
+      if ((saved.v || 1) < 2) { delete saved.objectives; delete saved.objForm; delete saved.indicators; }
+      saved.v = 3;
       return normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), saved)); } } catch (_) {}
     return JSON.parse(JSON.stringify(DEF));
   }
@@ -161,8 +144,8 @@
     });
   }
   function applyCompany() {
-    $$(".co-sub").forEach((el) => { el.textContent = el.dataset.sub.replace("Construction Boréal inc.", D.company.name); });
-    const h = $("#home-name"); if (h) h.textContent = D.company.first || "Maya";
+    $$(".co-sub").forEach((el) => { el.textContent = (D.company.name || (CLOUD && ME && ME.entreprises && ME.entreprises.nom) || "Votre entreprise") + " · configuration de l’espace"; });
+    const h = $("#home-name"); if (h) h.textContent = D.company.first || (CLOUD && ME && ME.nom ? ME.nom.split(" ")[0] : "") || "";
   }
 
   // ───────────────────────── écran 2 : départements ─────────────────────────
@@ -194,6 +177,7 @@
     const walk = (p, lvl, seen) => kids(p).filter((d) => !seen.has(d.name)).map((d) => { seen.add(d.name); const c = walk(d.name, lvl + 1, seen); return row(d, lvl) + (c ? '<div style="margin-left: 18px; padding-left: 16px; border-left: 1.5px solid ' + (lvl === 0 ? "#111113" : "#a9a9b0") + '; display: flex; flex-direction: column; gap: 8px">' + c + "</div>" : ""); }).join("");
     tree.innerHTML = walk("", 0, new Set()) || '<p style="margin:0;font-size:13px;color:#5e5e65">Ajoutez un département pour voir la structure.</p>';
   }
+  function treeHTML() { const t = $("#dep-tree"); if (!t) return ""; renderTree(); return D.departments.length ? t.innerHTML : ""; }
   function initDepts() {
     const box = $("#dep-rows"); if (!box) return;
     box.addEventListener("input", (e) => { const r = e.target.closest("[data-i]"); if (!r) return; const d = D.departments[+r.dataset.i]; const k = e.target.dataset.k; if (!d || !k) return;
@@ -205,7 +189,7 @@
         D.departments.forEach((x) => { if (x.parent === d.name) x.parent = d.parent; }); D.departments.splice(+b.dataset.del, 1); save(); renderDepts(); toast("Département supprimé"); }); });
     $("#dep-add").addEventListener("click", () => dialog({ title: "Nouveau département", fields: [{ name: "name", label: "Département" }, { name: "resp", label: "Responsable" }, { name: "parent", label: "Relève de", options: ["— (sommet)"].concat(deptNames()), value: "Direction" }, { name: "n", label: "Employés", type: "number", value: "3" }], ok: "Ajouter" })
       .then((v) => { if (!v || !v.name) return; D.departments.push({ name: v.name, resp: v.resp, parent: v.parent === "— (sommet)" ? "" : v.parent, n: parseInt(v.n, 10) || 0 }); save(); renderDepts(); toast("« " + v.name + " » ajouté"); }));
-    $("#dep-template").addEventListener("click", () => dialog({ title: "Appliquer le gabarit Construction ?", text: "Les 8 départements types remplaceront la liste actuelle.", ok: "Appliquer" }).then((ok) => { if (!ok) return; D.departments = JSON.parse(JSON.stringify(DEF.departments)); save(); renderDepts(); toast("Gabarit Construction appliqué"); }));
+    $("#dep-template").addEventListener("click", () => dialog({ title: "Appliquer le gabarit Construction ?", text: "Les 8 départements types remplaceront la liste actuelle.", ok: "Appliquer" }).then((ok) => { if (!ok) return; D.departments = JSON.parse(JSON.stringify(GABARIT)); save(); renderDepts(); toast("Gabarit Construction appliqué"); }));
     $("#dep-import").addEventListener("click", () => pickFile(".csv,.txt").then((txt) => { if (!txt) return; const rows = parseCSV(txt).filter((r) => r.length >= 2 && !/^d[ée]partement$/i.test(r[0]));
       if (!rows.length) { toast("Aucune ligne lisible : attendu « Département;Responsable;Relève de;Employés »", false); return; }
       D.departments = rows.map((r) => ({ name: r[0], resp: r[1] || "", parent: r[2] && !/sommet/i.test(r[2]) ? r[2] : "", n: parseInt(r[3], 10) || 0 })); save(); renderDepts(); toast(rows.length + " départements importés"); }));
@@ -327,7 +311,7 @@
       D.rec = { elapsed: 0, paused: false, running: true, clicks: 0, captures: 0, actions: [{ t: 0, label: "Démarrage de l’enregistrement", tag: "Lens", kind: "f" }], total: null, pool: 0 };
       save(); applyTask(); toast("Enregistrement démarré"); });
   }
-  function applyTask() { $$(".task-title").forEach((el) => (el.textContent = D.task.name)); $$(".task-sub").forEach((el) => (el.textContent = "Diagnostic · " + D.task.dept + (el.closest("#enregistrement") ? " · " + (D.users.find((u) => u.dept === D.task.dept) || { name: D.company.first }).name : ""))); }
+  function applyTask() { $$(".task-title").forEach((el) => (el.textContent = D.task.name || "Aucun diagnostic")); $$(".task-sub").forEach((el) => (el.textContent = "Diagnostic · " + D.task.dept + (el.closest("#enregistrement") ? " · " + (D.users.find((u) => u.dept === D.task.dept) || { name: D.company.first }).name : ""))); }
 
   // ───────────────────────── écran 6 : enregistrement ─────────────────────────
   const POOL = [["Ouverture de Plans_Laval.pdf", "Document entrant", "f"], ["Mesures prises dans la maquette", "Revit · 46 clics", "f"], ["Création de Estimation_Projet-Laval.xlsx", "Excel · document sortant", "f"], ["Quantités ressaisies depuis Revit", "Saisie double détectée", "dark"], ["Courriel envoyé au fournisseur", "Outlook · demande de prix", "f"], ["Copie des prix dans Excel", "Saisie double détectée", "dark"], ["Mise en page de la soumission", "Word", "f"], ["Soumission.pdf exportée", "Document sortant", "f"]];
@@ -424,9 +408,10 @@
   }
   function renderProcesses() {
     const box = $("#proc-cards"); if (!box) return; box.innerHTML = D.processes.map((p, i) => procCard(p, i, i === D.activeProc)).join("");
-    const t = $$("#diagnostic .task-title"); const p = D.processes[D.activeProc]; if (p) t.forEach((el) => (el.textContent = p.title));
-    const sub = $("#diagnostic .task-sub"); if (sub && p) sub.textContent = "Diagnostic · " + p.dept[0] + p.dept.slice(1).toLowerCase();
-    const tot = $("#diagnostic .rec-total"); if (tot) { const none = !(D.rec && D.rec.total != null) && p && !p.recs; const txt = Array.from(tot.parentElement.childNodes).find((n) => n.nodeType === 3 && /Enregistrement|Aucun/.test(n.textContent));
+    const t = $$("#diagnostic .task-title"); const p = D.processes[D.activeProc]; t.forEach((el) => (el.textContent = p ? p.title : "Aucun diagnostic"));
+    const sub = $("#diagnostic .task-sub"); if (sub) sub.textContent = p ? "Diagnostic · " + p.dept[0] + p.dept.slice(1).toLowerCase() : "Diagnostic";
+    if (!p) { box.innerHTML = '<div style="grid-column: 1 / -1; border-radius: 22px; padding: 24px; background: #ffffff; text-align: center; font-size: 14px; color: #5e5e65; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">Aucun processus. Créez votre premier diagnostic avec le bouton « Nouveau diagnostic ».</div>'; }
+    const tot = $("#diagnostic .rec-total"); if (tot) { const none = !(D.rec && D.rec.total != null) && (!p || !p.recs); const txt = Array.from(tot.parentElement.childNodes).find((n) => n.nodeType === 3 && /Enregistrement|Aucun/.test(n.textContent));
       if (txt) txt.textContent = none ? "Aucun enregistrement" : "Enregistrement terminé · "; tot.style.display = none ? "none" : ""; tot.textContent = D.rec && D.rec.total != null ? mmss(D.rec.total) : "12:48"; }
     const v = $("#epc-validate"); if (v) { v.textContent = D.procValidated ? "Processus validé ✓" : "Valider le processus"; }
     if (typeof renderEPC === "function") renderEPC();
@@ -445,27 +430,31 @@
     const sys = '<div style="width: 100px; min-height: 52px; box-sizing: border-box; border: 1.5px solid #111113; border-left: 6px solid #111113; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px">' + epcList(s.sys, "SYSTÈME", "hors écran") + "</div>";
     return '<div style="display: flex; align-items: center">' + who + epcLine + '<div style="' + EPC_DOC + '">' + epcList(s.in, "ENTRANT", "aucun") + "</div>" + epcRight + step + epcRight + '<div style="' + EPC_DOC + '">' + epcList(s.out, "SORTANT", "aucun") + "</div>" + epcLine + sys + "</div>";
   }
+  function ficheLabels(s1, qui) {
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    const fl = $("#fiche-step-label"), ft = $("#fiche-step-title");
+    if (fl && ft) { fl.textContent = s1 ? "ÉTAPE 1 · FICHE DE DONNÉES" : "FICHE DE DONNÉES"; ft.textContent = s1 ? s1.title : "En attente d’un enregistrement"; }
+    set("#fiche-in1", s1 ? ((s1.in || [])[0] || "aucun") : "—"); set("#fiche-out1", s1 ? ((s1.out || [])[0] || "aucun") : "—"); set("#fiche-sys1", s1 ? ((s1.sys || [])[0] || "hors écran") : "—");
+    set("#fiche-role", s1 ? (s1.who || "—") + (s1.dept ? " · " + s1.dept : "") : "—");
+    set("#fiche-double", s1 ? (s1.bottleneck ? "Copier-coller entre deux logiciels détecté" : "Aucune saisie double détectée pendant l’enregistrement") : "À déterminer par l’enregistrement");
+    const other = $("#fiche-other"); if (other) other.style.display = "none";
+    const add = $("#fiche-deps-add"); if (add) add.innerHTML = ["Ajouter…"].concat(deptNames()).map((n) => "<option>" + esc(n) + "</option>").join("");
+    const av = $$("#diagnostic header span").find((x) => /^[A-ZÀ-Ý—]{1,2}$/.test(x.textContent.trim()) && /border-radius: 50%/.test(x.getAttribute("style") || ""));
+    if (av) av.textContent = initials(qui || (CLOUD && ME && ME.nom) || D.company.first || "—");
+  }
   function renderEPC() {
-    const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); if (e) ficheClear();
-    if (!e) { if (p && !p.steps && !p.recs) { ficheClear(); const fl = $("#fiche-step-label"), ft = $("#fiche-step-title"); if (fl && ft) { fl.textContent = "FICHE DE DONNÉES"; ft.textContent = "En attente d’un enregistrement"; } const av0 = $$("#diagnostic header span").find((x) => /^[A-ZÀ-Ý]{1,2}$/.test(x.textContent.trim()) && /border-radius: 50%/.test(x.getAttribute("style") || "")); if (av0) av0.textContent = initials(D.company.first || "L"); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Réenregistrer » pour enregistrer l’écran, puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
+    const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); ficheClear();
+    if (!p) { box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun processus pour l’instant. Cliquez sur « Nouveau diagnostic », donnez-lui un nom, puis enregistrez l’écran.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = "EN ATTENTE D’UN PREMIER DIAGNOSTIC"; ficheLabels(null); return; }
+    if (!e) { if (p && !p.steps && !p.recs) { ficheLabels(null); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Réenregistrer » pour enregistrer l’écran, puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
     let h = '<div style="' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
     (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1) + epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">ÉVÉNEMENT</span><span style="font-size: 13px">' + esc(s.event || (i === e.steps.length - 1 ? e.result || "Terminé" : "Étape terminée")) + "</span></div>"; });
     if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
     box.innerHTML = h;
     const sub = $("#epc-sub"); const src = e.source || {};
     if (sub) sub.textContent = ((p && p.dept) || "").toUpperCase() + " · PROPOSÉ PAR LENS À PARTIR DE " + (src.clicks != null ? src.clicks + " CLICS" : "L’ENREGISTREMENT") + (src.qui ? " · " + src.qui.toUpperCase() : "");
-    const s1 = (e.steps || [])[0]; const fl = $("#fiche-step-label"), ft = $("#fiche-step-title");
-    if (fl && ft && s1) { fl.textContent = "ÉTAPE 1 · FICHE DE DONNÉES"; ft.textContent = s1.title; }
-    if (s1) {
-      const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
-      set("#fiche-in1", (s1.in || [])[0] || "aucun"); set("#fiche-out1", (s1.out || [])[0] || "aucun"); set("#fiche-sys1", (s1.sys || [])[0] || "hors écran");
-      set("#fiche-role", (s1.who || "—") + (s1.dept ? " · " + s1.dept : "")); set("#fiche-double", s1.bottleneck ? "Copier-coller entre deux logiciels détecté" : "Aucune saisie double détectée pendant l’enregistrement");
-      const other = $("#fiche-other"); if (other) other.style.display = "none";
-    }
+    const s1 = (e.steps || [])[0]; ficheLabels(s1 || null, src.qui);
     $$(".side-proc-title").forEach((el) => (el.textContent = (p || {}).title || "—"));
     $$(".side-proc-sub").forEach((el) => (el.textContent = ((p && p.dept) ? p.dept[0] + p.dept.slice(1).toLowerCase() : "") + " · " + (src.qui || "1 participant")));
-    const av = $$("#diagnostic header span").find((x) => /^[A-ZÀ-Ý]{1,2}$/.test(x.textContent.trim()) && /border-radius: 50%/.test(x.getAttribute("style") || ""));
-    if (av && src.qui) av.textContent = initials(src.qui);
   }
   function ficheInputs() { return $$("#fiche input, #fiche select, #fiche textarea"); }
   // espace réel (processus importé ou neuf) : les valeurs de démonstration de la fiche sont effacées, la personne la remplit
@@ -504,7 +493,7 @@
     f.addEventListener("change", () => save());
     $("#fiche-save").addEventListener("click", () => { D.ficheSaved = true; save(); const r = ficheCompute(); toast("Fiche enregistrée · cycle ≈ " + fr(r.cycle, 1) + " j · utilisation " + r.util + " %"); });
     $("#diag-validate").addEventListener("click", () => { D.procValidated = true; save(); toast("Diagnostic validé · visible sur le tableau de bord"); });
-    $("#diag-rerecord").addEventListener("click", () => { const p = activeProc(); if (p) { D.task.name = p.title; D.task.dept = p.dept[0] + p.dept.slice(1).toLowerCase(); save(); applyTask(); } });
+    $("#diag-rerecord").addEventListener("click", (e) => { const p = activeProc(); if (!p) { e.preventDefault(); $("#diag-new").click(); return; } D.task.name = p.title; D.task.dept = p.dept[0] + p.dept.slice(1).toLowerCase(); save(); applyTask(); });
     $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [{ name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Préparer une soumission" }, { name: "dept", label: "Département", options: deptNames().length ? deptNames() : ["Direction"] }], ok: "Créer" })
       .then((v) => { if (!v || !v.title) return; D.processes.unshift({ dept: v.dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0, epc: null }); D.activeProc = 0; D.procValidated = false;
         D.task = { name: v.title, dept: v.dept, proc: "Nouveau processus", freq: "", windows: [] }; D.rec = null; save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » créé · enregistrez l’écran"); }); });
@@ -514,13 +503,52 @@
   // ───────────────────────── diagramme des utilisateurs (tableau de bord) ─────────────────────────
   function initStruct() { const b = $("#struct-edit"); if (b) b.addEventListener("click", () => { location.hash = "departements"; }); }
   function initNotifs() { $$(".notif-btn").forEach((b) => b.addEventListener("click", () => { const pending = D.users.filter((u) => u.status === "sent").length; const todo = D.users.filter((u) => u.status === "todo").length;
-    const items = [activeEpc() ? null : "Goulot confirmé : « Estimer les quantités » à 112 % d’utilisation", pending + " invitation" + (pending > 1 ? "s" : "") + " en attente de réponse", todo ? todo + " employé" + (todo > 1 ? "s" : "") + " encore à inviter" : null, D.rec && D.rec.running ? "Un enregistrement est en cours (" + mmss(D.rec.elapsed) + ")" : null, D.procValidated ? "Processus « " + (D.processes[D.activeProc] || {}).title + " » validé" : "Le processus « " + (D.processes[D.activeProc] || {}).title + " » attend votre validation"].filter(Boolean);
+    const items = [pending + " invitation" + (pending > 1 ? "s" : "") + " en attente de réponse", todo ? todo + " employé" + (todo > 1 ? "s" : "") + " encore à inviter" : null, D.rec && D.rec.running ? "Un enregistrement est en cours (" + mmss(D.rec.elapsed) + ")" : null, !activeProc() ? "Aucun diagnostic pour l’instant" : D.procValidated ? "Processus « " + activeProc().title + " » validé" : "Le processus « " + activeProc().title + " » attend votre validation"].filter(Boolean);
+    if (!items.length) items.push("Rien à signaler.");
     dialog({ title: "Notifications", text: items.map((s) => "• " + s).join("\n"), ok: "Fermer" }); $("#dlg-text").style.whiteSpace = "pre-line"; })); }
 
   // ───────────────────────── écran 9 : tableau de bord ─────────────────────────
-  const DASH = [{ cat: "FINANCIER", val: "14 à 16 %", desc: "de profitabilité sur les contrats de construction", real: "Réel 10 à 12 % · écart −4 pts" }, { cat: "OPÉRATIONNEL", val: "6 j", desc: "de délai de soumission par dossier", real: "Réel 9,2 j · écart +3,2 j" }, { cat: "HUMAIN", val: "80 %", desc: "de charge moyenne des équipes", real: "Réel 92 % · écart +12 pts" }];
-  function renderSys() { $$(".sys-sub").forEach((t) => { const n = parseInt(t.dataset.usage, 10) || 0; t.textContent = D.sysMode === "cost" ? fr(n * 35, 0) + " $ / mois" : t.dataset.usage; }); const seg = (on, off) => { on.style.background = "#111113"; on.style.color = "#fff"; off.style.background = "transparent"; off.style.color = "#111113"; }; if ($("#sys-usage")) seg($(D.sysMode === "cost" ? "#sys-cost" : "#sys-usage"), $(D.sysMode === "cost" ? "#sys-usage" : "#sys-cost")); }
-  function renderDashGlobal() { const g = $("#dash-global"); if (!g) return; const o = DASH[D.dashObj] || DASH[0]; const sp = $$(":scope > span, :scope > b", g); sp[0].textContent = "OBJECTIF GLOBAL · " + o.cat; sp[1].textContent = o.val; sp[2].textContent = o.desc; sp[3].textContent = o.real; }
+  // ─── tableau de bord : tout est calculé à partir des données de l'espace (aucune valeur figée) ───
+  const allEpcSteps = () => D.processes.flatMap((p) => (p.epc && p.epc.steps) || []);
+  const allSystems = () => { const m = new Map(); allEpcSteps().forEach((st) => (st.sys || []).forEach((x) => m.set(x, (m.get(x) || 0) + 1))); return Array.from(m.entries()).sort((a, b) => b[1] - a[1]); };
+  function renderSys() {
+    const box = $("#dash-sysmap"); if (!box) return; const sys = allSystems();
+    const seg = (on, off) => { if (!on || !off) return; on.style.background = "#111113"; on.style.color = "#fff"; off.style.background = "transparent"; off.style.color = "#111113"; };
+    seg($(D.sysMode === "cost" ? "#sys-cost" : "#sys-usage"), $(D.sysMode === "cost" ? "#sys-usage" : "#sys-cost"));
+    if (!sys.length) { box.innerHTML = '<span style="font-size: 14px; color: #5e5e65; text-align: center">Aucun système observé pour l’instant : ils apparaissent avec le premier processus cartographié.</span>'; return; }
+    const max = sys[0][1];
+    box.innerHTML = sys.map(([n, c]) => { const size = 72 + Math.round(88 * (c / max)); const dark = c === max; return '<div title="' + esc(n) + '" style="width: ' + size + 'px; height: ' + size + 'px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8px; box-sizing: border-box; ' + (dark ? "background: " + GRADC + "; color: #ffffff" : "border: 1.5px solid #111113; background: #ffffff; color: #111113") + '"><b style="font-size: ' + (dark ? 15 : 13) + 'px; line-height: 1.15">' + esc(n) + '</b><span style="font-size: 11px; opacity: 0.75">' + (D.sysMode === "cost" ? "coût à renseigner" : c + (c > 1 ? " étapes" : " étape")) + "</span></div>"; }).join("");
+  }
+  const objLabel = (o) => (o.cat || "").toUpperCase();
+  function renderDashGlobal() {
+    const g = $("#dash-global"); if (!g) return; const sel = $("#dash-obj");
+    if (sel) { sel.innerHTML = D.objectives.map((o) => "<option>" + esc(o.title) + "</option>").join("") || "<option>Aucun objectif</option>"; sel.selectedIndex = Math.min(D.dashObj, Math.max(0, D.objectives.length - 1)); }
+    const o = D.objectives[D.dashObj] || D.objectives[0]; const sp = $$(":scope > span, :scope > b", g);
+    if (!o) { sp[0].textContent = "OBJECTIF GLOBAL"; sp[1].textContent = "—"; sp[2].textContent = "Aucun objectif global pour l’instant."; sp[3].textContent = "À définir dans Objectifs"; return; }
+    sp[0].textContent = "OBJECTIF GLOBAL · " + objLabel(o); sp[1].textContent = o.target || "—"; sp[2].textContent = o.title; sp[3].textContent = o.horizon ? "Horizon " + o.horizon : "Réel à mesurer";
+  }
+  function renderDash() {
+    if (!$("#dash-proc")) return;
+    const steps = allEpcSteps(); const goulots = steps.filter((st) => st.bottleneck).length; const sys = allSystems().length;
+    const mapped = D.processes.filter((p) => p.epc && p.epc.steps && p.epc.steps.length).length, total = D.processes.length;
+    $("#dash-proc").textContent = total; $("#dash-goulots").textContent = goulots; $("#dash-sys").textContent = sys;
+    $("#dash-objs").textContent = D.objectives.length + (D.objectives.length > 1 ? " objectifs" : " objectif");
+    const cov = total ? Math.round(mapped / total * 100) : 0;
+    $("#dash-cov").textContent = cov + " %"; $("#dash-cov-bar").style.width = cov + "%";
+    $("#dash-cov-text").textContent = total ? mapped + " processus cartographié" + (mapped > 1 ? "s" : "") + " sur " + total + " identifié" + (total > 1 ? "s" : "") : "Aucun processus cartographié pour l’instant.";
+    // indice de santé : part des étapes sans goulot, pondérée par la couverture ; « — » tant qu'il n'y a rien à mesurer
+    const sante = steps.length ? Math.round(100 * (1 - goulots / steps.length) * (0.5 + cov / 200)) : null;
+    $("#dash-health").textContent = sante == null ? "—" : sante + " %"; const ring = $("#dash-ring"); if (ring) ring.setAttribute("stroke-dasharray", Math.round(138 * (sante || 0) / 100) + " 138");
+    const empty = $("#dash-cols-empty"); if (empty) empty.style.display = $$("#dash-cols article").length ? "none" : "block";
+    const badge = $("#dash-tree-badge"); if (badge) badge.textContent = "ORGANIGRAMME · " + D.departments.length + " DÉPARTEMENT" + (D.departments.length > 1 ? "S" : "") + (totalEmployees() ? " · " + totalEmployees() + " EMPLOYÉ" + (totalEmployees() > 1 ? "S" : "") : "");
+    const tree = $("#dash-tree"); if (tree) tree.innerHTML = treeHTML() || '<p style="margin: 0; border-radius: 20px; padding: 24px; background: #f4f4f6; text-align: center; font-size: 14px; color: #5e5e65">Aucun département pour l’instant. Créez votre structure avec « Modifier la structure ».</p>';
+    const p = activeProc();
+    $$(".side-proc-title").forEach((el) => { const card = el.parentElement; if (card) card.style.display = p ? "flex" : "none"; });
+    const set = (id, v) => { const el = $(id); if (el) el.textContent = v; };
+    set("#dash-sys-n", sys); set("#dash-sys-double", goulots); set("#dash-sys-steps", steps.length);
+    set("#dash-avatar", initials((CLOUD && ME && ME.nom) || D.company.first || "—"));
+    renderSys(); renderDashGlobal();
+  }
   function applyReal() { Object.keys(D.realOverrides).forEach((k) => { const a = $$('#tableau .ind[data-ind="' + CSS.escape(k) + '"]')[0]; if (!a) return; const r = D.realOverrides[k]; const dark = $$("div", a).find((d) => /RÉEL/.test(d.textContent) && /radial-gradient/.test(d.getAttribute("style") || "")); if (dark) { const b = dark.querySelector("b"); if (b) b.textContent = r.value; const units = $$("span > span", dark).filter((s) => /rgba\(255, 255, 255, 0.14\)/.test(s.getAttribute("style") || "")); if (units[0] && r.unit) units[0].textContent = r.unit; } }); }
   // Écart défavorable pour l'entreprise → case en rouge. Un indicateur « plus bas = mieux » (délai, heures, coût…) est en
   // défaut quand l'écart est positif ; les autres (profitabilité, escompte…) quand il est négatif.
@@ -571,11 +599,11 @@
     g.innerHTML = head + rows;
   }
   function initDash() {
-    if (!$("#dash-period")) return; $("#dash-period").value = D.period; $("#dash-obj").selectedIndex = D.dashObj;
+    if (!$("#dash-period")) return; $("#dash-period").value = D.period;
     $("#dash-period").addEventListener("change", (e) => { D.period = e.target.value; save(); toast("Période : " + D.period); });
     $("#dash-obj").addEventListener("change", (e) => { D.dashObj = e.target.selectedIndex; save(); renderDashGlobal(); });
     $("#sys-usage").addEventListener("click", () => { D.sysMode = "usage"; save(); renderSys(); }); $("#sys-cost").addEventListener("click", () => { D.sysMode = "cost"; save(); renderSys(); });
-    $("#dash-ind-add").addEventListener("click", () => dialog({ title: "Nouvel indicateur", fields: [{ name: "dept", label: "Département", options: deptNames() }, { name: "name", label: "Indicateur" }, { name: "target", label: "Cible", placeholder: "Ex. : 5 j / dossier" }, { name: "desc", label: "Pourquoi il compte", type: "textarea" }], ok: "Ajouter" }).then((v) => { if (!v || !v.name) return; D.indicators.push(v); save(); addDashInd(v); toast("Indicateur ajouté au tableau de bord"); }));
+    $("#dash-ind-add").addEventListener("click", () => dialog({ title: "Nouvel indicateur", fields: [{ name: "dept", label: "Département", options: deptNames() }, { name: "name", label: "Indicateur" }, { name: "target", label: "Cible", placeholder: "Ex. : 5 j / dossier" }, { name: "desc", label: "Pourquoi il compte", type: "textarea" }], ok: "Ajouter" }).then((v) => { if (!v || !v.name) return; D.indicators.push(v); save(); addDashInd(v); renderDash(); toast("Indicateur ajouté au tableau de bord"); }));
     $("#dash-cols").addEventListener("click", (e) => { const b = e.target.closest(".ind-plus"); if (!b) return; const art = b.closest(".ind"); const name = art.dataset.ind;
       dialog({ title: "Nouvelle mesure · " + name, text: "Saisissez la valeur réelle observée sur la période.", fields: [{ name: "value", label: "Valeur réelle" }, { name: "unit", label: "Unité", placeholder: "%, jours, h…" }, { name: "src", label: "Source", options: ["Mesurée", "Estimée", "Donnée système"] }], ok: "Enregistrer" }).then((v) => { if (!v || !v.value) return; D.realOverrides[name] = v; save(); applyReal(); toast("Mesure enregistrée pour « " + name + " »"); }); });
     $("#gantt").addEventListener("click", (e) => { const b = e.target.closest("[data-gantt]"); if (!b) return; const p = D.projects[+b.dataset.gantt]; if (!p) return;
@@ -583,7 +611,7 @@
         .then((v) => { if (!v) return; p.status = v.status; if (v.start) p.start = v.start; if (v.end) p.end = v.end; prjDates(p); save(); renderGantt(); renderProjects(); toast("Projet mis à jour"); }); });
     $("#gantt-add").addEventListener("click", () => newProjectDialog().then((ok) => { if (ok) renderGantt(); }));
     $$("#tableau nav > div:last-child").forEach((card) => { if (/Diagnostic en cours/.test(card.textContent)) { card.style.cursor = "pointer"; card.addEventListener("click", () => { location.hash = "diagnostic"; }); } });
-    D.indicators.forEach(addDashInd); renderSys(); renderDashGlobal(); applyReal(); paintGaps(); renderGantt();
+    D.indicators.forEach(addDashInd); applyReal(); paintGaps(); renderGantt(); renderDash();
   }
   function addDashInd(v) {
     const cols = $("#dash-cols"); if (!cols) return; let col = $$(":scope > div", cols).find((c) => c.textContent.trim().toUpperCase().startsWith(v.dept.toUpperCase()));
@@ -594,19 +622,12 @@
 
   // ───────────────────────── écrans 10 à 12 : analyses, projets, paramètres ─────────────────────────
   function insights() {
-    if (activeEpc() && activeEpc().constats && activeEpc().constats.length) return activeEpc().constats.map((c) => ({ t: c.titre, d: c.detail, gain: c.gain || "à estimer", dept: c.dept || (D.processes[D.activeProc] || {}).dept || "", pri: c.gravite === "forte" ? 1 : c.gravite === "moyenne" ? 2 : 3 })).sort((a, b) => a.pri - b.pri);
-    const r = $("#fiche") ? ficheCompute() : { util: 112, cycle: 1.6 }; const pending = D.users.filter((u) => u.status === "sent").length; const todo = D.users.filter((u) => u.status === "todo").length;
-    const list = [
-      { t: "Goulot : « Estimer les quantités »", d: "Utilisation à " + r.util + " % pour " + fr(r.cycle, 1) + " j de cycle. La saisie des quantités est refaite à la main depuis Revit.", gain: "14 h / sem", dept: "Estimation", pri: 1 },
-      { t: "Double saisie Revit → Excel", d: "Deux échanges manuels détectés pendant l’enregistrement. Un export direct des quantités supprime la ressaisie.", gain: "9 h / sem", dept: "Estimation", pri: 1 },
-      { t: "Attente fournisseurs : 1,5 j", d: "Les demandes de prix partent par courriel une à une. Une demande groupée par projet réduit l’attente.", gain: "1 j de cycle", dept: "Approvisionnement", pri: 2 },
-      pending + todo ? { t: (pending + todo) + " employés sans compte actif", d: "La couverture du diagnostic plafonne tant que l’équipe n’est pas invitée.", gain: "couverture +" + Math.min(30, (pending + todo) * 4) + " pts", dept: "Ressources humaines", pri: 2 } : null,
-      D.objectives.length < 4 ? { t: "Objectif client absent", d: "Aucun objectif global ne porte sur la conversion des soumissions (24 % contre 30 % visés).", gain: "cible à fixer", dept: "Ventes", pri: 3 } : null,
-      { t: "Licences peu utilisées", d: "Quatre systèmes servent à moins de 5 étapes. Vérifier les abonnements avant le renouvellement.", gain: "≈ 1 200 $ / mois", dept: "Technologies", pri: 3 }].filter(Boolean);
-    return list.sort((a, b) => a.pri - b.pri);
+    const e = activeEpc(); if (!e || !e.constats || !e.constats.length) return [];
+    return e.constats.map((c) => ({ t: c.titre, d: c.detail, gain: c.gain || "à estimer", dept: c.dept || (activeProc() || {}).dept || "", pri: c.gravite === "forte" ? 1 : c.gravite === "moyenne" ? 2 : 3 })).sort((a, b) => a.pri - b.pri);
   }
   function renderIA() {
     const box = $("#ia-list"); if (!box) return; const items = insights(); $("#ia-count").textContent = items.length + " constat" + (items.length > 1 ? "s" : "");
+    if (!items.length) { box.innerHTML = '<div style="grid-column: 1 / -1; border-radius: 20px; padding: 24px; background: #f4f4f6; text-align: center; font-size: 14px; color: #5e5e65">Aucun constat pour l’instant : les analyses apparaissent après la cartographie d’un enregistrement.</div>'; $("#ia-plan").innerHTML = ""; return; }
     box.innerHTML = items.map((it, i) => '<div style="border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 8px; ' + (it.pri === 1 ? "background: " + GRADC + "; color: #fff" : "background: #f4f4f6") + '"><div style="display: flex; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; ' + (it.pri === 1 ? "color: #c9c9ce" : "color: #5e5e65") + '"><span>PRIORITÉ ' + it.pri + "</span><span>" + esc(it.dept.toUpperCase()) + '</span></div><b style="font-size: 15px">' + esc(it.t) + '</b><span style="font-size: 13px; line-height: 1.45; ' + (it.pri === 1 ? "color: #d4d4d8" : "color: #5e5e65") + '">' + esc(it.d) + '</span><div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px"><b style="font-size: 14px">' + esc(it.gain) + '</b><button type="button" data-mkprj="' + i + '" style="min-height: 34px; padding: 0 12px; border-radius: 999px; border: none; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; ' + (it.pri === 1 ? "background: #fff; color: #111113" : "background: #111113; color: #fff") + '">Créer un projet</button></div></div>').join("");
     const plan = $("#ia-plan"); plan.innerHTML = items.map((it, i) => '<li style="display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 0; border-top: 1px solid #ececef; font-size: 14px"><b style="width: 34px; height: 34px; border-radius: 50%; background: ' + (i === 0 ? "#111113" : "#e4e4e8") + "; color: " + (i === 0 ? "#fff" : "#111113") + '; display: flex; align-items: center; justify-content: center">' + (i + 1) + '</b><span><b style="font-weight: 600">' + esc(it.t) + '</b><span style="display: block; font-size: 12.5px; color: #5e5e65">' + esc(it.dept) + " · " + esc(it.gain) + '</span></span><span style="font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 999px; background: #f1f1f3">' + (i < 2 ? "30 jours" : i < 4 ? "60 jours" : "90 jours") + "</span></li>").join("");
   }
@@ -646,7 +667,7 @@
       renderInv();
       $("#inv-go").addEventListener("click", async () => { const em = $("#inv-courriel").value.trim(), en = $("#inv-entreprise").value.trim(); if (!/.+@.+\..+/.test(em)) { toast("Entrez un courriel valide.", false); return; } try { await LensCloud.invite(em, en, null); toast("Invitation enregistrée pour " + em); $("#inv-courriel").value = ""; $("#inv-entreprise").value = ""; renderInv(); } catch (e) { toast(e.message, false); } });
     }
-    $("#set-save").addEventListener("click", () => { D.company.name = f.name.value.trim() || D.company.name; D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = f.email.value.trim(); D.company.first = f.first.value.trim() || "Maya"; D.company.day = Math.min(24, Math.max(1, parseInt(f.day.value, 10) || 8)); save(); applyCompany(); fill(); if ($("#fiche")) ficheCompute(); toast("Paramètres enregistrés"); });
+    $("#set-save").addEventListener("click", () => { D.company.name = f.name.value.trim() || D.company.name; D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = f.email.value.trim(); D.company.first = f.first.value.trim(); D.company.day = Math.min(24, Math.max(1, parseInt(f.day.value, 10) || 8)); save(); applyCompany(); fill(); if ($("#fiche")) ficheCompute(); toast("Paramètres enregistrés"); });
     $("#set-export").addEventListener("click", () => { download("lens-" + D.company.name.replace(/[^\w]+/g, "-").toLowerCase() + ".json", JSON.stringify(D, null, 2), "application/json"); toast("Espace exporté"); });
     $("#set-import").addEventListener("click", () => pickFile(".json").then((txt) => { if (!txt) return; try { const o = JSON.parse(txt); if (!o.company) throw 0; if (!o.departments) o.departments = []; D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), o)); save(); toast("Espace importé · rechargement"); setTimeout(() => location.reload(), 600); } catch (_) { toast("Fichier JSON invalide", false); } }));
     $("#set-reset").addEventListener("click", () => dialog({ title: "Réinitialiser la démonstration ?", text: CLOUD ? "Toutes les données de l’espace en ligne de « " + D.company.name + " » seront remplacées par celles de départ, pour toute l’équipe." : "Toutes les données saisies dans ce navigateur seront remplacées par celles de départ.", ok: "Réinitialiser" })
@@ -662,7 +683,7 @@
   });
 
   // ───────────────────────── démarrage ─────────────────────────
-  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
+  function refresh() { const h = location.hash.slice(1) || "connexion"; if (h === "enregistrement") renderRec(); if (h === "diagnostic") { renderProcesses(); ficheCompute(); } if (h === "objectifs") { renderObjDepts(); renderIndRows(); } if (h === "tableau") { applyCompany(); paintGaps(); renderGantt(); renderDash(); } if (h === "analyses") renderIA(); if (h === "projets") renderProjects(); if (h === "parametres") initSettings.fill && initSettings.fill(); }
   function init() {
     initConnexion(); initDepts(); renderDepts(); initUsers(); renderUsers(); initObjectives(); initTask(); initRec(); renderRec(); initScreenRec(); initDiag(); initStruct(); initNotifs(); initDash(); initIA(); initProjects(); initSettings(); applyCompany(); applyTask();
     window.addEventListener("hashchange", refresh); refresh();
