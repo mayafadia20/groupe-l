@@ -470,7 +470,7 @@
 
   // ───────────────────────── écran 7 : diagnostic ─────────────────────────
   function procCard(p, i, on) {
-    return '<button type="button" data-proc="' + i + '" style="border: none; padding: 0; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; background: ' + GRADC + '; color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)' + (on ? "; outline: 2px solid #111113; outline-offset: 3px" : "") + '">' +
+    return '<button type="button" data-proc="' + i + '" style="border: none; padding: 0; text-align: left; font: inherit; cursor: pointer; border-radius: 22px; overflow: hidden; min-height: 120px; display: flex; flex-direction: column; background: ' + GRADC + '; color: #ffffff; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)' + '">' +
       '<span style="display: block; width: 100%; box-sizing: border-box; padding: 10px 20px; background: #ffffff; color: #111113; font-size: 12px; font-weight: 700; letter-spacing: 0.08em">' + esc(p.dept) + "</span>" +
       '<span style="display: flex; align-items: center; flex: 1; padding: 18px 20px 22px; font-size: 17px; font-weight: 600; line-height: 1.25">' + esc(p.title) + "</span></button>";
   }
