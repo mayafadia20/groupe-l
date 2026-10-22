@@ -107,8 +107,9 @@ create trigger lens_creer_membre after insert on auth.users
 -- ───────────────────────── données de départ ─────────────────────────
 insert into public.entreprises (id, nom) values ('00000000-0000-4000-8000-000000000001', 'Groupe Lounici')
   on conflict (id) do nothing;
-insert into public.acces_autorises (email, entreprise_id, role, nom)
-  values ('lounicimaya6@gmail.com', '00000000-0000-4000-8000-000000000001', 'lounici', 'Maya Lounici')
+insert into public.acces_autorises (email, entreprise_id, role, nom) values
+    ('maya@lounici.ca',        '00000000-0000-4000-8000-000000000001', 'lounici', 'Maya Lounici'),
+    ('lounicimaya6@gmail.com', '00000000-0000-4000-8000-000000000001', 'lounici', 'Maya Lounici')
   on conflict (email) do update set role = excluded.role, entreprise_id = excluded.entreprise_id;
 
 -- comptes créés avant l'exécution de ce script : rattachés s'ils sont dans la liste
