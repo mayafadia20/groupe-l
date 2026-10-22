@@ -404,13 +404,13 @@
     const total = SCR.elapsed; SCR.rec = null; SCR.stream = null; SCR.chunks = []; SCR.paused = false;
     D.rec = Object.assign(D.rec || { actions: [] }, { elapsed: total, paused: false, running: false, total: total, video: name, taille: blob.size });
     D.rec.actions.push({ t: total, label: "Fin de l’enregistrement · " + name + " (" + fr(blob.size / 1048576, 1) + " Mo)", tag: "Lens", kind: "f" });
-    let p = D.processes.find((x) => x.title === D.task.name); if (p) p.recs++; else { D.processes.unshift({ dept: (D.task.dept || "").toUpperCase(), ver: "v1", title: D.task.name, steps: 0, recs: 1, epc: null }); p = D.processes[0]; }
+    let p = D.processes.find((x) => x.title === (D.task.proc || D.task.name)); if (p) { p.recs++; (p.diagnostics = p.diagnostics || []).push({ name: D.task.name, date: new Date().toISOString(), duree_s: total, video: name }); } else { D.processes.unshift({ dept: (D.task.dept || "").toUpperCase(), ver: "v1", title: D.task.name, steps: 0, recs: 1, epc: null }); p = D.processes[0]; }
     D.activeProc = Math.max(0, D.processes.indexOf(p)); D.procValidated = false; save(); scrUI(); renderProcesses(); renderRec();
     toast(blob.size ? (CLOUD ? "Envoi de la vidéo à Lens… (" + fr(blob.size / 1048576, 1) + " Mo)" : "Vidéo enregistrée : " + name + " (" + mmss(total) + ")") : "Enregistrement arrêté sans vidéo", !!blob.size); location.hash = "diagnostic";
   }
   async function scrPublish(blob, name, total) {
     try {
-      const r = await LensCloud.uploadRecording(ME.entreprise_id, blob, name, { processus: D.task.name, departement: D.task.dept, qui: ME.nom || D.company.first, duree_s: total });
+      const r = await LensCloud.uploadRecording(ME.entreprise_id, blob, name, { processus: D.task.proc || D.task.name, departement: D.task.dept, qui: ME.nom || D.company.first, duree_s: total });
       if (D.rec) { D.rec.cloudId = r.id; D.rec.fichier = r.path; save(); }
       toast("Vidéo envoyée à Lens · " + name + " (" + mmss(total) + ")");
     } catch (e) {
@@ -516,10 +516,20 @@
     $("#epc").addEventListener("click", (ev) => { const b = ev.target.closest("[data-step]"); if (!b) return; const e = activeEpc(); const i = +b.dataset.step - 1; const st = e && e.steps ? e.steps[i] : null; if (!st) return;
       ficheLabels(st, (e.source || {}).qui, i + 1); const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); } });
     $("#fiche-close").addEventListener("click", () => { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; });
-    $("#epc-record").addEventListener("click", (e) => { const p = activeProc(); if (!p) { e.preventDefault(); $("#diag-new").click(); return; } D.task.name = p.title; D.task.dept = p.dept[0] + p.dept.slice(1).toLowerCase(); save(); applyTask(); });
-    $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [{ name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Préparer une soumission" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" })
-      .then((v) => { if (!v || !v.title) return; const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez un département.", false); return; } D.processes.unshift({ dept: dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0, epc: null }); D.activeProc = 0; D.procValidated = false;
-        D.task = { name: v.title, dept: dept, proc: "Nouveau processus", freq: "", windows: [] }; D.rec = null; save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » créé · enregistrez l’écran"); }); });
+    $("#epc-record").addEventListener("click", (e) => { const p = activeProc(); if (!p) { e.preventDefault(); $("#diag-new").click(); return; } D.task = { name: p.title, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; save(); applyTask(); });
+    $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [
+        { name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Soumission du projet Laval" },
+        { name: "proc", label: "Processus", combo: D.processes.map((p) => p.title), placeholder: "Tapez ou choisissez un processus" },
+        { name: "dept", label: "Département (pour un nouveau processus)", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" })
+      .then((v) => {
+        if (!v || !v.title) return;
+        const procName = String(v.proc || "").trim(); if (!procName) { toast("Indiquez le processus de ce diagnostic.", false); return; }
+        let p = D.processes.find((x) => x.title.toLowerCase() === procName.toLowerCase());
+        if (!p) { const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez le département du nouveau processus « " + procName + " ».", false); return; }
+          p = { dept: dept.toUpperCase(), ver: "v1", title: procName, steps: 0, recs: 0, epc: null }; D.processes.unshift(p); toast("Processus « " + procName + " » créé"); }
+        D.activeProc = D.processes.indexOf(p); D.procValidated = false;
+        D.task = { name: v.title, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; D.rec = null;
+        save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » · enregistrez l’écran"); }); });
     ficheCompute(); renderProcesses();
   }
 
