@@ -57,6 +57,7 @@ create table if not exists public.enregistrements (
   cree_le        timestamptz not null default now()
 );
 create index if not exists enregistrements_entreprise_idx on public.enregistrements (entreprise_id, cree_le desc);
+alter table public.enregistrements add column if not exists images integer;   -- nombre d'images capturées pendant l'enregistrement
 
 create table if not exists public.documents (
   id             uuid primary key default gen_random_uuid(),

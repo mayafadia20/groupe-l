@@ -47,6 +47,20 @@
       if (e2) fail(e2, "Fiche de l’enregistrement impossible");
       return { id: data.id, path };
     },
+    /** Images capturées pendant l'enregistrement : <entreprise>/images/<enregistrement>/f_001.jpg … */
+    async uploadFrames(entrepriseId, recId, blobs, onProgress) {
+      const c = await sb(); let n = 0;
+      for (let i = 0; i < blobs.length; i++) {
+        const path = entrepriseId + "/images/" + recId + "/f_" + String(i + 1).padStart(3, "0") + ".jpg";
+        const { error } = await c.storage.from("enregistrements").upload(path, blobs[i], { contentType: "image/jpeg", upsert: true });
+        if (!error) n++; if (onProgress) onProgress(i + 1, blobs.length);
+      }
+      await c.from("enregistrements").update({ images: n }).eq("id", recId);
+      return n;
+    },
+    /** Lance la cartographie côté serveur (fonction « analyser »). */
+    async analyse(recId) { const c = await sb(); const { data, error } = await c.functions.invoke("analyser", { body: { enregistrement_id: recId } }); if (error) { let msg = error.message || String(error); try { const ctx = error.context; if (ctx && ctx.json) { const j = await ctx.json(); if (j && j.error) msg = j.error; } } catch (_) {} fail({ message: msg }, "Analyse impossible"); } return data; },
+    async recording(recId) { const c = await sb(); const { data, error } = await c.from("enregistrements").select("id, statut, transcription, processus").eq("id", recId).maybeSingle(); if (error) fail(error, "Lecture de l’enregistrement impossible"); return data; },
     async listRecordings(entrepriseId) { const c = await sb(); const { data, error } = await c.from("enregistrements").select("id, processus, departement, qui, debut, duree_s, fichier, taille, statut, cree_le").eq("entreprise_id", entrepriseId).order("cree_le", { ascending: false }); if (error) fail(error, "Lecture des enregistrements impossible"); return data || []; },
     async recordingUrl(path, seconds) { const c = await sb(); const { data, error } = await c.storage.from("enregistrements").createSignedUrl(path, seconds || 3600); if (error) fail(error, "Lien de la vidéo impossible"); return data.signedUrl; },
 

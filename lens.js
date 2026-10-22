@@ -364,7 +364,15 @@
   }
 
   // ───────────────────────── écran 5 : enregistrement réel de l'écran (curseur inclus) ─────────────────────────
-  const SCR = { stream: null, rec: null, chunks: [], elapsed: 0, paused: false, timer: null, mime: "" };
+  const SCR = { stream: null, rec: null, chunks: [], elapsed: 0, paused: false, timer: null, mime: "", frames: [], frameTimer: null };
+  const FRAME_EVERY_S = 2, FRAME_MAX = 150, FRAME_WIDTH = 1024;
+  function scrCaptureFrame() {
+    const v = $("#scr-preview"); if (!v || !v.videoWidth || SCR.paused || !SCR.rec) return;
+    if (SCR.frames.length >= FRAME_MAX) { SCR.frames = SCR.frames.filter((_, i) => i % 2 === 0); clearInterval(SCR.frameTimer); SCR.frameTimer = setInterval(scrCaptureFrame, FRAME_EVERY_S * 2000); }
+    const c = document.createElement("canvas"); const w = Math.min(FRAME_WIDTH, v.videoWidth); c.width = w; c.height = Math.round(v.videoHeight * w / v.videoWidth);
+    c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+    c.toBlob((b) => { if (b) SCR.frames.push(b); }, "image/jpeg", 0.72);
+  }
   function scrUI() {
     const on = !!SCR.rec; const show = (id, d) => { const el = $(id); if (el) el.style.display = d; };
     show("#scr-start", on ? "none" : "flex"); show("#scr-live", on ? "flex" : "none"); show("#scr-pause", on ? "inline-block" : "none"); show("#scr-finish", on ? "inline-block" : "none");
@@ -381,41 +389,71 @@
     catch (e) { toast(e && e.name === "NotAllowedError" ? "Enregistrement annulé : aucun écran choisi." : "Impossible de démarrer l’enregistrement : " + (e && e.message || e), false); return; }
     SCR.mime = ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm", "video/mp4"].find((m) => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
     let rec; try { rec = new MediaRecorder(stream, SCR.mime ? { mimeType: SCR.mime, videoBitsPerSecond: 1200000 } : undefined); } catch (e) { stream.getTracks().forEach((t) => t.stop()); toast("Enregistreur vidéo indisponible : " + e.message, false); return; }
-    SCR.stream = stream; SCR.rec = rec; SCR.chunks = []; SCR.elapsed = 0; SCR.paused = false;
+    SCR.stream = stream; SCR.rec = rec; SCR.chunks = []; SCR.elapsed = 0; SCR.paused = false; SCR.frames = [];
     rec.ondataavailable = (e) => { if (e.data && e.data.size) SCR.chunks.push(e.data); };
     rec.onstop = scrSave;
     stream.getVideoTracks()[0].addEventListener("ended", () => { if (SCR.rec && SCR.rec.state !== "inactive") SCR.rec.stop(); });   // « Arrêter le partage » du navigateur
     const v = $("#scr-preview"); if (v) { v.srcObject = stream; }
     rec.start(1000);
     SCR.timer = setInterval(() => { if (!SCR.paused) { SCR.elapsed++; scrUI(); } }, 1000);
+    SCR.frameTimer = setInterval(scrCaptureFrame, FRAME_EVERY_S * 1000); setTimeout(scrCaptureFrame, 700);
     D.rec = { elapsed: 0, paused: false, running: true, clicks: 0, captures: 0, actions: [{ t: 0, label: "Démarrage de l’enregistrement de l’écran", tag: "Lens", kind: "f" }], total: null, pool: 0 }; save();
     scrUI(); toast("Enregistrement de l’écran démarré");
   }
   function scrPause() { if (!SCR.rec) return; if (SCR.paused) { SCR.rec.resume(); SCR.paused = false; } else { SCR.rec.pause(); SCR.paused = true; } D.rec.actions.push({ t: SCR.elapsed, label: SCR.paused ? "Pause" : "Reprise", tag: "Lens", kind: "f" }); save(); scrUI(); }
   function scrFinish() { if (!SCR.rec) return; if (SCR.rec.state !== "inactive") SCR.rec.stop(); else scrSave(); }
   function scrSave() {
-    clearInterval(SCR.timer); SCR.timer = null;
+    clearInterval(SCR.timer); SCR.timer = null; clearInterval(SCR.frameTimer); SCR.frameTimer = null;
+    const frames = SCR.frames.slice(); SCR.frames = [];
     const blob = new Blob(SCR.chunks, { type: SCR.mime || "video/webm" }); const ext = /mp4/.test(SCR.mime) ? "mp4" : "webm";
     const stamp = new Date().toISOString().slice(0, 16).replace("T", "_").replace(":", "-");
     const name = "lens-" + (D.task.name || "enregistrement").normalize("NFD").replace(/[^\w]+/g, "-").replace(/^-|-$/g, "").toLowerCase() + "-" + stamp + "." + ext;
     const total0 = SCR.elapsed;
-    if (blob.size) { if (CLOUD && ME && ME.entreprise_id) scrPublish(blob, name, total0); else download(name, blob, blob.type); }
+    if (blob.size) { if (CLOUD && ME && ME.entreprise_id) scrPublish(blob, name, total0, frames); else download(name, blob, blob.type); }
     if (SCR.stream) SCR.stream.getTracks().forEach((t) => t.stop()); const v = $("#scr-preview"); if (v) v.srcObject = null;
     const total = SCR.elapsed; SCR.rec = null; SCR.stream = null; SCR.chunks = []; SCR.paused = false;
     D.rec = Object.assign(D.rec || { actions: [] }, { elapsed: total, paused: false, running: false, total: total, video: name, taille: blob.size });
     D.rec.actions.push({ t: total, label: "Fin de l’enregistrement · " + name + " (" + fr(blob.size / 1048576, 1) + " Mo)", tag: "Lens", kind: "f" });
     let p = D.processes.find((x) => x.title === (D.task.proc || D.task.name)); if (p) { p.recs++; (p.diagnostics = p.diagnostics || []).push({ name: D.task.name, date: new Date().toISOString(), duree_s: total, video: name }); } else { D.processes.unshift({ dept: (D.task.dept || "").toUpperCase(), ver: "v1", title: D.task.name, steps: 0, recs: 1, epc: null }); p = D.processes[0]; }
     D.activeProc = Math.max(0, D.processes.indexOf(p)); D.procValidated = false; save(); scrUI(); renderProcesses(); renderRec();
-    toast(blob.size ? (CLOUD ? "Envoi de la vidéo à Lens… (" + fr(blob.size / 1048576, 1) + " Mo)" : "Vidéo enregistrée : " + name + " (" + mmss(total) + ")") : "Enregistrement arrêté sans vidéo", !!blob.size); location.hash = "diagnostic";
+    toast(blob.size ? (CLOUD ? "Envoi de la vidéo à Lens… (" + fr(blob.size / 1048576, 1) + " Mo)" : "Vidéo enregistrée : " + name + " (" + mmss(total) + ")") : "Enregistrement arrêté sans vidéo", !!blob.size); renderProcPage();
   }
-  async function scrPublish(blob, name, total) {
+  let ANALYSE = null;   // { recId, timer } pendant qu'une cartographie est en cours côté serveur
+  function scrStatus(msg) { const h = $("#scr-hint"); if (h && !SCR.rec) { h.textContent = msg; const card = $("#scr-card"); if (card) card.style.display = "flex"; } }
+  async function scrPublish(blob, name, total, frames) {
     try {
+      scrStatus("Envoi de la vidéo (" + fr(blob.size / 1048576, 1) + " Mo)…");
       const r = await LensCloud.uploadRecording(ME.entreprise_id, blob, name, { processus: D.task.proc || D.task.name, departement: D.task.dept, qui: ME.nom || D.company.first, duree_s: total });
       if (D.rec) { D.rec.cloudId = r.id; D.rec.fichier = r.path; save(); }
-      toast("Vidéo envoyée à Lens · " + name + " (" + mmss(total) + ")");
+      let n = 0;
+      if (frames && frames.length) { n = await LensCloud.uploadFrames(ME.entreprise_id, r.id, frames, (i, t) => scrStatus("Envoi des images " + i + " / " + t + "…")); }
+      toast("Vidéo envoyée à Lens · " + name + " (" + mmss(total) + ", " + n + " images)");
+      if (!n) { scrStatus("Vidéo envoyée, mais aucune image n’a pu être capturée : l’analyse automatique n’est pas possible pour cet enregistrement."); return; }
+      scrStatus("Analyse en cours par Lens… Le diagramme apparaîtra ici dans une à deux minutes. Vous pouvez quitter la page.");
+      await LensCloud.analyse(r.id);
+      scrWatch(r.id);
     } catch (e) {
-      console.error(e); toast("Envoi impossible (" + e.message + ") : la vidéo est téléchargée sur cet ordinateur.", false); download(name, blob, blob.type);
+      console.error(e); toast("Envoi impossible (" + e.message + ") : la vidéo est téléchargée sur cet ordinateur.", false); scrStatus("Envoi impossible : " + e.message); download(name, blob, blob.type);
     }
+  }
+  function scrWatch(recId) {
+    if (ANALYSE && ANALYSE.timer) clearInterval(ANALYSE.timer);
+    const debut = Date.now(); ANALYSE = { recId, timer: null };
+    ANALYSE.timer = setInterval(async () => {
+      try {
+        const r = await LensCloud.recording(recId); if (!r) return;
+        if (r.statut === "cartographie") { clearInterval(ANALYSE.timer); ANALYSE = null; await reloadSpace(); toast("Diagramme du processus prêt"); renderProcesses(); renderProcPage(); renderDash(); }
+        else if (r.statut === "erreur") { clearInterval(ANALYSE.timer); ANALYSE = null; scrStatus("L’analyse a échoué : " + (r.transcription || "erreur inconnue") + ". Vous pouvez réenregistrer."); toast("Analyse impossible", false); }
+        else if (Date.now() - debut > 6 * 60000) { clearInterval(ANALYSE.timer); ANALYSE = null; scrStatus("L’analyse prend plus de temps que prévu. Revenez dans quelques minutes : le diagramme apparaîtra dès qu’il sera prêt."); }
+        else scrStatus("Analyse en cours par Lens (" + Math.round((Date.now() - debut) / 1000) + " s)… Le diagramme apparaîtra ici dès qu’il sera prêt.");
+      } catch (e) { console.warn(e); }
+    }, 5000);
+  }
+  /** Recharge l'espace depuis la base en ligne (après une écriture côté serveur). */
+  async function reloadSpace() {
+    if (!CLOUD || !ME || !ME.entreprise_id) return;
+    const sp = await LensCloud.loadSpace(ME.entreprise_id);
+    if (sp && sp.data && Object.keys(sp.data).length) { D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), sp.data)); try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} }
   }
   const docIcon = (nom) => /\.pdf$/i.test(nom) ? "PDF" : /\.xlsx?$|\.csv$/i.test(nom) ? "XLS" : /\.docx?$/i.test(nom) ? "DOC" : /\.pptx?$/i.test(nom) ? "PPT" : /\.md$/i.test(nom) ? "MD" : "TXT";
   async function renderDocs() {
@@ -438,6 +476,7 @@
     if (card) card.style.display = e && !SCR.rec ? "none" : "flex";
     const hint = $("#scr-hint"); if (hint && !SCR.rec) hint.textContent = (e ? "Nouvel enregistrement : " : "Aucun enregistrement pour ce processus. ") + "Cliquez sur « Enregistrer l’écran », choisissez l’écran à partager, puis exécutez la tâche comme d’habitude. Le curseur est enregistré avec l’image" + (CLOUD ? " et la vidéo est envoyée dans votre espace Lens." : ".");
     renderEPC(); renderDocs();
+    if (CLOUD && ME && !e && D.rec && D.rec.cloudId && !ANALYSE && !SCR.rec) { LensCloud.recording(D.rec.cloudId).then((r) => { if (r && (r.statut === "analyse" || r.statut === "televerse")) { scrStatus("Analyse en cours par Lens… Le diagramme apparaîtra ici dès qu’il sera prêt."); scrWatch(r.id); } }).catch(() => {}); }
   }
   function initScreenRec() {
     if (!$("#scr-start")) return; scrUI();
