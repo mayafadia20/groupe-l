@@ -104,6 +104,25 @@ drop trigger if exists lens_creer_membre on auth.users;
 create trigger lens_creer_membre after insert on auth.users
   for each row execute function public.lens_creer_membre();
 
+-- ───────────────────────── invitation → création de l'entreprise par la personne invitée ─────────────────────────
+alter table public.acces_autorises add column if not exists entreprise_nom text;   -- nom proposé par Groupe Lounici à l'invitation
+
+create or replace function public.lens_creer_entreprise(p_email text, p_nom text) returns uuid
+language plpgsql security definer set search_path = public as $$
+declare a public.acces_autorises; eid uuid;
+begin
+  select * into a from public.acces_autorises where email = lower(trim(p_email));
+  if not found then
+    raise exception 'Cette adresse n''a pas été invitée par Groupe Lounici. Demandez votre accès à info@lounici.ca.';
+  end if;
+  if a.entreprise_id is not null then return a.entreprise_id; end if;        -- entreprise déjà créée
+  insert into public.entreprises (nom) values (coalesce(nullif(trim(p_nom), ''), a.entreprise_nom, 'Entreprise')) returning id into eid;
+  update public.acces_autorises set entreprise_id = eid, role = case when role = 'membre' then 'admin' else role end where email = a.email;
+  return eid;
+end $$;
+revoke all on function public.lens_creer_entreprise(text, text) from public;
+grant execute on function public.lens_creer_entreprise(text, text) to anon, authenticated;
+
 -- ───────────────────────── données de départ ─────────────────────────
 insert into public.entreprises (id, nom) values ('00000000-0000-4000-8000-000000000001', 'Groupe Lounici')
   on conflict (id) do nothing;

@@ -115,17 +115,50 @@
 
   // ───────────────────────── écran 1 : connexion ─────────────────────────
   function initConnexion() {
-    const f = { name: $("#co-name"), sector: $("#co-sector"), size: $("#co-size"), email: $("#co-email") };
+    const f = { name: $("#co-name"), sector: $("#co-sector"), size: $("#co-size"), email: $("#co-email"), pass: $("#co-pass"), pass2: $("#co-pass2") };
     if (!f.name) return;
-    f.name.value = D.company.name; f.sector.value = D.company.sector; f.size.value = D.company.size; f.email.value = D.company.email;
-    const commit = (ms) => (e) => {
-      if (!f.name.value.trim() || !/.+@.+\..+/.test(f.email.value)) { e.preventDefault(); toast("Indiquez le nom de l’entreprise et un courriel valide.", false); return; }
-      D.company.name = f.name.value.trim(); D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = f.email.value.trim();
-      const local = D.company.email.split("@")[0].split(/[._-]/)[0]; if (local && local !== "direction") D.company.first = local[0].toUpperCase() + local.slice(1);
-      save(); applyCompany(); toast(ms ? "Connexion Microsoft simulée · espace « " + D.company.name + " » ouvert" : "Espace « " + D.company.name + " » créé");
-    };
-    $("#btn-create").addEventListener("click", commit(false));
-    $("#btn-ms").addEventListener("click", commit(true));
+    const views = $$("#connexion [data-cv]");
+    const show = (v) => { views.forEach((el) => { el.style.display = el.dataset.cv === v ? "flex" : "none"; }); const first = views.find((el) => el.dataset.cv === v); const inp = first && first.querySelector("input"); if (inp) setTimeout(() => inp.focus(), 50); };
+    const err = (id, m) => { const el = $(id); if (!el) return; el.textContent = m || ""; el.style.display = m ? "block" : "none"; };
+    // accueil : avec une session en ligne, « Se connecter » devient « Continuer »
+    const refreshAccueil = () => { const b = $("#cx-login"), sw = $("#cx-switch"); if (CLOUD && ME) { b.textContent = "Continuer · " + (ME.email || ""); sw.style.display = "inline"; } else { b.textContent = "Se connecter"; sw.style.display = "none"; } };
+    refreshAccueil();
+    const vue = new URLSearchParams(location.search).get("vue"); if (vue && views.some((el) => el.dataset.cv === vue)) show(vue);   // lens.html?vue=login ou ?vue=creer
+    if (!CLOUD) { $$("#connexion [data-cloud-only]").forEach((el) => (el.style.display = "none")); f.name.value = D.company.name; f.sector.value = D.company.sector; f.size.value = D.company.size; f.email.value = D.company.email; }
+    $("#cx-login").addEventListener("click", () => { if (CLOUD && ME) { location.hash = "tableau"; return; } if (!CLOUD) { location.hash = "tableau"; return; } show("login"); });
+    $("#cx-signup").addEventListener("click", () => show("creer"));
+    $("#cx-switch").addEventListener("click", async () => { await LensCloud.signOut(); ME = null; try { localStorage.removeItem(KEY); } catch (_) {} refreshAccueil(); show("login"); });
+    $("#lg-back").addEventListener("click", () => show("accueil")); $("#co-back").addEventListener("click", () => show("accueil"));
+    $("#lg-reset").addEventListener("click", async () => { const e = $("#lg-email").value.trim(); if (!/.+@.+\..+/.test(e)) { err("#lg-err", "Entrez d’abord votre courriel, puis cliquez de nouveau."); return; } try { await LensCloud.resetPassword(e, location.origin + location.pathname); err("#lg-err", ""); toast("Courriel envoyé à " + e + " : suivez le lien pour choisir un nouveau mot de passe."); } catch (ex) { err("#lg-err", ex.message); } });
+    // connexion
+    $('#connexion [data-cv="login"]').addEventListener("submit", async (e) => {
+      e.preventDefault(); err("#lg-err", "");
+      const email = $("#lg-email").value.trim(), pass = $("#lg-pass").value;
+      if (!/.+@.+\..+/.test(email) || !pass) { err("#lg-err", "Entrez votre courriel et votre mot de passe."); return; }
+      const b = $("#lg-go"); b.disabled = true;
+      try { await LensCloud.signIn(email, pass); try { sessionStorage.setItem("portail", "1"); } catch (_) {} location.hash = "tableau"; location.reload(); }
+      catch (ex) { err("#lg-err", /Invalid login/i.test(ex.message) ? "Courriel ou mot de passe incorrect." : /not confirmed/i.test(ex.message) ? "Adresse non confirmée : cliquez le lien reçu par courriel, puis réessayez." : ex.message); b.disabled = false; }
+    });
+    // création de l'espace
+    $('#connexion [data-cv="creer"]').addEventListener("submit", async (e) => {
+      e.preventDefault(); err("#co-err", "");
+      const nom = f.name.value.trim(), email = f.email.value.trim().toLowerCase();
+      if (!nom || !/.+@.+\..+/.test(email)) { err("#co-err", "Indiquez le nom de l’entreprise et un courriel valide."); return; }
+      const setCompany = () => { D.company.name = nom; D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = email; const local = email.split("@")[0].split(/[._-]/)[0]; if (local && local !== "direction" && local !== "info") D.company.first = local[0].toUpperCase() + local.slice(1); };
+      if (!CLOUD) { setCompany(); save(); applyCompany(); toast("Espace « " + nom + " » créé"); location.hash = "departements"; return; }
+      if (f.pass.value.length < 8) { err("#co-err", "Le mot de passe doit faire au moins 8 caractères."); return; }
+      if (f.pass.value !== f.pass2.value) { err("#co-err", "Les deux mots de passe ne correspondent pas."); return; }
+      const b = $("#btn-create"); b.disabled = true;
+      try {
+        const entrepriseId = await LensCloud.createCompany(email, nom);          // refuse les adresses non invitées
+        const { session } = await LensCloud.signUp(email, f.pass.value, nom);
+        if (!session) { err("#co-err", "Compte créé. Confirmez votre adresse via le courriel reçu, puis connectez-vous."); b.disabled = false; return; }
+        D = JSON.parse(JSON.stringify(DEF)); D.departments = []; D.users = []; D.projects = []; D.processes = []; D.steps = []; D.extraInvited = 0; setCompany();
+        await LensCloud.saveSpace(entrepriseId, D);
+        try { sessionStorage.setItem("portail", "1"); } catch (_) {}
+        location.hash = "departements"; location.reload();
+      } catch (ex) { err("#co-err", /already registered/i.test(ex.message) ? "Un compte existe déjà avec ce courriel : connectez-vous." : ex.message); b.disabled = false; }
+    });
   }
   function applyCompany() {
     $$(".co-sub").forEach((el) => { el.textContent = el.dataset.sub.replace("Construction Boréal inc.", D.company.name); });
@@ -604,12 +637,21 @@
       $("#set-stats").textContent = D.departments.length + " départements · " + totalEmployees() + " employés · " + D.users.length + " comptes · " + D.objectives.length + " objectifs · " + D.processes.length + " processus · " + D.projects.length + " projets. " + (CLOUD ? "Données dans la base en ligne de Lens (Canada), partagées par toute l’équipe." : "Données conservées dans ce navigateur seulement.");
       $("#set-account").textContent = CLOUD && ME ? (ME.email || "") + " · " + ((ME.entreprises && ME.entreprises.nom) || D.company.name) + (ME.role === "lounici" ? " · Groupe Lounici" : ME.role === "admin" ? " · administrateur·rice" : "") : D.company.email + " · connecté par le portail client de Groupe Lounici."; };
     fill();
+    if (CLOUD && ME && ME.role === "lounici") {
+      const card = $("#set-stats").closest("div[style*='border-radius']") || $("#set-stats").parentElement;
+      card.insertAdjacentHTML("afterend", '<div style="background: #ffffff; border-radius: 28px; padding: 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)"><div style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">Inviter une entreprise cliente</b><span style="font-size: 13px; line-height: 1.5; color: #5e5e65">La personne invitée crée son compte et l’espace de son entreprise avec « Créer un compte » sur l’accueil de Lens. Personne d’autre ne peut en créer.</span></div>' +
+        '<label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Entreprise<input id="inv-entreprise" placeholder="Ex. : Construction Boréal inc." style="' + INPUT + '"></label><label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Courriel de la personne responsable<input id="inv-courriel" type="email" placeholder="direction@entreprise.ca" style="' + INPUT + '"></label>' +
+        '<button id="inv-go" type="button" style="align-self: flex-start; min-height: 44px; padding: 0 18px; border-radius: 999px; border: none; background: #111113; color: #ffffff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Inviter</button><div id="inv-list" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: #5e5e65"></div></div>');
+      const renderInv = () => LensCloud.invitations().then((rows) => { $("#inv-list").innerHTML = rows.filter((r) => r.role !== "lounici").map((r) => "<span>" + esc(r.email) + " · " + esc((r.entreprises && r.entreprises.nom) || r.entreprise_nom || "") + (r.entreprise_id ? " · espace créé" : " · en attente") + "</span>").join("") || "<span>Aucune invitation pour l’instant.</span>"; }).catch((e) => { $("#inv-list").textContent = e.message; });
+      renderInv();
+      $("#inv-go").addEventListener("click", async () => { const em = $("#inv-courriel").value.trim(), en = $("#inv-entreprise").value.trim(); if (!/.+@.+\..+/.test(em)) { toast("Entrez un courriel valide.", false); return; } try { await LensCloud.invite(em, en, null); toast("Invitation enregistrée pour " + em); $("#inv-courriel").value = ""; $("#inv-entreprise").value = ""; renderInv(); } catch (e) { toast(e.message, false); } });
+    }
     $("#set-save").addEventListener("click", () => { D.company.name = f.name.value.trim() || D.company.name; D.company.sector = f.sector.value; D.company.size = f.size.value; D.company.email = f.email.value.trim(); D.company.first = f.first.value.trim() || "Maya"; D.company.day = Math.min(24, Math.max(1, parseInt(f.day.value, 10) || 8)); save(); applyCompany(); fill(); if ($("#fiche")) ficheCompute(); toast("Paramètres enregistrés"); });
     $("#set-export").addEventListener("click", () => { download("lens-" + D.company.name.replace(/[^\w]+/g, "-").toLowerCase() + ".json", JSON.stringify(D, null, 2), "application/json"); toast("Espace exporté"); });
     $("#set-import").addEventListener("click", () => pickFile(".json").then((txt) => { if (!txt) return; try { const o = JSON.parse(txt); if (!o.company) throw 0; if (!o.departments) o.departments = []; D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), o)); save(); toast("Espace importé · rechargement"); setTimeout(() => location.reload(), 600); } catch (_) { toast("Fichier JSON invalide", false); } }));
     $("#set-reset").addEventListener("click", () => dialog({ title: "Réinitialiser la démonstration ?", text: CLOUD ? "Toutes les données de l’espace en ligne de « " + D.company.name + " » seront remplacées par celles de départ, pour toute l’équipe." : "Toutes les données saisies dans ce navigateur seront remplacées par celles de départ.", ok: "Réinitialiser" })
       .then(async (ok) => { if (!ok) return; try { localStorage.removeItem(KEY); } catch (_) {} if (CLOUD && ME && ME.entreprise_id) { try { await LensCloud.saveSpace(ME.entreprise_id, JSON.parse(JSON.stringify(DEF))); } catch (e) { toast(e.message, false); return; } } location.hash = "connexion"; location.reload(); }));
-    $("#set-logout").addEventListener("click", async () => { try { sessionStorage.removeItem("portail"); } catch (_) {} if (CLOUD) { try { localStorage.removeItem(KEY); } catch (_) {} await LensCloud.signOut(); } location.href = "index.html"; });
+    $("#set-logout").addEventListener("click", async () => { try { sessionStorage.removeItem("portail"); } catch (_) {} if (CLOUD) { try { localStorage.removeItem(KEY); } catch (_) {} await LensCloud.signOut(); location.hash = "connexion"; location.reload(); return; } location.href = "index.html"; });
   }
 
   // ───────────────────────── bascules génériques Oui / Non et boutons de filtre ─────────────────────────
@@ -629,8 +671,8 @@
   async function boot() {
     if (CLOUD) {
       try { ME = await LensCloud.me(); } catch (e) { console.error(e); }
-      if (!ME) { await LensCloud.signOut(); try { sessionStorage.removeItem("portail"); } catch (_) {} location.replace("index.html#portail"); return; }
-      if (ME.entreprise_id) {
+      if (!ME) { await LensCloud.signOut(); D = JSON.parse(JSON.stringify(DEF)); location.hash = "connexion"; window.addEventListener("hashchange", () => { if (!ME && location.hash !== "#connexion") location.hash = "connexion"; }); }
+      if (ME && ME.entreprise_id) {
         try {
           const sp = await LensCloud.loadSpace(ME.entreprise_id);
           if (sp && sp.data && Object.keys(sp.data).length) { D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), sp.data)); try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} }

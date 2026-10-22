@@ -50,6 +50,14 @@
     async listRecordings(entrepriseId) { const c = await sb(); const { data, error } = await c.from("enregistrements").select("id, processus, departement, qui, debut, duree_s, fichier, taille, statut, cree_le").eq("entreprise_id", entrepriseId).order("cree_le", { ascending: false }); if (error) fail(error, "Lecture des enregistrements impossible"); return data || []; },
     async recordingUrl(path, seconds) { const c = await sb(); const { data, error } = await c.storage.from("enregistrements").createSignedUrl(path, seconds || 3600); if (error) fail(error, "Lien de la vidéo impossible"); return data.signedUrl; },
 
+    /** Création de compte (adresse invitée seulement). Renvoie { user, session } ; session null si la confirmation par courriel est exigée. */
+    async signUp(email, password, nom) { const c = await sb(); const { data, error } = await c.auth.signUp({ email: String(email).trim().toLowerCase(), password, options: { data: { name: nom } } }); if (error) fail(error, "Création du compte impossible"); me = null; return data; },
+    /** Crée l'entreprise d'une adresse invitée (ou renvoie celle déjà créée). Fonction SQL lens_creer_entreprise. */
+    async createCompany(email, nom) { const c = await sb(); const { data, error } = await c.rpc("lens_creer_entreprise", { p_email: String(email).trim().toLowerCase(), p_nom: nom || "" }); if (error) fail(error, "Création de l’entreprise impossible"); return data; },
+    /** Invitation d'une entreprise cliente par Groupe Lounici : l'adresse pourra créer son compte et son espace. */
+    async invite(email, entrepriseNom, nom) { const c = await sb(); const { error } = await c.from("acces_autorises").upsert({ email: String(email).trim().toLowerCase(), role: "admin", entreprise_nom: entrepriseNom || null, nom: nom || null }, { onConflict: "email" }); if (error) fail(error, "Invitation impossible"); },
+    async invitations() { const c = await sb(); const { data, error } = await c.from("acces_autorises").select("email, role, nom, entreprise_nom, entreprise_id, ajoute_le, entreprises(nom)").order("ajoute_le", { ascending: false }); if (error) fail(error, "Lecture des invitations impossible"); return data || []; },
+
     // ───── gestion des accès (Groupe Lounici et administrateurs d'entreprise) ─────
     async allowEmail(email, entrepriseId, role, nom) { const c = await sb(); const { error } = await c.from("acces_autorises").upsert({ email: String(email).trim().toLowerCase(), entreprise_id: entrepriseId, role: role || "membre", nom: nom || null }, { onConflict: "email" }); if (error) fail(error, "Ajout à la liste des accès impossible"); },
     async signUpOther(email, password, nom) {

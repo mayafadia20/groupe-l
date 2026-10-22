@@ -32,37 +32,80 @@ body:not(:has(.screen:target)) #connexion{display:block}
 <script src="lens-cloud.js?v=1"></script>
 <script>
   // Accès réservé : session de la base en ligne (compte Lens) ou, en mode local, passage par la fenêtre de connexion du portail
-  (function () { var ok = false; try { ok = (window.LensCloud && LensCloud.enabled) ? LensCloud.hasLocalSession() : sessionStorage.getItem("portail") === "1"; } catch (e) {} if (!ok) { location.replace("index.html#portail"); } })();
+  // En ligne, Lens a son propre écran d'accueil (se connecter / créer un compte) ; en mode local, la barrière du portail reste.
+  (function () { var ok = false; try { ok = (window.LensCloud && LensCloud.enabled) ? true : sessionStorage.getItem("portail") === "1"; } catch (e) {} if (!ok) { location.replace("index.html#portail"); } })();
 </script>
 <a id="retour-portail" href="portail.html" title="Retour au portail">← Portail</a>
 <section class="screen" id="connexion" data-index="0">
 <div style="min-height: 100vh; box-sizing: border-box; padding: 24px; background: #e8e8eb; color: #111113; font-family: 'Space Grotesk', 'Helvetica Neue', sans-serif; display: flex">
 <div style="flex: 1; max-width: 1392px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: 24px; align-items: center; justify-content: center">
 
-  <section aria-label="Créer l'espace de l'entreprise" style="flex: 0 1 620px; margin: 0 auto; align-self: center; min-width: 0; box-sizing: border-box; border-radius: 32px; padding: 44px; background: #ffffff; display: flex; flex-direction: column; justify-content: center; gap: 26px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-    <div style="display: flex; align-items: center; gap: 12px">
-      <img src="assets/logo-blanc.png" alt="Lens" style="width: 48px; height: 48px; object-fit: contain; filter: invert(1)">
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 6px; max-width: 460px">
-      <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">BIENVENUE</span>
-      <h2 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em">Créez l'espace de votre entreprise</h2>
-      <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5e5e65">Quelques informations pour adapter Lens à votre secteur. Vous pourrez tout modifier plus tard.</p>
-    </div>
+  <section aria-label="Accès à Lens" style="flex: 0 1 620px; margin: 0 auto; align-self: center; min-width: 0; box-sizing: border-box; border-radius: 32px; padding: 44px; background: #ffffff; display: flex; flex-direction: column; justify-content: center; gap: 26px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
 
-    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 460px">
-      <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Nom de l'entreprise<input id="co-name" value="Construction Boréal inc." style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113"></label>
-      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Secteur<select id="co-sector" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff"><option>Construction</option><option>Architecture</option><option>Gestion immobilière</option><option>Manufacturier</option></select></label>
-        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Taille<select id="co-size" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff"><option>50 à 99 employés</option><option>10 à 49 employés</option><option>100 à 249 employés</option></select></label>
+    <!-- accueil : se connecter ou créer un compte -->
+    <div data-cv="accueil" style="display: flex; flex-direction: column; gap: 26px">
+      <div style="display: flex; align-items: center; gap: 12px"><img src="assets/logo-blanc.png" alt="Lens" style="width: 48px; height: 48px; object-fit: contain; filter: invert(1)"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px; max-width: 460px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">BIENVENUE</span>
+        <h2 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em">Lens, le diagnostic opérationnel de votre entreprise</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5e5e65">Enregistrez une tâche, Lens cartographie le processus et mesure où le temps se perd.</p>
       </div>
-      <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Courriel professionnel<input id="co-email" type="email" value="direction@constructionboreal.ca" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113"></label>
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 460px">
+        <button type="button" id="cx-login" style="min-height: 56px; border-radius: 18px; border: none; background: radial-gradient(130% 260% at 90% -60%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; font: inherit; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%">Se connecter</button>
+        <button type="button" id="cx-signup" style="min-height: 52px; border-radius: 18px; border: 1.5px solid #111113; background: #ffffff; color: #111113; font: inherit; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%">Créer un compte</button>
+        <button type="button" id="cx-switch" style="background: none; border: none; padding: 0; font: inherit; font-size: 13.5px; color: #5e5e65; text-decoration: underline; cursor: pointer; display: none; align-self: center">Changer de compte</button>
+        <span style="font-size: 12.5px; color: #5e5e65; text-align: center">Données hébergées au Canada · conforme à la Loi 25</span>
+      </div>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 460px">
-      <a id="btn-create" href="#departements" style="min-height: 56px; border-radius: 18px; background: radial-gradient(130% 260% at 90% -60%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.55)">Créer l'espace et commencer<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-      <a id="btn-ms" href="#departements" style="min-height: 52px; border-radius: 18px; border: 1.5px solid #dcdce0; color: #111113; text-decoration: none; font-size: 15px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 10px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" fill="#111113"/><rect x="13" y="3" width="8" height="8" fill="#5e5e65"/><rect x="3" y="13" width="8" height="8" fill="#5e5e65"/><rect x="13" y="13" width="8" height="8" fill="#111113"/></svg>Continuer avec Microsoft</a>
-      <span style="font-size: 12.5px; color: #5e5e65; text-align: center">Données hébergées au Canada · conforme à la Loi 25</span>
-    </div>
+    <!-- connexion -->
+    <form data-cv="login" novalidate style="display: none; flex-direction: column; gap: 26px">
+      <div style="display: flex; align-items: center; gap: 12px"><img src="assets/logo-blanc.png" alt="Lens" style="width: 48px; height: 48px; object-fit: contain; filter: invert(1)"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px; max-width: 460px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">CONNEXION</span>
+        <h2 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em">Accédez à votre espace</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5e5e65">Avec le courriel et le mot de passe de votre compte Lens.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; max-width: 460px">
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Courriel<input id="lg-email" type="email" autocomplete="username" placeholder="vous@entreprise.ca" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"></label>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Mot de passe<input id="lg-pass" type="password" autocomplete="current-password" placeholder="Votre mot de passe" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"></label>
+        <div id="lg-err" style="display: none; font-size: 13.5px; line-height: 1.45; color: #c62828; padding: 10px 14px; border-radius: 12px; background: #fdecea"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 460px">
+        <button type="submit" id="lg-go" style="min-height: 56px; border-radius: 18px; border: none; background: radial-gradient(130% 260% at 90% -60%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; font: inherit; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%">Se connecter</button>
+        <div style="display: flex; justify-content: space-between; gap: 12px"><button type="button" id="lg-back" style="background: none; border: none; padding: 0; font: inherit; font-size: 13.5px; color: #5e5e65; text-decoration: underline; cursor: pointer">← Retour</button><button type="button" id="lg-reset" style="background: none; border: none; padding: 0; font: inherit; font-size: 13.5px; color: #5e5e65; text-decoration: underline; cursor: pointer">Mot de passe oublié ?</button></div>
+        <span style="font-size: 12.5px; color: #5e5e65; text-align: center">Données hébergées au Canada · conforme à la Loi 25</span>
+      </div>
+    </form>
+
+    <!-- créer un compte : l'espace de l'entreprise -->
+    <form data-cv="creer" novalidate style="display: none; flex-direction: column; gap: 26px">
+      <div style="display: flex; align-items: center; gap: 12px"><img src="assets/logo-blanc.png" alt="Lens" style="width: 48px; height: 48px; object-fit: contain; filter: invert(1)"></div>
+      <div style="display: flex; flex-direction: column; gap: 6px; max-width: 460px">
+        <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">BIENVENUE</span>
+        <h2 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 700; letter-spacing: -0.02em">Créez l'espace de votre entreprise</h2>
+        <p style="margin: 0; font-size: 15px; line-height: 1.5; color: #5e5e65">Quelques informations pour adapter Lens à votre secteur. Vous pourrez tout modifier plus tard.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; max-width: 460px">
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Nom de l'entreprise<input id="co-name" placeholder="Ex. : Construction Boréal inc." style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"></label>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Secteur<select id="co-sector" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"><option>Construction</option><option>Architecture</option><option>Gestion immobilière</option><option>Manufacturier</option><option>Services professionnels</option><option>Commerce</option><option>Autre</option></select></label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Taille<select id="co-size" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 12px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"><option>1 à 9 employés</option><option>10 à 49 employés</option><option selected>50 à 99 employés</option><option>100 à 249 employés</option><option>250 employés et plus</option></select></label>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Courriel professionnel<input id="co-email" type="email" autocomplete="username" placeholder="vous@entreprise.ca" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"></label>
+        <div data-cloud-only style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Mot de passe<input id="co-pass" type="password" autocomplete="new-password" minlength="8" placeholder="8 caractères minimum" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"></label>
+          <label style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600">Confirmer<input id="co-pass2" type="password" autocomplete="new-password" minlength="8" placeholder="Le même mot de passe" style="height: 50px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #dcdce0; padding: 0 16px; font: inherit; font-size: 15px; font-weight: 400; color: #111113; background: #ffffff; width: 100%"></label>
+        </div>
+        <div id="co-err" style="display: none; font-size: 13.5px; line-height: 1.45; color: #c62828; padding: 10px 14px; border-radius: 12px; background: #fdecea"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; max-width: 460px">
+        <button type="submit" id="btn-create" style="min-height: 56px; border-radius: 18px; border: none; background: radial-gradient(130% 260% at 90% -60%, #4a4a4f 0%, #1a1a1d 40%, #070708 100%); color: #ffffff; font: inherit; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; width: 100%">Créer l'espace et commencer <span aria-hidden="true">→</span></button>
+        <button type="button" id="co-back" style="background: none; border: none; padding: 0; font: inherit; font-size: 13.5px; color: #5e5e65; text-decoration: underline; cursor: pointer; align-self: flex-start">← Retour</button>
+        <span style="font-size: 12.5px; color: #5e5e65; text-align: center">Données hébergées au Canada · conforme à la Loi 25</span>
+      </div>
+    </form>
+
   </section>
 
 </div>
