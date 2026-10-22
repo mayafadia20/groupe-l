@@ -428,6 +428,7 @@
   }
   function initScreenRec() {
     if (!$("#scr-start")) return; scrUI();
+    const hint = $("#scr-hint"); if (hint && CLOUD) hint.textContent = "Cliquez sur « Enregistrer l’écran », choisissez l’écran à partager, puis exécutez la tâche comme d’habitude. Le curseur est enregistré avec l’image. À la fin, la vidéo est envoyée dans votre espace Lens. Vous pouvez aussi joindre des documents (PDF, Excel, Word…) qui serviront à l’analyse.";
     $("#scr-start").addEventListener("click", scrStart);
     $("#scr-quiz").addEventListener("click", () => toast("Questionnaire : à venir. Il complétera l’enregistrement par quelques questions sur la tâche.", false));
     $("#scr-docs").addEventListener("click", () => { if (!CLOUD || !ME || !ME.entreprise_id) { toast("L’import de documents demande la base en ligne.", false); return; } $("#scr-docs-in").value = ""; $("#scr-docs-in").click(); });
