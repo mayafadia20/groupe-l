@@ -43,7 +43,13 @@
       const c = await sb(); const path = entrepriseId + "/" + name;
       const { error } = await c.storage.from("enregistrements").upload(path, blob, { contentType: blob.type || "video/webm", upsert: false });
       if (error) fail(error, "Envoi de la vidéo impossible");
-      const { data, error: e2 } = await c.from("enregistrements").insert(Object.assign({ entreprise_id: entrepriseId, fichier: path, taille: blob.size, type: blob.type || "video/webm" }, meta || {})).select("id").single();
+      const base = { entreprise_id: entrepriseId, fichier: path, taille: blob.size, type: blob.type || "video/webm" };
+      let { data, error: e2 } = await c.from("enregistrements").insert(Object.assign({}, base, meta || {})).select("id").single();
+      if (e2 && /column|schema cache/i.test(e2.message || "")) {   // base pas encore à jour (colonne absente) : on garde les champs de base
+        const min = Object.assign({}, base); ["processus", "departement", "qui", "duree_s"].forEach((k) => { if (meta && meta[k] != null) min[k] = meta[k]; });
+        console.warn("Colonne absente dans enregistrements, fiche réduite :", e2.message);
+        ({ data, error: e2 } = await c.from("enregistrements").insert(min).select("id").single());
+      }
       if (e2) fail(e2, "Fiche de l’enregistrement impossible");
       return { id: data.id, path };
     },
