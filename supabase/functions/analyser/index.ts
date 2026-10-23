@@ -185,7 +185,14 @@ async function analyser(admin: SupabaseClient, rec: Rec) {
   // deno-lint-ignore no-explicit-any
   let p = data.processes.find((x: any) => String(x.title).toLowerCase() === String(rec.processus ?? "").toLowerCase());
   if (!p) { p = { dept: (rec.departement ?? "").toUpperCase(), ver: "v1", title: rec.processus ?? epc.processus.titre, steps: 0, recs: 1, epc: null }; data.processes.unshift(p); }
-  p.epc = lensEpc; p.steps = lensEpc.steps.length;
+  // chaque diagnostic (enregistrement) garde son propre diagramme ; l'analyse comparera les diagnostics plus tard
+  p.diagnostics = Array.isArray(p.diagnostics) ? p.diagnostics : [];
+  // deno-lint-ignore no-explicit-any
+  let d = rec.diagnostic ? p.diagnostics.find((x: any) => x.name === rec.diagnostic) : null;
+  if (!d) d = p.diagnostics[p.diagnostics.length - 1];
+  if (!d) { d = { name: rec.diagnostic ?? "Diagnostic 1", desc: rec.description ?? "", date: new Date().toISOString(), duree_s: rec.duree_s }; p.diagnostics.push(d); }
+  d.epc = lensEpc; if (rec.description && !d.desc) d.desc = rec.description;
+  p.epc = null; p.steps = lensEpc.steps.length;
   const { error: e4 } = await admin.from("espaces").upsert({ entreprise_id: rec.entreprise_id, data }, { onConflict: "entreprise_id" });
   if (e4) throw new Error(`Écriture de l'espace : ${e4.message}`);
 

@@ -46,9 +46,22 @@
     return JSON.parse(JSON.stringify(DEF));
   }
   // un diagramme importé (clé « epc » à la racine, ancien format) est rattaché au premier processus
-  function normalize(d) { if (d.epc && d.processes[0] && !d.processes[0].epc) d.processes[0].epc = d.epc; d.epc = null; return d; }
+  function normalize(d) {
+    if (d.epc && d.processes[0] && !d.processes[0].epc) d.processes[0].epc = d.epc; d.epc = null;
+    // chaque diagnostic porte son propre diagramme ; un ancien diagramme de processus est rattaché au dernier diagnostic (ou en crée un)
+    (d.processes || []).forEach((p) => {
+      p.diagnostics = Array.isArray(p.diagnostics) ? p.diagnostics : [];
+      if (p.epc && !p.diagnostics.some((x) => x.epc)) { if (p.diagnostics.length) p.diagnostics[p.diagnostics.length - 1].epc = p.epc; else p.diagnostics.push({ name: "Diagnostic 1", desc: "", date: (p.epc.source || {}).date || new Date().toISOString(), epc: p.epc }); }
+      p.epc = null;
+    });
+    return d;
+  }
+  let DIAG_SEL = {};   // par processus (titre) : index du diagnostic affiché
+  const procDiags = (p) => ((p || {}).diagnostics) || [];
+  function selectedDiag(p) { const ds = procDiags(p); if (!ds.length) return null; let i = DIAG_SEL[p.title]; if (i == null || !ds[i]) { i = ds.length - 1; while (i > 0 && !ds[i].epc) i--; } return ds[i] || null; }
+  const latestEpc = (p) => { const ds = procDiags(p); for (let i = ds.length - 1; i >= 0; i--) if (ds[i].epc) return ds[i].epc; return null; };
   const activeProc = () => D.processes[D.activeProc] || null;
-  const activeEpc = () => (activeProc() || {}).epc || null;
+  const activeEpc = () => { const d = selectedDiag(activeProc()); return d ? d.epc || null : null; };
   /** Nom du prochain diagnostic d'un processus : « Diagnostic 1 », « Diagnostic 2 »… (numérotation par le système). */
   const nextDiagName = (p) => "Diagnostic " + ((((p || {}).diagnostics) || []).length + 1);
   const diagDesc = (p) => (D.task.proc === (p || {}).title ? (D.task.desc || "") : "");
@@ -446,7 +459,7 @@
     ANALYSE.timer = setInterval(async () => {
       try {
         const r = await LensCloud.recording(recId); if (!r) return;
-        if (r.statut === "cartographie") { clearInterval(ANALYSE.timer); ANALYSE = null; await reloadSpace(); toast("Diagramme du processus prêt"); renderProcesses(); renderProcPage(); renderDash(); }
+        if (r.statut === "cartographie") { clearInterval(ANALYSE.timer); ANALYSE = null; await reloadSpace(); { const p = activeProc(); if (p) delete DIAG_SEL[p.title]; } toast("Diagramme du processus prêt"); renderProcesses(); renderProcPage(); renderDash(); }
         else if (r.statut === "erreur") { clearInterval(ANALYSE.timer); ANALYSE = null; scrStatus("L’analyse a échoué : " + (r.transcription || "erreur inconnue") + ". Vous pouvez réenregistrer."); toast("Analyse impossible", false); }
         else if (Date.now() - debut > 6 * 60000) { clearInterval(ANALYSE.timer); ANALYSE = null; scrStatus("L’analyse prend plus de temps que prévu. Revenez dans quelques minutes : le diagramme apparaîtra dès qu’il sera prêt."); }
         else scrStatus("Analyse en cours par Lens (" + Math.round((Date.now() - debut) / 1000) + " s)… Le diagramme apparaîtra ici dès qu’il sera prêt.");
@@ -478,7 +491,7 @@
     const nb = (p.diagnostics || []).length; const enCours = D.task.proc === p.title && D.task.name && !(p.diagnostics || []).some((d) => d.name === D.task.name);
     $("#pp-sub").textContent = (enCours ? D.task.name + " à venir · " : nb ? nb + (nb > 1 ? " diagnostics · " : " diagnostic · ") : "Processus · ") + dept + (enCours && D.task.desc ? " · " + D.task.desc : "");
     const e = activeEpc(); const detail = $("#diag-detail"), card = $("#scr-card");
-    if (detail) detail.style.display = e ? "flex" : "none";
+    if (detail) detail.style.display = (e || procDiags(p).length) ? "flex" : "none";
     if (card) card.style.display = e && !SCR.rec ? "none" : "flex";
     const hint = $("#scr-hint"); if (hint && !SCR.rec) hint.textContent = (e ? "Nouvel enregistrement : " : "Aucun enregistrement pour ce processus. ") + "Cliquez sur « Enregistrer l’écran », choisissez l’écran à partager, puis exécutez la tâche comme d’habitude. Le curseur est enregistré avec l’image" + (CLOUD ? " et la vidéo est envoyée dans votre espace Lens." : ".");
     renderEPC(); renderDocs();
@@ -557,12 +570,13 @@
   function setEdit(on) {
     EDIT = !!on; const b = $("#epc-edit"), t = $("#epc-tools"), box = $("#epc");
     if (b) { b.textContent = EDIT ? "Terminer" : "Modifier"; b.style.background = EDIT ? "#111113" : "#ffffff"; b.style.color = EDIT ? "#ffffff" : "#111113"; }
-    if (t) t.style.display = EDIT ? "flex" : "none";
+    if (t) t.style.display = EDIT ? "flex" : "none"; const del = $("#epc-delete"); if (del) del.style.display = EDIT ? "inline-block" : "none";
     if (box) box.classList.toggle("epc-editing", EDIT);
     if (EDIT) { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; }
   }
   /** Diagramme du processus actif, créé vide s'il n'existe pas encore (processus bâti à la main). */
-  function ensureEpc() { const p = activeProc(); if (!p) return null; if (!p.epc) p.epc = { trigger: "", steps: [], source: {} }; p.epc.steps = p.epc.steps || []; return p.epc; }
+  function ensureEpc() { const p = activeProc(); if (!p) return null; let d = selectedDiag(p); if (!d) { d = { name: "Diagnostic 1", desc: "bâti à la main", date: new Date().toISOString(), epc: null }; (p.diagnostics = p.diagnostics || []).push(d); DIAG_SEL[p.title] = 0; }
+    if (!d.epc) d.epc = { trigger: "", steps: [], source: { type: "manuel" } }; d.epc.steps = d.epc.steps || []; return d.epc; }
   /** Barre du mode « Modifier » : ajout d'une étape, d'une ressource (qui exécute), d'un intrant, d'un sortant ou d'un système. */
   function epcAdd(kind) {
     const e = ensureEpc(); if (!e) return; const steps = e.steps;
@@ -617,7 +631,15 @@
     const av = $$("#diagnostic header span").find((x) => /^[A-ZÀ-Ý—]{1,2}$/.test(x.textContent.trim()) && /border-radius: 50%/.test(x.getAttribute("style") || ""));
     if (av) av.textContent = initials(qui || (CLOUD && ME && ME.nom) || D.company.first || "—");
   }
+  function renderDiagPills() {
+    const box = $("#epc-diags"); if (!box) return; const p = activeProc(); const ds = procDiags(p); const sel = selectedDiag(p);
+    if (!p || ds.length < 1) { box.style.display = "none"; return; }
+    box.style.display = "flex";
+    box.innerHTML = ds.map((d, i) => { const on = d === sel; const etat = d.epc ? "" : " · en attente d’analyse"; const date = d.date ? new Date(d.date).toLocaleDateString("fr-CA") : "";
+      return '<button type="button" data-diag="' + i + '" title="' + esc(d.desc || "") + '" style="min-height: 34px; padding: 0 14px; border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; border: 1.5px solid #111113; background: ' + (on ? "#111113" : "#ffffff") + "; color: " + (on ? "#ffffff" : "#111113") + '">' + esc(d.name) + (date ? '<span style="font-weight: 400; opacity: 0.75"> · ' + date + "</span>" : "") + esc(etat) + "</button>"; }).join("");
+  }
   function renderEPC() {
+    renderDiagPills();
     const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; FICHE_STEP = null; ficheClear();
     if (!p) { ficheLabels(null); return; }
     if (!e) { if (p && !p.steps && !p.recs) { ficheLabels(null); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Enregistrer l’écran », puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
@@ -627,7 +649,7 @@
     if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
     box.innerHTML = h;
     const sub = $("#epc-sub"); const src = e.source || {};
-    const dern = (p.diagnostics || [])[(p.diagnostics || []).length - 1];
+    const dern = selectedDiag(p);
     $$("#diag-detail .task-title").forEach((el) => (el.textContent = p.title));
     if (sub) sub.textContent = ((p && p.dept) || "").toUpperCase() + (src.diagnostic || dern ? " · " + String(src.diagnostic || dern.name).toUpperCase() : "") + " · PROPOSÉ PAR LENS À PARTIR DE " + (src.clicks != null ? src.clicks + " CLICS" : "L’ENREGISTREMENT") + (src.qui ? " · " + src.qui.toUpperCase() : "") + (dern && dern.desc ? " · " + dern.desc : "");
     const s1 = (e.steps || [])[0]; ficheLabels(s1 || null, src.qui);
@@ -671,6 +693,10 @@
     $("#proc-new").addEventListener("click", () => dialog({ title: "Nouveau processus", fields: [{ name: "title", label: "Nom du processus", placeholder: "Ex. : Clôturer un chantier" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" }).then((v) => { if (!v || !v.title) return; const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez un département.", false); return; } D.processes.unshift({ dept: dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0 }); D.activeProc = 0; D.procValidated = false; save(); renderProcesses(); toast("Processus créé · enregistrez une tâche pour le cartographier"); }));
     // ─── mode « Modifier » : les cases deviennent éditables et une barre permet d'ajouter étape, ressource, intrant, sortant, système ───
     $("#epc-edit").addEventListener("click", () => setEdit(!EDIT));
+    $("#epc-diags").addEventListener("click", (ev) => { const b = ev.target.closest("[data-diag]"); if (!b) return; const p = activeProc(); if (!p) return; DIAG_SEL[p.title] = +b.dataset.diag; renderProcPage(); });
+    $("#epc-delete").addEventListener("click", () => { const p = activeProc(); if (!p) return; const n = procDiags(p).length;
+      dialog({ title: "Supprimer « " + p.title + " » ?", text: "Le processus" + (n ? " et ses " + n + " diagnostic" + (n > 1 ? "s" : "") : "") + " disparaîtront de Lens. Les vidéos restent dans la base.", ok: "Supprimer" })
+        .then((ok) => { if (!ok) return; const i = D.processes.indexOf(p); if (i >= 0) D.processes.splice(i, 1); D.activeProc = 0; setEdit(false); save(); renderProcesses(); toast("Processus « " + p.title + " » supprimé"); location.hash = "diagnostic"; }); });
     $("#epc-tools").addEventListener("click", (ev) => { const b = ev.target.closest("[data-epc-add]"); if (b) epcAdd(b.dataset.epcAdd); });
     renderEPC();
     const f = $("#fiche"); ficheSetEditable(false);
@@ -714,7 +740,7 @@
 
   // ───────────────────────── écran 9 : tableau de bord ─────────────────────────
   // ─── tableau de bord : tout est calculé à partir des données de l'espace (aucune valeur figée) ───
-  const allEpcSteps = () => D.processes.flatMap((p) => (p.epc && p.epc.steps) || []);
+  const allEpcSteps = () => D.processes.flatMap((p) => ((latestEpc(p) || {}).steps) || []);
   const allSystems = () => { const m = new Map(); allEpcSteps().forEach((st) => (st.sys || []).forEach((x) => m.set(x, (m.get(x) || 0) + 1))); return Array.from(m.entries()).sort((a, b) => b[1] - a[1]); };
   function renderSys() {
     const box = $("#dash-sysmap"); if (!box) return; const sys = allSystems();
@@ -735,7 +761,7 @@
   function renderDash() {
     if (!$("#dash-proc")) return;
     const steps = allEpcSteps(); const goulots = steps.filter((st) => st.bottleneck).length; const sys = allSystems().length;
-    const mapped = D.processes.filter((p) => p.epc && p.epc.steps && p.epc.steps.length).length, total = D.processes.length;
+    const mapped = D.processes.filter((p) => (latestEpc(p) || { steps: [] }).steps.length).length, total = D.processes.length;
     $("#dash-proc").textContent = total; $("#dash-goulots").textContent = goulots; $("#dash-sys").textContent = sys;
     $("#dash-objs").textContent = D.objectives.length + (D.objectives.length > 1 ? " objectifs" : " objectif");
     const cov = total ? Math.round(mapped / total * 100) : 0;
