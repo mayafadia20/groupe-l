@@ -26,6 +26,7 @@ body:not(:has(.screen:target)) #connexion{display:block}
 #retour-portail:hover{background:#e4e4e8;color:#111113}
 @media (max-width: 900px){#retour-portail{display:none}}
 </style>
+<style>#epc.epc-editing [data-edit] { outline: 1.5px dashed #8a8a92; outline-offset: 3px; cursor: pointer; } #epc:not(.epc-editing) [data-edit] { cursor: default; } #epc:not(.epc-editing) [data-edit^="step:"] { cursor: pointer; }</style>
 </head>
 <body>
 <script src="lens-config.js?v=1"></script>
@@ -406,10 +407,21 @@ body:not(:has(.screen:target)) #connexion{display:block}
     <div id="diag-detail" style="display: none; flex-wrap: wrap; gap: 24px; align-items: flex-start; width: 100%">
 
       <section aria-label="Processus capturé" style="flex: 3 1 560px; min-width: 0; box-sizing: border-box; background: #ffffff; border-radius: 28px; padding: 26px 22px; display: flex; flex-direction: column; gap: 18px; box-shadow: 0 24px 48px -28px rgba(17, 17, 19, 0.18)">
-        <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 4px">
-          <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">PROCESSUS · EPC</span>
-          <h2 class="task-title" style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em">Préparer une soumission</h2>
-          <span id="epc-sub" style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; color: #5e5e65">ESTIMATION · PROPOSÉ PAR LENS À PARTIR DE 214 CLICS</span>
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 0 4px">
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+            <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">PROCESSUS · EPC</span>
+            <h2 class="task-title" style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em">Préparer une soumission</h2>
+            <span id="epc-sub" style="font-size: 12px; font-weight: 500; letter-spacing: 0.1em; color: #5e5e65">ESTIMATION · PROPOSÉ PAR LENS À PARTIR DE 214 CLICS</span>
+          </div>
+          <button type="button" id="epc-edit" title="Modifier le processus : cliquez ensuite sur une case pour l’éditer, ou ajoutez une étape, une ressource, un intrant, un sortant ou un système" style="flex: none; min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid #111113; background: #ffffff; color: #111113">Modifier</button>
+        </div>
+        <div id="epc-tools" style="display: none; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 18px; background: #f1f1f3">
+          <span style="font-size: 12.5px; color: #5e5e65; margin-right: 6px">Cliquez sur une case pour la modifier, ou ajoutez :</span>
+          <button type="button" data-epc-add="step" style="min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 38px; border: none; background: #111113; color: #ffffff">+ Étape</button>
+          <button type="button" data-epc-add="who" style="min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 38px; border: 1.5px solid #111113; background: #ffffff; color: #111113">+ Ressource</button>
+          <button type="button" data-epc-add="in" style="min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 38px; border: 1.5px solid #111113; background: #ffffff; color: #111113">+ Intrant</button>
+          <button type="button" data-epc-add="out" style="min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 38px; border: 1.5px solid #111113; background: #ffffff; color: #111113">+ Sortant</button>
+          <button type="button" data-epc-add="sys" style="min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 38px; border: 1.5px solid #111113; background: #ffffff; color: #111113">+ Système</button>
         </div>
 
         <div style="display: flex; flex-wrap: wrap; gap: 10px 20px; padding: 12px 4px; border-top: 1px solid #ececef; border-bottom: 1px solid #ececef; font-size: 12.5px; color: #3a3a3f">
@@ -484,11 +496,6 @@ body:not(:has(.screen:target)) #connexion{display:block}
           </div>
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; padding-top: 6px">
-          <button type="button" style="min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1.5px solid #111113; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="epc-validate">Valider le processus</button>
-          <button type="button" style="min-height: 46px; padding: 0 20px; border-radius: 999px; border: 1.5px solid #111113; background: #ffffff; color: #111113; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="epc-addstep">Ajouter une étape hors écran</button>
-          <button type="button" style="min-height: 46px; padding: 0 20px; border-radius: 999px; border: none; background: #f1f1f3; color: #111113; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer" id="epc-export">Exporter en BPMN</button>
-        </div>
       </section>
 
       <section id="fiche-panel" aria-label="Fiche de l'étape" style="display: none; flex: 2 1 380px; min-width: 0; box-sizing: border-box; flex-direction: column; gap: 16px">

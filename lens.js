@@ -467,6 +467,7 @@
   /** Page d'un processus : en-tête, carte d'enregistrement tant qu'il n'y a rien, diagramme EPC dès qu'il y a de l'information, documents à gauche. */
   function renderProcPage() {
     if (!$("#pp-title")) return; const p = activeProc();
+    if (!p || p !== EDIT_P) { setEdit(false); EDIT_P = p; }
     if (!p) { location.hash = "diagnostic"; return; }
     const dept = p.dept ? p.dept[0] + p.dept.slice(1).toLowerCase() : "";
     $("#pp-title").textContent = p.title;
@@ -547,6 +548,41 @@
     const step = '<div data-edit="step:' + i + '" title="Modifier l’étape" style="cursor: pointer; width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px' + (s.bottleneck ? "; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113" : "") + '"><span style="font-size: 11px; color: #c9c9ce">Étape ' + n + " · " + esc(s.dur || "—") + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(s.title) + "</b>" + (s.bottleneck ? '<span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #111113">Goulot probable</span>' : "") + '<button type="button" data-fiche="' + n + '" style="margin-top: 2px; border: none; background: rgba(255, 255, 255, 0.16); color: #ffffff; border-radius: 999px; padding: 2px 9px; font: inherit; font-size: 10.5px; font-weight: 600; cursor: pointer">Fiche de données</button></div>';
     return '<div style="display: flex; align-items: center">' + who + epcLine + epcColumn(s.in, "ENTRANT", "in", i, epcBox, "aucun") + epcRight + step + epcRight + epcColumn(s.out, "SORTANT", "out", i, epcBox, "aucun") + epcLine + epcColumn(s.sys, "SYSTÈME", "sys", i, epcSysBox, "hors écran") + "</div>";
   }
+  let EDIT = false, EDIT_P = null;   // mode « Modifier » du diagramme et processus concerné
+  function setEdit(on) {
+    EDIT = !!on; const b = $("#epc-edit"), t = $("#epc-tools"), box = $("#epc");
+    if (b) { b.textContent = EDIT ? "Terminer" : "Modifier"; b.style.background = EDIT ? "#111113" : "#ffffff"; b.style.color = EDIT ? "#ffffff" : "#111113"; }
+    if (t) t.style.display = EDIT ? "flex" : "none";
+    if (box) box.classList.toggle("epc-editing", EDIT);
+    if (EDIT) { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; }
+  }
+  /** Diagramme du processus actif, créé vide s'il n'existe pas encore (processus bâti à la main). */
+  function ensureEpc() { const p = activeProc(); if (!p) return null; if (!p.epc) p.epc = { trigger: "", steps: [], source: {} }; p.epc.steps = p.epc.steps || []; return p.epc; }
+  /** Barre du mode « Modifier » : ajout d'une étape, d'une ressource (qui exécute), d'un intrant, d'un sortant ou d'un système. */
+  function epcAdd(kind) {
+    const e = ensureEpc(); if (!e) return; const steps = e.steps;
+    const apres = (msg) => { const p = activeProc(); if (p) p.steps = steps.length; save(); renderProcPage(); setEdit(true); toast(msg); };
+    const labels = steps.map((s, i) => "Étape " + (i + 1) + " · " + (s.title || "—"));
+    if (kind === "step") {
+      return dialog({ title: "Nouvelle étape", fields: [
+        { name: "title", label: "Titre de l’étape", placeholder: "Ex. : Préparer la soumission" },
+        { name: "dur", label: "Durée", placeholder: "Ex. : 20 min, attente 2 j" },
+        { name: "who", label: "Qui exécute (ressource)", placeholder: "Personne ou rôle" },
+        { name: "dept", label: "Département", combo: deptNames(), placeholder: "Facultatif" },
+        { name: "pos", label: "Position", options: ["À la fin"].concat(labels.map((l) => "Après « " + l + " »")).concat(steps.length ? ["Au début"] : []) }], ok: "Ajouter" })
+        .then((v) => { if (!v || !v.title) return; const st = { title: v.title, dur: v.dur || "", who: v.who || "", dept: v.dept || "", in: [], out: [], sys: [], event: "" };
+          const k = v.pos === "Au début" ? 0 : v.pos === "À la fin" ? steps.length : labels.findIndex((l) => v.pos === "Après « " + l + " »") + 1;
+          steps.splice(k < 0 ? steps.length : k, 0, st); apres("Étape « " + v.title + " » ajoutée"); });
+    }
+    if (!steps.length) { toast("Ajoutez d’abord une étape.", false); return; }
+    const etape = { name: "step", label: "Étape concernée", options: labels };
+    if (kind === "who") return dialog({ title: "Ressource · qui exécute", fields: [etape, { name: "who", label: "Personne ou rôle", placeholder: "Ex. : Estimateur" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Facultatif" }], ok: "Enregistrer" })
+      .then((v) => { if (!v) return; const st = steps[labels.indexOf(v.step)]; if (!st) return; st.who = v.who || ""; st.dept = v.dept || ""; apres("Ressource enregistrée"); });
+    const def = { in: ["in", "Intrant", "Document ou information reçue", "Ex. : Plans.pdf, courriel du client"], out: ["out", "Sortant", "Document ou information produite", "Ex. : Soumission.pdf"], sys: ["sys", "Système", "Logiciel ou outil utilisé", "Ex. : Excel, Outlook, Procore"] }[kind]; if (!def) return;
+    const [cle, titre, label, ph] = def;
+    return dialog({ title: titre + " · ajouter", fields: [etape, { name: "v", label, placeholder: ph }], ok: "Ajouter" })
+      .then((v) => { if (!v || !v.v) return; const st = steps[labels.indexOf(v.step)]; if (!st) return; (st[cle] = Array.isArray(st[cle]) ? st[cle] : []).push(v.v); apres(titre + " ajouté"); });
+  }
   /** Édition d'une case du diagramme : trigger · event:i · step:i · who:i · in:i:j · out:i:j · sys:i:j (j = new pour ajouter). */
   function epcEdit(code) {
     const e = activeEpc(); if (!e) return; const [kind, si, sj] = code.split(":"); const i = +si; const st = (e.steps || [])[i];
@@ -608,18 +644,9 @@
     if (!$("#proc-cards")) return;
     $("#proc-cards").addEventListener("click", (e) => { const b = e.target.closest("[data-proc]"); if (!b) return; D.activeProc = +b.dataset.proc; D.procValidated = false; const p = activeProc(); if (p) D.task = { name: p.title, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; save(); renderProcesses(); location.hash = "nouveau-diagnostic"; });
     $("#proc-new").addEventListener("click", () => dialog({ title: "Nouveau processus", fields: [{ name: "title", label: "Nom du processus", placeholder: "Ex. : Clôturer un chantier" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" }).then((v) => { if (!v || !v.title) return; const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez un département.", false); return; } D.processes.unshift({ dept: dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0 }); D.activeProc = 0; D.procValidated = false; save(); renderProcesses(); toast("Processus créé · enregistrez une tâche pour le cartographier"); }));
-    $("#epc-validate").addEventListener("click", () => { D.procValidated = true; const p = D.processes[D.activeProc]; if (p) p.ver = "v" + (parseInt(p.ver.slice(1), 10) + 1); save(); renderProcesses(); toast("Processus validé · nouvelle version publiée"); });
-    $("#epc-addstep").addEventListener("click", () => dialog({ title: "Étape hors écran", text: "Une étape réalisée sans ordinateur (appel, visite de chantier, signature…).", fields: [{ name: "title", label: "Étape" }, { name: "dur", label: "Durée", placeholder: "Ex. : 15 min" }, { name: "who", label: "Qui exécute", value: D.users[0] ? D.users[0].name : "" }, { name: "sys", label: "Support", value: "Téléphone" }], ok: "Ajouter" })
-      .then((v) => { if (!v || !v.title) return; D.steps.push(v); const p = D.processes[D.activeProc]; if (p) p.steps = D.steps.length;
-        if (activeEpc()) { (activeEpc().steps = activeEpc().steps || []).push({ title: v.title, dur: v.dur || "hors écran", who: v.who, sys: v.sys ? [v.sys] : [], in: [], out: [], event: "" }); }
-        $("#epc").insertAdjacentHTML("beforeend", '<div style="display: flex; flex-direction: column; align-items: center"><span style="width: 1.5px; height: 22px; background: #111113"></span><span style="width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 7px solid #111113"></span></div><div style="display: flex; align-items: center"><div style="width: 100px; min-height: 74px; box-sizing: border-box; border: 1.5px solid #6b6b72; border-radius: 50%; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">QUI</span><span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(v.who) + '</span></div><span style="width: 14px; height: 1.5px; background: #111113"></span><div style="width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px"><span style="font-size: 11px; color: #c9c9ce">Étape ' + D.steps.length + " · " + esc(v.dur || "hors écran") + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(v.title) + '</b></div><span style="width: 14px; height: 1.5px; background: #111113"></span><div style="width: 100px; min-height: 52px; box-sizing: border-box; border: 1.5px solid #111113; border-left: 6px solid #111113; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px"><span style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em; color: #5e5e65">SUPPORT</span><span style="font-size: 12px">' + esc(v.sys) + "</span></div></div>");
-        save(); renderProcesses(); toast("Étape « " + v.title + " » ajoutée au processus"); }));
-    $("#epc-export").addEventListener("click", () => { const p = D.processes[D.activeProc] || { title: D.task.name }; const id = (s) => s.normalize("NFD").replace(/[^\w]/g, "_");
-      let x = '<?xml version="1.0" encoding="UTF-8"?>\n<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="Lens_' + id(p.title) + '" targetNamespace="https://lounici.ca/lens">\n  <bpmn:process id="P_' + id(p.title) + '" name="' + esc(p.title) + '" isExecutable="false">\n    <bpmn:startEvent id="start" name="Demande reçue"/>\n';
-      D.steps.forEach((s, i) => { x += '    <bpmn:task id="t' + (i + 1) + '" name="' + esc(s.title) + '"><bpmn:documentation>' + esc(s.dur) + " · " + esc(s.who) + " · " + esc(s.sys) + "</bpmn:documentation></bpmn:task>\n"; });
-      x += '    <bpmn:endEvent id="end" name="Terminé"/>\n'; const nodes = ["start"].concat(D.steps.map((_, i) => "t" + (i + 1))).concat(["end"]);
-      for (let i = 0; i < nodes.length - 1; i++) x += '    <bpmn:sequenceFlow id="f' + i + '" sourceRef="' + nodes[i] + '" targetRef="' + nodes[i + 1] + '"/>\n';
-      x += "  </bpmn:process>\n</bpmn:definitions>\n"; download(id(p.title) + ".bpmn", x, "application/xml"); toast("Fichier BPMN téléchargé"); });
+    // ─── mode « Modifier » : les cases deviennent éditables et une barre permet d'ajouter étape, ressource, intrant, sortant, système ───
+    $("#epc-edit").addEventListener("click", () => setEdit(!EDIT));
+    $("#epc-tools").addEventListener("click", (ev) => { const b = ev.target.closest("[data-epc-add]"); if (b) epcAdd(b.dataset.epcAdd); });
     renderEPC();
     const f = $("#fiche"); ficheInputs().forEach((inp, i) => { if (D.fiche[i] != null) inp.value = D.fiche[i]; });
     f.addEventListener("input", (e) => { const i = ficheInputs().indexOf(e.target); if (i >= 0) { D.fiche[i] = e.target.value; D.ficheSaved = false; } ficheCompute(); });
@@ -628,7 +655,11 @@
     $("#epc").addEventListener("click", (ev) => {
       const f = ev.target.closest("[data-fiche]");
       if (f) { ev.stopPropagation(); const e = activeEpc(); const i = +f.dataset.fiche - 1; const st = e && e.steps ? e.steps[i] : null; if (!st) return; ficheLabels(st, (e.source || {}).qui, i + 1); const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); } return; }
-      const b = ev.target.closest("[data-edit]"); if (b) epcEdit(b.dataset.edit);
+      const b = ev.target.closest("[data-edit]"); if (!b) return;
+      if (EDIT) { epcEdit(b.dataset.edit); return; }
+      const m = /^step:(\d+)$/.exec(b.dataset.edit); if (!m) return;
+      const e = activeEpc(); const i = +m[1]; const st = e && e.steps ? e.steps[i] : null; if (!st) return;
+      ficheLabels(st, (e.source || {}).qui, i + 1); const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); }
     });
     $("#fiche-close").addEventListener("click", () => { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; });
     $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [
