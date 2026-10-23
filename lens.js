@@ -656,7 +656,7 @@
     if ((e.steps || []).length) h += epcDown + '<div data-edit="result" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">RÉSULTAT</span><span style="font-size: 13px">' + esc(e.result || "Terminé") + "</span></div>";
     if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
     box.innerHTML = h;
-    const sub = $("#epc-sub"); const src = e.source || {};
+    const sub = null; const src = e.source || {};
     const dern = selectedDiag(p);
     $$("#diag-detail .task-title").forEach((el) => (el.textContent = p.title));
     if (sub) sub.textContent = ((p && p.dept) || "").toUpperCase() + (src.diagnostic || dern ? " · " + String(src.diagnostic || dern.name).toUpperCase() : "") + " · PROPOSÉ PAR LENS À PARTIR DE " + (src.clicks != null ? src.clicks + " CLICS" : "L’ENREGISTREMENT") + (src.qui ? " · " + src.qui.toUpperCase() : "") + (dern && dern.desc ? " · " + dern.desc : "");
