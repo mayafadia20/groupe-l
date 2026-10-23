@@ -110,7 +110,7 @@
           const norm = (t) => String(t || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
           const item = (txt, label, strong) => '<button type="button" data-pick="' + esc(txt) + '" style="text-align: left; border: none; background: transparent; border-radius: 8px; padding: 9px 10px; font: inherit; font-size: 14px; font-weight: ' + (strong ? 600 : 400) + '; cursor: pointer">' + label + "</button>";
           const render = () => { const q = norm(el.value); const opts = f.combo.filter((o) => !q || norm(o).includes(q)); const exact = f.combo.some((o) => norm(o) === q);
-            const items = opts.map((o) => item(o, esc(o), false)); if (q && !exact) items.push(item(el.value.trim(), "Créer « " + esc(el.value.trim()) + " »", true));
+            const items = opts.map((o) => item(o, esc(o), false)); if (q && !exact) items.push(item(el.value.trim(), (f.createLabel || "Créer") + " « " + esc(el.value.trim()) + " »", true));
             list.innerHTML = items.join(""); list.style.display = items.length ? "flex" : "none"; };
           el.addEventListener("input", render); el.addEventListener("focus", render);
           list.addEventListener("mousedown", (e) => { const b = e.target.closest("[data-pick]"); if (!b) return; e.preventDefault(); el.value = b.dataset.pick; list.style.display = "none"; });
@@ -388,11 +388,35 @@
   // ───────────────────────── écran 5 : enregistrement réel de l'écran (curseur inclus) ─────────────────────────
   const SCR = { stream: null, rec: null, chunks: [], elapsed: 0, paused: false, timer: null, mime: "", frames: [], frameTimer: null };
   const FRAME_EVERY_S = 2, FRAME_MAX = 150, FRAME_WIDTH = 1024;
+  /** Luminosité moyenne (0-255) d'un canevas, sur un échantillon de pixels : sert à écarter les images noires. */
+  function canvasBrightness(c) { try { const w = 32, h = 18; const t = document.createElement("canvas"); t.width = w; t.height = h; t.getContext("2d").drawImage(c, 0, 0, w, h); const d = t.getContext("2d").getImageData(0, 0, w, h).data; let s = 0; for (let i = 0; i < d.length; i += 4) s += (d[i] + d[i + 1] + d[i + 2]) / 3; return s / (d.length / 4); } catch (_) { return 255; } }
+  /** Extrait une image toutes les `pas` secondes de la vidéo enregistrée (au plus FRAME_MAX), en écartant les images noires. */
+  async function framesFromBlob(blob, onProgress) {
+    const out = []; const url = URL.createObjectURL(blob); const v = document.createElement("video"); v.muted = true; v.playsInline = true; v.preload = "auto"; v.src = url;
+    const once = (ev, ms) => new Promise((res, rej) => { const t = setTimeout(() => rej(new Error("délai " + ev)), ms || 8000); v.addEventListener(ev, () => { clearTimeout(t); res(); }, { once: true }); v.addEventListener("error", () => { clearTimeout(t); rej(new Error("vidéo illisible")); }, { once: true }); });
+    try {
+      await once("loadedmetadata", 10000);
+      if (!isFinite(v.duration) || v.duration <= 0) { v.currentTime = 1e101; await once("timeupdate", 10000); }   // WebM du navigateur : la durée n'est connue qu'après ce saut
+      const duree = isFinite(v.duration) && v.duration > 0 ? v.duration : SCR.elapsed || 0; if (!duree) return out;
+      const pas = Math.max(FRAME_EVERY_S, duree / FRAME_MAX); const c = document.createElement("canvas");
+      for (let t = 0.3; t < duree; t += pas) {
+        v.currentTime = Math.min(t, Math.max(0, duree - 0.05)); try { await once("seeked", 6000); } catch (_) { break; }
+        if (!v.videoWidth) continue; const w = Math.min(FRAME_WIDTH, v.videoWidth); c.width = w; c.height = Math.round(v.videoHeight * w / v.videoWidth);
+        c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+        if (canvasBrightness(c) < 6) continue;   // image noire (écran non partagé, écran verrouillé…)
+        const b = await new Promise((res) => c.toBlob(res, "image/jpeg", 0.72)); if (b) out.push(b);
+        if (onProgress) onProgress(Math.min(1, t / duree));
+      }
+    } catch (e) { console.warn("Extraction des images :", e); }
+    finally { URL.revokeObjectURL(url); v.removeAttribute("src"); try { v.load(); } catch (_) {} }
+    return out;
+  }
   function scrCaptureFrame() {
     const v = $("#scr-preview"); if (!v || !v.videoWidth || SCR.paused || !SCR.rec) return;
     if (SCR.frames.length >= FRAME_MAX) { SCR.frames = SCR.frames.filter((_, i) => i % 2 === 0); clearInterval(SCR.frameTimer); SCR.frameTimer = setInterval(scrCaptureFrame, FRAME_EVERY_S * 2000); }
     const c = document.createElement("canvas"); const w = Math.min(FRAME_WIDTH, v.videoWidth); c.width = w; c.height = Math.round(v.videoHeight * w / v.videoWidth);
     c.getContext("2d").drawImage(v, 0, 0, c.width, c.height);
+    if (canvasBrightness(c) < 6) return;   // onglet en arrière-plan : l'aperçu ne se rafraîchit pas et donne du noir
     c.toBlob((b) => { if (b) SCR.frames.push(b); }, "image/jpeg", 0.72);
   }
   function scrUI() {
@@ -449,7 +473,10 @@
       const r = await LensCloud.uploadRecording(ME.entreprise_id, blob, name, { processus: D.task.proc || D.task.name, departement: D.task.dept, qui: ME.nom || D.company.first, duree_s: total, diagnostic: D.task.name, description: D.task.desc || null });
       if (D.rec) { D.rec.cloudId = r.id; D.rec.fichier = r.path; save(); }
       let n = 0;
-      if (frames && frames.length) { n = await LensCloud.uploadFrames(ME.entreprise_id, r.id, frames, (i, t) => scrStatus("Envoi des images " + i + " / " + t + "…")); }
+      scrStatus("Préparation des images de la vidéo…");
+      let images = await framesFromBlob(blob, (pct) => scrStatus("Préparation des images de la vidéo… " + Math.round(pct * 100) + " %"));
+      if (!images.length && frames && frames.length) images = frames;   // repli : images captées pendant l'enregistrement
+      if (images.length) { n = await LensCloud.uploadFrames(ME.entreprise_id, r.id, images, (i, t) => scrStatus("Envoi des images " + i + " / " + t + "…")); }
       toast("Vidéo envoyée à Lens · " + name + " (" + mmss(total) + ", " + n + " images)");
       if (!n) { scrStatus("Vidéo envoyée, mais aucune image n’a pu être capturée : l’analyse automatique n’est pas possible pour cet enregistrement."); return; }
       scrStatus("Analyse en cours par Lens… Le diagramme apparaîtra ici dans une à deux minutes. Vous pouvez quitter la page.");
@@ -478,12 +505,15 @@
     const sp = await LensCloud.loadSpace(ME.entreprise_id);
     if (sp && sp.data && Object.keys(sp.data).length) { D = normalize(Object.assign(JSON.parse(JSON.stringify(DEF)), sp.data)); try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} }
   }
+  let DOCS = [];   // documents du processus affiché (noms), pour proposer un intrant ou un sortant
+  const docNames = () => DOCS.map((d) => d.nom);
   const docIcon = (nom) => /\.pdf$/i.test(nom) ? "PDF" : /\.xlsx?$|\.csv$/i.test(nom) ? "XLS" : /\.docx?$/i.test(nom) ? "DOC" : /\.pptx?$/i.test(nom) ? "PPT" : /\.md$/i.test(nom) ? "MD" : "TXT";
   async function renderDocs() {
     const box = $("#scr-docs-list"); if (!box) return;
     const vide = (m) => { box.innerHTML = '<div style="border-radius: 16px; padding: 18px 14px; background: #f4f4f6; text-align: center; font-size: 13px; line-height: 1.5; color: #5e5e65">' + m + "</div>"; };
     if (!CLOUD || !ME || !ME.entreprise_id) { vide("L’import de documents demande la base en ligne."); return; }
     let rows = []; try { rows = await LensCloud.listDocuments(ME.entreprise_id, D.task.proc || D.task.name || null); } catch (e) { console.warn(e); vide("Documents indisponibles : " + e.message); return; }
+    DOCS = rows;
     if (!rows.length) { vide("Aucun document pour l’instant. Cliquez sur « Importer des documents »."); return; }
     box.innerHTML = '<span style="font-size: 11px; font-weight: 700; letter-spacing: 0.16em; color: #5e5e65">' + rows.length + " / 10</span>" + rows.map((r) => '<div style="display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 14px; background: #f4f4f6"><span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; padding: 6px 0; border-radius: 8px; background: #111113; color: #fff; text-align: center">' + docIcon(r.nom) + '</span><span style="display: flex; flex-direction: column; min-width: 0"><a href="#" data-doc-open="' + esc(r.fichier) + '" style="font-weight: 600; font-size: 14px; color: #111113; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">' + esc(r.nom) + '</a><span style="font-size: 12px; color: #5e5e65">' + fr((r.taille || 0) / 1048576, 1) + " Mo · " + new Date(r.cree_le).toLocaleDateString("fr-CA") + (r.diagnostic ? " · " + esc(r.diagnostic) : "") + '</span></span><button type="button" data-doc-del="' + esc(r.id) + '" data-doc-path="' + esc(r.fichier) + '" data-doc-name="' + esc(r.nom) + '" aria-label="Retirer" style="width: 34px; height: 34px; border-radius: 50%; border: none; background: #e4e4e8; font: inherit; cursor: pointer">×</button></div>').join("");
   }
@@ -607,7 +637,7 @@
       .then((v) => { if (!v) return; const st = steps[labels.indexOf(v.step)]; if (!st) return; st.who = v.who || ""; st.dept = v.dept || ""; apres("Ressource enregistrée"); });
     const def = { in: ["in", "Intrant", "Document ou information reçue", "Ex. : Plans.pdf, courriel du client"], out: ["out", "Sortant", "Document ou information produite", "Ex. : Soumission.pdf"], sys: ["sys", "Système", "Logiciel ou outil utilisé", "Ex. : Excel, Outlook, Procore"] }[kind]; if (!def) return;
     const [cle, titre, label, ph] = def;
-    return dialog({ title: titre + " · ajouter", fields: [etape, { name: "v", label, placeholder: ph }], ok: "Ajouter" })
+    return dialog({ title: titre + " · ajouter", fields: [etape, kind === "sys" ? { name: "v", label, placeholder: ph } : { name: "v", label: label + (docNames().length ? " · tapez un nom ou choisissez un document importé" : ""), combo: docNames(), createLabel: "Utiliser", placeholder: ph }], ok: "Ajouter" })
       .then((v) => { if (!v || !v.v) return; const st = steps[labels.indexOf(v.step)]; if (!st) return; (st[cle] = Array.isArray(st[cle]) ? st[cle] : []).push(v.v); apres(titre + " ajouté"); });
   }
   /** Édition d'une case du diagramme : trigger · event:i · step:i · who:i · in:i:j · out:i:j · sys:i:j (j = new pour ajouter). */
@@ -624,7 +654,7 @@
       .then((v) => { if (!v) return; st.who = v.who.trim(); st.dept = v.dept.trim(); apres(); });
     const listes = { in: ["in", "Document entrant"], out: ["out", "Document sortant"], sys: ["sys", "Système"] }[kind]; if (!listes) return;
     const [cle, titre] = listes; st[cle] = Array.isArray(st[cle]) ? st[cle] : []; const neuf = sj === "new"; const j = neuf ? st[cle].length : +sj;
-    return dialog({ title: titre + (neuf ? " · ajouter" : " " + (j + 1)) + " · étape " + (i + 1), text: neuf ? "" : "Videz le champ pour retirer cette case.", fields: [{ name: "v", label: titre, value: neuf ? "" : (st[cle][j] || ""), placeholder: kind === "sys" ? "Ex. : Excel, Outlook, Procore" : "Ex. : Soumission.pdf, courriel du client" }], ok: "Enregistrer" })
+    return dialog({ title: titre + (neuf ? " · ajouter" : " " + (j + 1)) + " · étape " + (i + 1), text: neuf ? "" : "Videz le champ pour retirer cette case.", fields: [kind === "sys" ? { name: "v", label: titre, value: neuf ? "" : (st[cle][j] || ""), placeholder: "Ex. : Excel, Outlook, Procore" } : { name: "v", label: titre + (docNames().length ? " · tapez un nom ou choisissez un document importé" : ""), combo: docNames(), createLabel: "Utiliser", value: neuf ? "" : (st[cle][j] || ""), placeholder: "Ex. : Soumission.pdf, courriel du client" }], ok: "Enregistrer" })
       .then((v) => { if (!v) return; const t = v.v.trim(); if (!t) { if (!neuf) st[cle].splice(j, 1); } else if (neuf) st[cle].push(t); else st[cle][j] = t; apres(); });
   }
   function ficheLabels(s1, qui, n) {
