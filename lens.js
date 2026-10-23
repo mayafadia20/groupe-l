@@ -49,6 +49,9 @@
   function normalize(d) { if (d.epc && d.processes[0] && !d.processes[0].epc) d.processes[0].epc = d.epc; d.epc = null; return d; }
   const activeProc = () => D.processes[D.activeProc] || null;
   const activeEpc = () => (activeProc() || {}).epc || null;
+  /** Nom du prochain diagnostic d'un processus : « Diagnostic 1 », « Diagnostic 2 »… (numérotation par le système). */
+  const nextDiagName = (p) => "Diagnostic " + ((((p || {}).diagnostics) || []).length + 1);
+  const diagDesc = (p) => (D.task.proc === (p || {}).title ? (D.task.desc || "") : "");
   function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (_) {} cloudSave(); }
   const deptNames = () => D.departments.map((d) => d.name);
   /** Nom canonique d'un département ; le crée (sans responsable ni effectif) s'il n'existe pas encore. */
@@ -97,7 +100,7 @@
           wrap.appendChild(el); wrap.appendChild(list);
         }
         else if (f.options) { el = document.createElement("select"); f.options.forEach((v) => { const op = document.createElement("option"); op.textContent = v; el.appendChild(op); }); if (f.value) el.value = f.value; }
-        else if (f.type === "textarea") { el = document.createElement("textarea"); el.rows = 3; el.value = f.value || ""; }
+        else if (f.type === "textarea") { el = document.createElement("textarea"); el.rows = 3; el.value = f.value || ""; if (f.placeholder) el.placeholder = f.placeholder; }
         else { el = document.createElement("input"); el.type = f.type || "text"; el.value = f.value || ""; if (f.placeholder) el.placeholder = f.placeholder; }
         el.name = f.name; el.style.cssText = INPUT + (f.type === "textarea" ? "; height: auto; padding: 10px 12px; resize: vertical" : ""); el.style.fontWeight = "400";
         lab.appendChild(wrap || el); box.appendChild(lab);
@@ -383,6 +386,7 @@
   }
   async function scrStart() {
     if (SCR.rec) return;
+    { const p = activeProc(); if (p) { const desc = diagDesc(p); D.task = { name: nextDiagName(p), desc, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; save(); } }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) { toast("Ce navigateur ne permet pas d’enregistrer l’écran (utilisez Chrome ou Edge, en https).", false); return; }
     let stream;
     try { stream = await navigator.mediaDevices.getDisplayMedia({ video: { frameRate: { ideal: 10, max: 15 }, cursor: "always" }, audio: false, selfBrowserSurface: "exclude", surfaceSwitching: "include", monitorTypeSurfaces: "include" }); }
@@ -414,7 +418,7 @@
     const total = SCR.elapsed; SCR.rec = null; SCR.stream = null; SCR.chunks = []; SCR.paused = false;
     D.rec = Object.assign(D.rec || { actions: [] }, { elapsed: total, paused: false, running: false, total: total, video: name, taille: blob.size });
     D.rec.actions.push({ t: total, label: "Fin de l’enregistrement · " + name + " (" + fr(blob.size / 1048576, 1) + " Mo)", tag: "Lens", kind: "f" });
-    let p = D.processes.find((x) => x.title === (D.task.proc || D.task.name)); if (p) { p.recs++; (p.diagnostics = p.diagnostics || []).push({ name: D.task.name, date: new Date().toISOString(), duree_s: total, video: name }); } else { D.processes.unshift({ dept: (D.task.dept || "").toUpperCase(), ver: "v1", title: D.task.name, steps: 0, recs: 1, epc: null }); p = D.processes[0]; }
+    let p = D.processes.find((x) => x.title === (D.task.proc || D.task.name)); if (p) { p.recs++; (p.diagnostics = p.diagnostics || []).push({ name: D.task.name, desc: D.task.desc || "", date: new Date().toISOString(), duree_s: total, video: name }); } else { D.processes.unshift({ dept: (D.task.dept || "").toUpperCase(), ver: "v1", title: D.task.name, steps: 0, recs: 1, epc: null }); p = D.processes[0]; }
     D.activeProc = Math.max(0, D.processes.indexOf(p)); D.procValidated = false; save(); scrUI(); renderProcesses(); renderRec();
     toast(blob.size ? (CLOUD ? "Envoi de la vidéo à Lens… (" + fr(blob.size / 1048576, 1) + " Mo)" : "Vidéo enregistrée : " + name + " (" + mmss(total) + ")") : "Enregistrement arrêté sans vidéo", !!blob.size); renderProcPage();
   }
@@ -423,7 +427,7 @@
   async function scrPublish(blob, name, total, frames) {
     try {
       scrStatus("Envoi de la vidéo (" + fr(blob.size / 1048576, 1) + " Mo)…");
-      const r = await LensCloud.uploadRecording(ME.entreprise_id, blob, name, { processus: D.task.proc || D.task.name, departement: D.task.dept, qui: ME.nom || D.company.first, duree_s: total });
+      const r = await LensCloud.uploadRecording(ME.entreprise_id, blob, name, { processus: D.task.proc || D.task.name, departement: D.task.dept, qui: ME.nom || D.company.first, duree_s: total, diagnostic: D.task.name, description: D.task.desc || null });
       if (D.rec) { D.rec.cloudId = r.id; D.rec.fichier = r.path; save(); }
       let n = 0;
       if (frames && frames.length) { n = await LensCloud.uploadFrames(ME.entreprise_id, r.id, frames, (i, t) => scrStatus("Envoi des images " + i + " / " + t + "…")); }
@@ -471,7 +475,8 @@
     if (!p) { location.hash = "diagnostic"; return; }
     const dept = p.dept ? p.dept[0] + p.dept.slice(1).toLowerCase() : "";
     $("#pp-title").textContent = p.title;
-    $("#pp-sub").textContent = (D.task.name && D.task.name !== p.title ? "Diagnostic « " + D.task.name + " » · " : "Processus · ") + dept;
+    const nb = (p.diagnostics || []).length; const enCours = D.task.proc === p.title && D.task.name && !(p.diagnostics || []).some((d) => d.name === D.task.name);
+    $("#pp-sub").textContent = (enCours ? D.task.name + " à venir · " : nb ? nb + (nb > 1 ? " diagnostics · " : " diagnostic · ") : "Processus · ") + dept + (enCours && D.task.desc ? " · " + D.task.desc : "");
     const e = activeEpc(); const detail = $("#diag-detail"), card = $("#scr-card");
     if (detail) detail.style.display = e ? "flex" : "none";
     if (card) card.style.display = e && !SCR.rec ? "none" : "flex";
@@ -622,7 +627,9 @@
     if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
     box.innerHTML = h;
     const sub = $("#epc-sub"); const src = e.source || {};
-    if (sub) sub.textContent = ((p && p.dept) || "").toUpperCase() + " · PROPOSÉ PAR LENS À PARTIR DE " + (src.clicks != null ? src.clicks + " CLICS" : "L’ENREGISTREMENT") + (src.qui ? " · " + src.qui.toUpperCase() : "");
+    const dern = (p.diagnostics || [])[(p.diagnostics || []).length - 1];
+    $$("#diag-detail .task-title").forEach((el) => (el.textContent = p.title));
+    if (sub) sub.textContent = ((p && p.dept) || "").toUpperCase() + (src.diagnostic || dern ? " · " + String(src.diagnostic || dern.name).toUpperCase() : "") + " · PROPOSÉ PAR LENS À PARTIR DE " + (src.clicks != null ? src.clicks + " CLICS" : "L’ENREGISTREMENT") + (src.qui ? " · " + src.qui.toUpperCase() : "") + (dern && dern.desc ? " · " + dern.desc : "");
     const s1 = (e.steps || [])[0]; ficheLabels(s1 || null, src.qui);
     $$(".side-proc-title").forEach((el) => (el.textContent = (p || {}).title || "—"));
     $$(".side-proc-sub").forEach((el) => (el.textContent = ((p && p.dept) ? p.dept[0] + p.dept.slice(1).toLowerCase() : "") + " · " + (src.qui || "1 participant")));
@@ -683,18 +690,18 @@
     });
     $("#fiche-close").addEventListener("click", () => { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; });
     $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [
-        { name: "title", label: "Nom du diagnostic", placeholder: "Ex. : Soumission du projet Laval" },
         { name: "proc", label: "Processus", combo: D.processes.map((p) => p.title), placeholder: "Tapez ou choisissez un processus" },
-        { name: "dept", label: "Département (pour un nouveau processus)", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" })
+        { name: "desc", label: "Description du diagnostic", type: "textarea", placeholder: "Ex. : soumission du projet Laval, cas d’un client récurrent…" },
+        { name: "dept", label: "Département (pour un nouveau processus)", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], text: "Le numéro du diagnostic est attribué automatiquement : Diagnostic 1, 2, 3… pour chaque processus.", ok: "Créer" })
       .then((v) => {
-        if (!v || !v.title) return;
+        if (!v) return;
         const procName = String(v.proc || "").trim(); if (!procName) { toast("Indiquez le processus de ce diagnostic.", false); return; }
         let p = D.processes.find((x) => x.title.toLowerCase() === procName.toLowerCase());
         if (!p) { const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez le département du nouveau processus « " + procName + " ».", false); return; }
           p = { dept: dept.toUpperCase(), ver: "v1", title: procName, steps: 0, recs: 0, epc: null }; D.processes.unshift(p); toast("Processus « " + procName + " » créé"); }
         D.activeProc = D.processes.indexOf(p); D.procValidated = false;
-        D.task = { name: v.title, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; D.rec = null;
-        save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast("Diagnostic « " + v.title + " » · enregistrez l’écran"); }); });
+        D.task = { name: nextDiagName(p), desc: String(v.desc || "").trim(), dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; D.rec = null;
+        save(); applyTask(); renderProcesses(); location.hash = "nouveau-diagnostic"; toast(D.task.name + " · " + p.title + " · enregistrez l’écran"); }); });
     ficheCompute(); renderProcesses();
   }
 

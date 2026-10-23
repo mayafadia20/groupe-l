@@ -58,6 +58,8 @@ create table if not exists public.enregistrements (
 );
 create index if not exists enregistrements_entreprise_idx on public.enregistrements (entreprise_id, cree_le desc);
 alter table public.enregistrements add column if not exists images integer;   -- nombre d'images capturées pendant l'enregistrement
+alter table public.enregistrements add column if not exists diagnostic text;    -- « Diagnostic 1 », « Diagnostic 2 »… (numéro attribué par Lens)
+alter table public.enregistrements add column if not exists description text;   -- description saisie par la personne
 
 create table if not exists public.documents (
   id             uuid primary key default gen_random_uuid(),

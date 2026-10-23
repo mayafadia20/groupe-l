@@ -80,7 +80,7 @@ const SCHEMA = {
   required: ["processus", "etapes", "systemes", "constats"], additionalProperties: false,
 };
 
-type Rec = { id: string; entreprise_id: string; processus: string | null; departement: string | null; qui: string | null; duree_s: number | null; fichier: string | null; images: number | null };
+type Rec = { id: string; entreprise_id: string; processus: string | null; departement: string | null; qui: string | null; duree_s: number | null; fichier: string | null; images: number | null; diagnostic?: string | null; description?: string | null };
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type" } });
@@ -95,7 +95,7 @@ Deno.serve(async (req) => {
 
   // accès vérifié avec le jeton de la personne (RLS)
   const moi = createClient(url, anon, { global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } } });
-  const { data: rec, error } = await moi.from("enregistrements").select("id, entreprise_id, processus, departement, qui, duree_s, fichier, images").eq("id", body.enregistrement_id).maybeSingle();
+  const { data: rec, error } = await moi.from("enregistrements").select("id, entreprise_id, processus, departement, qui, duree_s, fichier, images, diagnostic, description").eq("id", body.enregistrement_id).maybeSingle();
   if (error) return json({ error: error.message }, 500);
   if (!rec) return json({ error: "Enregistrement introuvable ou accès refusé." }, 404);
 
@@ -133,6 +133,7 @@ async function analyser(admin: SupabaseClient, rec: Rec) {
 
   (contenu as Anthropic.ContentBlockParam[]).push({ type: "text", text:
     `Processus : ${rec.processus ?? "(non précisé)"}\nDépartement : ${rec.departement ?? "(non précisé)"}\nPersonne qui exécute : ${rec.qui ?? "(non précisée)"}\n` +
+    (rec.diagnostic ? `${rec.diagnostic}${rec.description ? " : " + rec.description : ""}\n` : "") +
     `Durée de la vidéo : ${mmss(duree)} · ${tous.length} images capturées, ${choisis.length} transmises.${docsTxt}\n` });
 
   for (const f of choisis) {
@@ -172,7 +173,7 @@ async function analyser(admin: SupabaseClient, rec: Rec) {
     // deno-lint-ignore no-explicit-any
     constats: epc.constats.map((c: any) => ({ titre: c.titre, detail: c.detail, gravite: c.gravite, evenements: c.evenements })),
     systemes: epc.systemes,
-    source: { type: "video", images: choisis.length, qui: rec.qui, duree_s: duree, clicks: null, enregistrement_id: rec.id, date: new Date().toISOString() },
+    source: { type: "video", images: choisis.length, qui: rec.qui, duree_s: duree, clicks: null, enregistrement_id: rec.id, date: new Date().toISOString(), diagnostic: rec.diagnostic ?? null, description: rec.description ?? null },
   };
 
   // 5. écriture dans l'espace de l'entreprise
