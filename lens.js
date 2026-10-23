@@ -597,12 +597,12 @@
   // chaque document et chaque système a sa propre case ; une case vide propose d'en ajouter un
   const epcBox = (label, value, edit, empty) => '<div data-edit="' + edit + '" title="Modifier" style="cursor: pointer; ' + EPC_DOC + '"><span style="' + EPC_LBL + '">' + label + '</span><span style="font-size: 12px' + (empty ? "; color: #9a9aa1; font-style: italic" : "") + '">' + esc(value) + "</span></div>";
   const epcSysBox = (label, value, edit, empty) => '<div data-edit="' + edit + '" title="Modifier" style="cursor: pointer; width: 100px; min-height: 52px; box-sizing: border-box; border: 1.5px solid #111113; border-left: 6px solid #111113; padding: 6px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 2px"><span style="' + EPC_LBL + '">' + label + '</span><span style="font-size: 12px' + (empty ? "; color: #9a9aa1; font-style: italic" : "") + '">' + esc(value) + "</span></div>";
-  const epcColumn = (items, label, kind, i, fabrique, empty) => '<div style="display: flex; flex-direction: column; gap: 6px">' + ((items && items.length) ? items.map((x, j) => fabrique(label + " " + (j + 1), x, kind + ":" + i + ":" + j, false)).join("") : fabrique(label, empty, kind + ":" + i + ":new", true)) + "</div>";
-  function epcStep(s, n) {
-    const i = n - 1;
-    const who = '<div data-edit="who:' + i + '" title="Modifier" style="cursor: pointer; width: 100px; min-height: ' + (s.dept ? 92 : 74) + 'px; box-sizing: border-box; border: 1.5px solid #6b6b72; border-radius: 50%; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">QUI</span><span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.who || "—") + "</span>" + (s.dept ? '<span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.dept) + "</span>" : "") + "</div>";
-    const step = '<div data-fiche="' + n + '" data-edit="step:' + i + '" title="Fiche de données · en mode Modifier : éditer l’étape" style="cursor: pointer; width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px' + (s.bottleneck ? "; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113" : "") + '"><span style="font-size: 11px; color: #c9c9ce">Étape ' + n + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(s.title) + "</b>" + (s.bottleneck ? '<span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #111113">Goulot probable</span>' : "") + "</div>";
-    return '<div style="display: flex; align-items: center">' + who + epcLine + epcColumn(s.in, "ENTRANT", "in", i, epcBox, "aucun") + epcRight + step + epcRight + epcColumn(s.out, "SORTANT", "out", i, epcBox, "aucun") + epcLine + epcColumn(s.sys, "SYSTÈME", "sys", i, epcSysBox, "hors écran") + "</div>";
+  const epcColumn = (items, label, kind, i, fabrique, empty, pre) => '<div style="display: flex; flex-direction: column; gap: 6px">' + ((items && items.length) ? items.map((x, j) => fabrique(label + " " + (j + 1), x, (pre || "") + kind + ":" + i + ":" + j, false)).join("") : fabrique(label, empty, (pre || "") + kind + ":" + i + ":new", true)) + "</div>";
+  function epcStep(s, n, pre) {
+    const i = n - 1; pre = pre || "";
+    const who = '<div data-edit="' + pre + 'who:' + i + '" title="Modifier" style="cursor: pointer; width: 100px; min-height: ' + (s.dept ? 92 : 74) + 'px; box-sizing: border-box; border: 1.5px solid #6b6b72; border-radius: 50%; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">QUI</span><span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.who || "—") + "</span>" + (s.dept ? '<span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.dept) + "</span>" : "") + "</div>";
+    const step = '<div data-fiche="' + pre + n + '" data-edit="' + pre + 'step:' + i + '" title="Fiche de données · en mode Modifier : éditer l’étape" style="cursor: pointer; width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px' + (s.bottleneck ? "; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113" : "") + '"><span style="font-size: 11px; color: #c9c9ce">Étape ' + n + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(s.title) + "</b>" + (s.bottleneck ? '<span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #111113">Goulot probable</span>' : "") + "</div>";
+    return '<div style="display: flex; align-items: center">' + who + epcLine + epcColumn(s.in, "ENTRANT", "in", i, epcBox, "aucun", pre) + epcRight + step + epcRight + epcColumn(s.out, "SORTANT", "out", i, epcBox, "aucun", pre) + epcLine + epcColumn(s.sys, "SYSTÈME", "sys", i, epcSysBox, "hors écran", pre) + "</div>";
   }
   let EDIT = false, EDIT_P = null;   // mode « Modifier » du diagramme et processus concerné
   function setEdit(on) {
@@ -642,7 +642,7 @@
   }
   /** Édition d'une case du diagramme : trigger · event:i · step:i · who:i · in:i:j · out:i:j · sys:i:j (j = new pour ajouter). */
   function epcEdit(code) {
-    const e = activeEpc(); if (!e) return; const [kind, si, sj] = code.split(":"); const i = +si; const st = (e.steps || [])[i];
+    const parts = code.split(":"); const k = +parts.shift(); const e = ((procDiags(activeProc())[k] || {}).epc) || null; if (!e) return; const [kind, si, sj] = parts; const i = +si; const st = (e.steps || [])[i];
     const apres = () => { const p = activeProc(); if (p) p.steps = (e.steps || []).length; save(); renderEPC(); toast("Diagramme mis à jour"); };
     if (kind === "trigger") return dialog({ title: "Déclencheur", fields: [{ name: "v", label: "Événement qui lance le processus", value: e.trigger || "" }], ok: "Enregistrer" }).then((v) => { if (!v) return; e.trigger = v.v; apres(); });
     if (kind === "result") return dialog({ title: "Résultat du processus", fields: [{ name: "v", label: "Ce que le processus produit", value: e.result || "" }], ok: "Enregistrer" }).then((v) => { if (!v) return; e.result = v.v; apres(); });
@@ -671,7 +671,7 @@
   }
   function renderDiagPills() {
     const box = $("#epc-diags"); if (!box) return; const p = activeProc(); const ds = procDiags(p); const sel = selectedDiag(p);
-    if (!p || ds.length < 1) { box.style.display = "none"; return; }
+    box.style.display = "none"; if (box) return;
     box.style.display = "flex";
     box.innerHTML = ds.map((d, i) => { const on = d === sel; const etat = d.epc ? "" : " · en attente d’analyse"; const date = d.date ? new Date(d.date).toLocaleDateString("fr-CA") : "";
       return '<button type="button" data-diag="' + i + '" title="' + esc(d.desc || "") + '" style="min-height: 34px; padding: 0 14px; border-radius: 999px; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; border: 1.5px solid #111113; background: ' + (on ? "#111113" : "#ffffff") + "; color: " + (on ? "#ffffff" : "#111113") + '">' + esc(d.name) + (date ? '<span style="font-weight: 400; opacity: 0.75"> · ' + date + "</span>" : "") + esc(etat) + "</button>"; }).join("");
@@ -681,10 +681,19 @@
     const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; FICHE_STEP = null; ficheClear();
     if (!p) { ficheLabels(null); return; }
     if (!e) { if (p && !p.steps && !p.recs) { ficheLabels(null); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Enregistrer l’écran », puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
-    let h = '<div data-edit="trigger" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
-    (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1); });
-    if ((e.steps || []).length) h += epcDown + '<div data-edit="result" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">RÉSULTAT</span><span style="font-size: 13px">' + esc(e.result || "Terminé") + "</span></div>";
-    if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
+    const diagramme = (e, pre) => {
+      let h = '<div data-edit="' + pre + 'trigger" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
+      (e.steps || []).forEach((st, i) => { h += epcDown + epcStep(st, i + 1, pre); });
+      if ((e.steps || []).length) h += epcDown + '<div data-edit="' + pre + 'result" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">RÉSULTAT</span><span style="font-size: 13px">' + esc(e.result || "Terminé") + "</span></div>";
+      else h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape pour l’instant.</span></div>';
+      return h;
+    };
+    const ds = procDiags(p); let h = "";
+    ds.forEach((d, k) => {
+      const date = d.date ? new Date(d.date).toLocaleDateString("fr-CA") : "";
+      h += '<div style="width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: ' + (k ? "26px" : "4px") + ' 0 16px' + (k ? "; border-top: 1px solid #ececef; margin-top: 22px" : "") + '"><span style="font-size: 12.5px; font-weight: 700; padding: 6px 14px; border-radius: 999px; background: #111113; color: #ffffff">' + esc(d.name) + '</span><span style="font-size: 13px; color: #5e5e65">' + esc(date) + (d.desc ? " · " + esc(d.desc) : "") + (d.duree_s ? " · " + mmss(d.duree_s) : "") + (d.epc ? "" : " · en attente d’analyse") + "</span></div>";
+      if (d.epc) h += diagramme(d.epc, k + ":");
+    });
     box.innerHTML = h;
     const sub = null; const src = e.source || {};
     const dern = selectedDiag(p);
@@ -753,7 +762,7 @@
       const b = ev.target.closest("[data-edit]");
       if (EDIT) { if (b) epcEdit(b.dataset.edit); return; }
       const f = ev.target.closest("[data-fiche]"); if (!f) return;
-      const e = activeEpc(); const i = +f.dataset.fiche - 1; const st = e && e.steps ? e.steps[i] : null; if (!st) return;
+      const [fk, fn] = f.dataset.fiche.split(":"); const e = ((procDiags(activeProc())[+fk] || {}).epc) || null; const i = +fn - 1; const st = e && e.steps ? e.steps[i] : null; if (!st) return;
       ficheLabels(st, (e.source || {}).qui, i + 1); ficheLoad(st);
       const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); }
     });

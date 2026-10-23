@@ -413,8 +413,10 @@ body:not(:has(.screen:target)) #connexion{display:block}
             <h2 class="task-title" style="margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.01em">Préparer une soumission</h2>
             <div id="epc-diags" style="display: none; flex-wrap: wrap; gap: 8px; margin-top: 10px"></div>
           </div>
-          <button type="button" id="epc-delete" title="Supprimer ce processus et ses diagnostics" style="display: none; flex: none; min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid #c62828; background: #ffffff; color: #c62828; margin-right: 8px">Supprimer</button>
+          <div style="display: flex; align-items: center; gap: 8px; margin-left: auto; flex: none">
+          <button type="button" id="epc-delete" title="Supprimer ce processus et ses diagnostics" style="display: none; flex: none; min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid #c62828; background: #ffffff; color: #c62828">Supprimer</button>
           <button type="button" id="epc-edit" title="Modifier le processus : cliquez ensuite sur une case pour l’éditer, ou ajoutez une étape, une ressource, un intrant, un sortant ou un système" style="flex: none; min-height: 42px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border: 1.5px solid #111113; background: #ffffff; color: #111113">Modifier</button>
+          </div>
         </div>
         <div id="epc-tools" style="display: none; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px 14px; border-radius: 18px; background: #f1f1f3">
           <span style="font-size: 12.5px; color: #5e5e65; margin-right: 6px">Cliquez sur une case pour la modifier, ou ajoutez :</span>
