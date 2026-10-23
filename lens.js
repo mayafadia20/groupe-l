@@ -56,6 +56,12 @@
     });
     return d;
   }
+  /** Supprime en ligne les documents d'un processus (ils sont rattachés par son nom). */
+  async function purgeProcessDocs(p) {
+    if (!CLOUD || !ME || !ME.entreprise_id || !p) return 0;
+    try { const rows = await LensCloud.listDocuments(ME.entreprise_id, p.title); for (const r of rows) { try { await LensCloud.deleteDocument(r.id, r.fichier); } catch (e) { console.warn(e); } } return rows.length; }
+    catch (e) { console.warn(e); return 0; }
+  }
   let DIAG_SEL = {};   // par processus (titre) : index du diagnostic affiché
   const procDiags = (p) => ((p || {}).diagnostics) || [];
   function selectedDiag(p) { const ds = procDiags(p); if (!ds.length) return null; let i = DIAG_SEL[p.title]; if (i == null || !ds[i]) { i = ds.length - 1; while (i > 0 && !ds[i].epc) i--; } return ds[i] || null; }
@@ -694,16 +700,16 @@
     $("#proc-cards").addEventListener("click", (e) => {
       const x = e.target.closest("[data-proc-del]");
       if (x) { e.stopPropagation(); const p = D.processes[+x.dataset.procDel]; if (!p) return; const n = (p.diagnostics || []).length;
-        dialog({ title: "Supprimer « " + p.title + " » ?", text: "Le processus" + (n ? " et ses " + n + " diagnostic" + (n > 1 ? "s" : "") : "") + " disparaîtront de Lens. Les vidéos restent dans la base.", ok: "Supprimer" })
-          .then((ok) => { if (!ok) return; const i = D.processes.indexOf(p); if (i >= 0) D.processes.splice(i, 1); D.activeProc = 0; save(); renderProcesses(); toast("Processus « " + p.title + " » supprimé"); }); return; }
-      const b = e.target.closest("[data-proc]"); if (!b) return; D.activeProc = +b.dataset.proc; D.procValidated = false; const p = activeProc(); if (p && b.dataset.diag != null) DIAG_SEL[p.title] = +b.dataset.diag; if (p) D.task = { name: p.title, dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; save(); renderProcesses(); location.hash = "nouveau-diagnostic"; });
+        dialog({ title: "Supprimer « " + p.title + " » ?", text: "Le processus" + (n ? ", ses " + n + " diagnostic" + (n > 1 ? "s" : "") : "") + " et ses documents importés disparaîtront de Lens. Les vidéos restent dans la base.", ok: "Supprimer" })
+          .then(async (ok) => { if (!ok) return; const i = D.processes.indexOf(p); if (i >= 0) D.processes.splice(i, 1); D.activeProc = 0; save(); renderProcesses(); await purgeProcessDocs(p); toast("Processus « " + p.title + " » supprimé"); }); return; }
+      const b = e.target.closest("[data-proc]"); if (!b) return; D.activeProc = +b.dataset.proc; D.procValidated = false; const p = activeProc(); if (p && b.dataset.diag != null) DIAG_SEL[p.title] = +b.dataset.diag; if (p) D.task = { name: nextDiagName(p), desc: "", dept: p.dept[0] + p.dept.slice(1).toLowerCase(), proc: p.title, freq: "", windows: [] }; save(); renderProcesses(); location.hash = "nouveau-diagnostic"; });
     $("#proc-new").addEventListener("click", () => dialog({ title: "Nouveau processus", fields: [{ name: "title", label: "Nom du processus", placeholder: "Ex. : Clôturer un chantier" }, { name: "dept", label: "Département", combo: deptNames(), placeholder: "Tapez ou choisissez un département" }], ok: "Créer" }).then((v) => { if (!v || !v.title) return; const dept = ensureDept(v.dept); if (!dept) { toast("Indiquez un département.", false); return; } D.processes.unshift({ dept: dept.toUpperCase(), ver: "v1", title: v.title, steps: 0, recs: 0 }); D.activeProc = 0; D.procValidated = false; save(); renderProcesses(); toast("Processus créé · enregistrez une tâche pour le cartographier"); }));
     // ─── mode « Modifier » : les cases deviennent éditables et une barre permet d'ajouter étape, ressource, intrant, sortant, système ───
     $("#epc-edit").addEventListener("click", () => setEdit(!EDIT));
     $("#epc-diags").addEventListener("click", (ev) => { const b = ev.target.closest("[data-diag]"); if (!b) return; const p = activeProc(); if (!p) return; DIAG_SEL[p.title] = +b.dataset.diag; renderProcPage(); });
     $("#epc-delete").addEventListener("click", () => { const p = activeProc(); if (!p) return; const n = procDiags(p).length;
-      dialog({ title: "Supprimer « " + p.title + " » ?", text: "Le processus" + (n ? " et ses " + n + " diagnostic" + (n > 1 ? "s" : "") : "") + " disparaîtront de Lens. Les vidéos restent dans la base.", ok: "Supprimer" })
-        .then((ok) => { if (!ok) return; const i = D.processes.indexOf(p); if (i >= 0) D.processes.splice(i, 1); D.activeProc = 0; setEdit(false); save(); renderProcesses(); toast("Processus « " + p.title + " » supprimé"); location.hash = "diagnostic"; }); });
+      dialog({ title: "Supprimer « " + p.title + " » ?", text: "Le processus" + (n ? ", ses " + n + " diagnostic" + (n > 1 ? "s" : "") : "") + " et ses documents importés disparaîtront de Lens. Les vidéos restent dans la base.", ok: "Supprimer" })
+        .then(async (ok) => { if (!ok) return; const i = D.processes.indexOf(p); if (i >= 0) D.processes.splice(i, 1); D.activeProc = 0; setEdit(false); save(); renderProcesses(); location.hash = "diagnostic"; await purgeProcessDocs(p); toast("Processus « " + p.title + " » supprimé"); }); });
     $("#epc-tools").addEventListener("click", (ev) => { const b = ev.target.closest("[data-epc-add]"); if (b) epcAdd(b.dataset.epcAdd); });
     renderEPC();
     const f = $("#fiche"); ficheSetEditable(false);
