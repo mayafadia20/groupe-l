@@ -545,7 +545,7 @@
   function epcStep(s, n) {
     const i = n - 1;
     const who = '<div data-edit="who:' + i + '" title="Modifier" style="cursor: pointer; width: 100px; min-height: ' + (s.dept ? 92 : 74) + 'px; box-sizing: border-box; border: 1.5px solid #6b6b72; border-radius: 50%; padding: 8px 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font-size: 10px; font-weight: 600; letter-spacing: 0.14em; color: #5e5e65">QUI</span><span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.who || "—") + "</span>" + (s.dept ? '<span style="font-size: 10.5px; font-weight: 600; padding: 2px 7px; border: 1px solid #6b6b72; border-radius: 999px; white-space: nowrap">' + esc(s.dept) + "</span>" : "") + "</div>";
-    const step = '<div data-edit="step:' + i + '" title="Modifier l’étape" style="cursor: pointer; width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px' + (s.bottleneck ? "; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113" : "") + '"><span style="font-size: 11px; color: #c9c9ce">Étape ' + n + " · " + esc(s.dur || "—") + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(s.title) + "</b>" + (s.bottleneck ? '<span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #111113">Goulot probable</span>' : "") + '<button type="button" data-fiche="' + n + '" style="margin-top: 2px; border: none; background: rgba(255, 255, 255, 0.16); color: #ffffff; border-radius: 999px; padding: 2px 9px; font: inherit; font-size: 10.5px; font-weight: 600; cursor: pointer">Fiche de données</button></div>';
+    const step = '<div data-fiche="' + n + '" data-edit="step:' + i + '" title="Fiche de données · en mode Modifier : éditer l’étape" style="cursor: pointer; width: 150px; min-height: 64px; box-sizing: border-box; border-radius: 10px; padding: 8px 10px; background: ' + GRADC + '; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 4px' + (s.bottleneck ? "; box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px #111113" : "") + '"><span style="font-size: 11px; color: #c9c9ce">Étape ' + n + '</span><b style="font-size: 13.5px; font-weight: 600; line-height: 1.2">' + esc(s.title) + "</b>" + (s.bottleneck ? '<span style="font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: #ffffff; color: #111113">Goulot probable</span>' : "") + "</div>";
     return '<div style="display: flex; align-items: center">' + who + epcLine + epcColumn(s.in, "ENTRANT", "in", i, epcBox, "aucun") + epcRight + step + epcRight + epcColumn(s.out, "SORTANT", "out", i, epcBox, "aucun") + epcLine + epcColumn(s.sys, "SYSTÈME", "sys", i, epcSysBox, "hors écran") + "</div>";
   }
   let EDIT = false, EDIT_P = null;   // mode « Modifier » du diagramme et processus concerné
@@ -588,6 +588,7 @@
     const e = activeEpc(); if (!e) return; const [kind, si, sj] = code.split(":"); const i = +si; const st = (e.steps || [])[i];
     const apres = () => { const p = activeProc(); if (p) p.steps = (e.steps || []).length; save(); renderEPC(); toast("Diagramme mis à jour"); };
     if (kind === "trigger") return dialog({ title: "Déclencheur", fields: [{ name: "v", label: "Événement qui lance le processus", value: e.trigger || "" }], ok: "Enregistrer" }).then((v) => { if (!v) return; e.trigger = v.v; apres(); });
+    if (kind === "result") return dialog({ title: "Résultat du processus", fields: [{ name: "v", label: "Ce que le processus produit", value: e.result || "" }], ok: "Enregistrer" }).then((v) => { if (!v) return; e.result = v.v; apres(); });
     if (!st) return;
     if (kind === "event") return dialog({ title: "Événement après l’étape " + (i + 1), fields: [{ name: "v", label: "Événement", value: st.event || "" }], ok: "Enregistrer" }).then((v) => { if (!v) return; st.event = v.v; apres(); });
     if (kind === "step") return dialog({ title: "Étape " + (i + 1), text: "Videz le titre pour supprimer l’étape.", fields: [{ name: "title", label: "Titre", value: st.title || "" }, { name: "dur", label: "Durée", value: st.dur || "", placeholder: "Ex. : 20 min, attente 2 j" }, { name: "bottleneck", label: "Goulot probable", options: ["Non", "Oui"], value: st.bottleneck ? "Oui" : "Non" }], ok: "Enregistrer" })
@@ -612,11 +613,12 @@
     if (av) av.textContent = initials(qui || (CLOUD && ME && ME.nom) || D.company.first || "—");
   }
   function renderEPC() {
-    const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); ficheClear(); const fp = $("#fiche-panel"); if (fp) fp.style.display = "none";
+    const box = $("#epc"); if (!box) return; const p = activeProc(); const e = activeEpc(); const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; FICHE_STEP = null; ficheClear();
     if (!p) { ficheLabels(null); return; }
     if (!e) { if (p && !p.steps && !p.recs) { ficheLabels(null); box.innerHTML = '<div style="padding: 40px 20px; text-align: center; font-size: 14px; color: #5e5e65">Aucun enregistrement pour ce processus. Cliquez sur « Enregistrer l’écran », puis importez le diagnostic produit par l’agent.</div>'; const sub = $("#epc-sub"); if (sub) sub.textContent = (p.dept || "").toUpperCase() + " · EN ATTENTE D’UN ENREGISTREMENT"; } return; }
     let h = '<div data-edit="trigger" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; min-height: 58px; background: ' + GRADC + '; color: #ffffff"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #c9c9ce">DÉCLENCHEUR</span><b style="font-size: 13.5px; font-weight: 600">' + esc(e.trigger || "Début") + "</b></div>";
-    (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1) + epcDown + '<div data-edit="event:' + i + '" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">ÉVÉNEMENT</span><span style="font-size: 13px">' + esc(s.event || (i === e.steps.length - 1 ? e.result || "Terminé" : "Étape terminée")) + "</span></div>"; });
+    (e.steps || []).forEach((s, i) => { h += epcDown + epcStep(s, i + 1); });
+    if ((e.steps || []).length) h += epcDown + '<div data-edit="result" title="Modifier" style="cursor: pointer; ' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 10.5px; font-weight: 600; letter-spacing: 0.16em; color: #5e5e65">RÉSULTAT</span><span style="font-size: 13px">' + esc(e.result || "Terminé") + "</span></div>";
     if (!(e.steps || []).length) h += epcDown + '<div style="' + EPC_HEX + '; background: #e4e4e8"><span style="font-size: 13px">Aucune étape : enregistrez une tâche.</span></div>';
     box.innerHTML = h;
     const sub = $("#epc-sub"); const src = e.source || {};
@@ -628,10 +630,26 @@
   function ficheInputs() { return $$("#fiche input, #fiche select, #fiche textarea"); }
   // espace réel (processus importé ou neuf) : les valeurs de démonstration de la fiche sont effacées, la personne la remplit
   function ficheClear() { if (Object.keys(D.fiche).length) return; ficheInputs().forEach((inp) => { if (inp.tagName !== "SELECT") inp.value = ""; }); ficheCompute(); }
+  let FICHE_STEP = null;   // étape dont la fiche est affichée
+  const UNITES = { s: "s", sec: "s", secondes: "s", min: "min", minutes: "min", h: "h", heures: "h", j: "jours", jour: "jours", jours: "jours", sem: "semaines" };
+  /** « 4 s », « 20 min », « 1,5 h », « attente 2 j » → { attente, valeur, unite } */
+  function parseDur(d) { const m = /(attente\s*)?([\d.,]+)\s*([a-zé]+)?/i.exec(String(d || "")); if (!m) return null; return { attente: !!m[1], valeur: m[2].replace(",", "."), unite: UNITES[(m[3] || "min").toLowerCase()] || (m[3] || "min") }; }
+  function ficheSetEditable(on) { ficheInputs().forEach((inp) => { inp.disabled = !on; inp.style.background = on ? "#ffffff" : "#f4f4f6"; inp.style.color = "#111113"; }); const b = $("#fiche-edit"); if (b) { b.textContent = on ? "Modification en cours" : "Modifier"; b.style.background = on ? "#111113" : "#ffffff"; b.style.color = on ? "#ffffff" : "#111113"; } const sv = $("#fiche-save"); if (sv) sv.style.display = on ? "" : "none"; }
+  /** Charge la fiche d'une étape : ses valeurs enregistrées, sinon le temps de traitement (ou d'attente) déduit de la durée. */
+  function ficheLoad(st) {
+    FICHE_STEP = st; const ins = ficheInputs();
+    ins.forEach((inp) => { if (inp.tagName !== "SELECT") inp.value = ""; });
+    const row = (k) => $('#fiche .f-row[data-f="' + k + '"]');
+    const remplir = (k, p) => { const r = row(k); if (!r) return; const sel = r.querySelector("select"); if (sel) sel.value = "="; const champs = $$("input", r); if (champs[0]) champs[0].value = p.valeur; if (champs.length > 3 && champs[1]) champs[1].value = ""; champs[champs.length - 2].value = p.unite; champs[champs.length - 1].value = "par exécution"; };
+    const saved = st && st.fiche && Object.keys(st.fiche).length ? st.fiche : null;
+    if (saved) ins.forEach((inp, i) => { if (saved[i] != null) inp.value = saved[i]; });
+    else if (st) { const p = parseDur(st.dur); if (p) remplir(p.attente ? "wb" : "tt", p); }
+    ficheSetEditable(false); ficheCompute();
+  }
   function ficheCompute() {
     const row = (k) => $('#fiche .f-row[data-f="' + k + '"]'); const val = (k) => { const r = row(k); if (!r) return 0; const ins = $$("input", r); const a = num(ins[0].value); const b = ins.length > 3 ? num(ins[1].value) : a; return (a + b) / 2; };
     const unitOf = (k) => { const r = row(k); if (!r) return ""; const ins = $$("input", r); return (ins[ins.length - 2].value || "").toLowerCase(); };
-    const toDays = (v, u) => /min/.test(u) ? v / 60 / (D.company.day || 8) : /^h/.test(u) ? v / (D.company.day || 8) : /sem/.test(u) ? v * 5 : v;
+    const toDays = (v, u) => /^s/.test(u) ? v / 3600 / (D.company.day || 8) : /min/.test(u) ? v / 60 / (D.company.day || 8) : /^h/.test(u) ? v / (D.company.day || 8) : /sem/.test(u) ? v * 5 : v;
     const cycle = toDays(val("tt"), unitOf("tt")) + toDays(val("wb"), unitOf("wb")) + toDays(val("wa"), unitOf("wa"));
     const c = $("#f-cycle"); if (c) c.textContent = "≈ " + fr(cycle, 1) + (cycle >= 2 ? " jours" : " jour");
     const freq = val("freq"), cap = val("cap"); const util = cap ? Math.round(freq / cap * 100) : 0;
@@ -648,18 +666,20 @@
     $("#epc-edit").addEventListener("click", () => setEdit(!EDIT));
     $("#epc-tools").addEventListener("click", (ev) => { const b = ev.target.closest("[data-epc-add]"); if (b) epcAdd(b.dataset.epcAdd); });
     renderEPC();
-    const f = $("#fiche"); ficheInputs().forEach((inp, i) => { if (D.fiche[i] != null) inp.value = D.fiche[i]; });
-    f.addEventListener("input", (e) => { const i = ficheInputs().indexOf(e.target); if (i >= 0) { D.fiche[i] = e.target.value; D.ficheSaved = false; } ficheCompute(); });
-    f.addEventListener("change", () => save());
-    $("#fiche-save").addEventListener("click", () => { D.ficheSaved = true; save(); const r = ficheCompute(); toast("Fiche enregistrée · cycle ≈ " + fr(r.cycle, 1) + " j · utilisation " + r.util + " %"); });
+    const f = $("#fiche"); ficheSetEditable(false);
+    f.addEventListener("input", (e) => { const i = ficheInputs().indexOf(e.target); if (i >= 0 && FICHE_STEP) { FICHE_STEP.fiche = FICHE_STEP.fiche || {}; FICHE_STEP.fiche[i] = e.target.value; } ficheCompute(); });
+    $("#fiche-edit").addEventListener("click", () => { const on = $("#fiche-save").style.display === "none"; ficheSetEditable(on); if (on) { const first = ficheInputs().find((x) => x.tagName === "INPUT" && !x.disabled); if (first) first.focus(); } });
+    $("#fiche-save").addEventListener("click", (ev) => { ev.preventDefault();
+      if (FICHE_STEP) { const r0 = $('#fiche .f-row[data-f="tt"]'); const ch = r0 ? $$("input", r0) : []; const v = ch[0] && ch[0].value.trim(); const u = ch[ch.length - 2] && ch[ch.length - 2].value.trim();
+        if (v) { const abr = { s: "s", sec: "s", secondes: "s", seconde: "s", minutes: "min", minute: "min", heures: "h", heure: "h", jours: "j", jour: "j", j: "j" }[(u || "").toLowerCase()] || u || "min"; FICHE_STEP.dur = v + " " + abr; } }
+      save(); ficheSetEditable(false); const r = ficheCompute(); renderEPC(); const fp = $("#fiche-panel"); if (fp) fp.style.display = "flex"; toast("Fiche enregistrée · cycle ≈ " + fr(r.cycle, 1) + " j · utilisation " + r.util + " %"); });
     $("#epc").addEventListener("click", (ev) => {
-      const f = ev.target.closest("[data-fiche]");
-      if (f) { ev.stopPropagation(); const e = activeEpc(); const i = +f.dataset.fiche - 1; const st = e && e.steps ? e.steps[i] : null; if (!st) return; ficheLabels(st, (e.source || {}).qui, i + 1); const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); } return; }
-      const b = ev.target.closest("[data-edit]"); if (!b) return;
-      if (EDIT) { epcEdit(b.dataset.edit); return; }
-      const m = /^step:(\d+)$/.exec(b.dataset.edit); if (!m) return;
-      const e = activeEpc(); const i = +m[1]; const st = e && e.steps ? e.steps[i] : null; if (!st) return;
-      ficheLabels(st, (e.source || {}).qui, i + 1); const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); }
+      const b = ev.target.closest("[data-edit]");
+      if (EDIT) { if (b) epcEdit(b.dataset.edit); return; }
+      const f = ev.target.closest("[data-fiche]"); if (!f) return;
+      const e = activeEpc(); const i = +f.dataset.fiche - 1; const st = e && e.steps ? e.steps[i] : null; if (!st) return;
+      ficheLabels(st, (e.source || {}).qui, i + 1); ficheLoad(st);
+      const fp = $("#fiche-panel"); if (fp) { fp.style.display = "flex"; fp.scrollIntoView({ behavior: "smooth", block: "start" }); }
     });
     $("#fiche-close").addEventListener("click", () => { const fp = $("#fiche-panel"); if (fp) fp.style.display = "none"; });
     $("#diag-new").addEventListener("click", (e) => { e.preventDefault(); dialog({ title: "Nouveau diagnostic", fields: [
