@@ -25,6 +25,13 @@ Déploiement depuis le tableau de bord (sans installer d'outil) :
 Avec le CLI (`npm i -g supabase`, puis `supabase login`) : `supabase functions deploy analyser --project-ref afcwntgvmpkulngcueaq`
 et `supabase secrets set ANTHROPIC_API_KEY=...`.
 
+## 2 bis. Fonction « questionnaire » (entretien après la cartographie)
+
+Code : `functions/questionnaire/index.ts`. Même déploiement que « analyser » (Edge Functions → Deploy a new function → Via Editor,
+nom `questionnaire`), même secret `ANTHROPIC_API_KEY`. Lens l'appelle quand la personne ouvre le bouton Questionnaire :
+Claude pose une question à la fois sur le processus cartographié, prend en compte les corrections décrites par la personne
+et met à jour le diagramme du diagnostic. La conversation est conservée dans l'espace (diagnostic → `chat`).
+
 ## 3. Suivi
 
 Table `enregistrements`, colonne `statut` : `televerse` → `analyse` → `cartographie` (ou `erreur`, avec le message dans

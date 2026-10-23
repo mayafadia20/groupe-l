@@ -530,13 +530,58 @@
     if (detail) detail.style.display = (e || procDiags(p).length) ? "flex" : "none";
     if (card) card.style.display = e && !SCR.rec ? "none" : "flex";
     const hint = $("#scr-hint"); if (hint && !SCR.rec) hint.textContent = (e ? "Nouvel enregistrement : " : "Aucun enregistrement pour ce processus. ") + "Cliquez sur « Enregistrer l’écran », choisissez l’écran à partager, puis exécutez la tâche comme d’habitude. Le curseur est enregistré avec l’image" + (CLOUD ? " et la vidéo est envoyée dans votre espace Lens." : ".");
+    const qb = $("#scr-quiz"); if (qb) { const ok = procDiags(p).some((d) => d.epc); qb.style.opacity = ok ? "1" : "0.45"; qb.title = ok ? "Répondre aux questions de Lens sur ce processus, ou corriger le diagramme" : "Disponible après la cartographie du premier enregistrement"; }
+    const qp = $("#quiz-panel"); if (qp && qp.style.display !== "none") quizRender();
     renderEPC(); renderDocs();
     if (CLOUD && ME && !e && D.rec && D.rec.cloudId && !ANALYSE && !SCR.rec) { LensCloud.recording(D.rec.cloudId).then((r) => { if (r && (r.statut === "analyse" || r.statut === "televerse")) { scrStatus("Analyse en cours par Lens… Le diagramme apparaîtra ici dès qu’il sera prêt."); scrWatch(r.id); } }).catch(() => {}); }
+  }
+  // ─── questionnaire : entretien guidé par Lens après la cartographie, avec corrections du diagramme ───
+  const QUIZ = { diag: null, busy: false };
+  function quizDiag() { const p = activeProc(); const ds = procDiags(p).filter((d) => d.epc); if (!ds.length) return null; return ds.find((d) => d.name === QUIZ.diag) || ds[ds.length - 1]; }
+  function quizStatus(t) { const el = $("#quiz-status"); if (el) el.textContent = t || ""; }
+  function quizRender() {
+    const box = $("#quiz-msgs"); const d = quizDiag(); if (!box) return;
+    const p = activeProc(); const ds = procDiags(p).filter((x) => x.epc); const sel = $("#quiz-diag");
+    if (sel) { sel.style.display = ds.length > 1 ? "inline-block" : "none"; sel.innerHTML = ds.map((x) => '<option' + (d && x.name === d.name ? " selected" : "") + ">" + esc(x.name) + "</option>").join(""); }
+    $("#quiz-title").textContent = d ? d.name + " · " + (p ? p.title : "") : "Entretien sur le processus";
+    const chat = (d && d.chat) || [];
+    box.innerHTML = chat.map((m) => '<div style="align-self: ' + (m.role === "user" ? "flex-end" : "flex-start") + '; max-width: 92%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; ' + (m.role === "user" ? "background: #111113; color: #ffffff; border-bottom-right-radius: 6px" : "background: #f4f4f6; color: #111113; border-bottom-left-radius: 6px") + '">' + esc(m.content) + (m.epc_modifie ? '<div style="margin-top: 6px; font-size: 11.5px; font-weight: 600; opacity: 0.75">Diagramme mis à jour</div>' : "") + "</div>").join("") || '<div style="font-size: 13.5px; color: #5e5e65">Lens prépare sa première question…</div>';
+    const f = $("#quiz-form"); if (f) f.style.display = d && d.chat_termine ? "none" : "flex";
+    if (d && d.chat_termine) box.insertAdjacentHTML("beforeend", '<div style="font-size: 13px; color: #5e5e65; text-align: center; padding: 8px">Entretien terminé. Merci !</div>');
+    box.scrollTop = box.scrollHeight;
+  }
+  async function quizCall(message) {
+    const p = activeProc(); const d = quizDiag(); if (!p || !d) return;
+    if (!CLOUD || !ME) { toast("Le questionnaire demande la base en ligne.", false); return; }
+    QUIZ.busy = true; quizStatus("Lens réfléchit…"); const btn = $("#quiz-send"); if (btn) btn.disabled = true;
+    try {
+      if (cloudDirty) { clearTimeout(cloudTimer); cloudDirty = false; await LensCloud.saveSpace(ME.entreprise_id, D); }
+      const r = await LensCloud.questionnaire(p.title, d.name, message);
+      await reloadSpace(); quizRender();
+      if (r && r.epc_modifie) { renderProcPage(); $("#quiz-panel").style.display = "flex"; quizRender(); toast("Diagramme mis à jour d’après vos précisions"); }
+    } catch (e) { console.error(e); quizStatus(e.message); toast(e.message, false); }
+    finally { QUIZ.busy = false; if (!$("#quiz-status").textContent.startsWith("Questionnaire")) quizStatus(""); if (btn) btn.disabled = false; }
+  }
+  function quizOpening() { const d = quizDiag(); if (d && !(d.chat || []).length && !QUIZ.busy) quizCall(null); }
+  function quizOpen() {
+    const d = quizDiag();
+    if (!d) { toast("Le questionnaire s’ouvre une fois le processus cartographié : enregistrez l’écran d’abord.", false); return; }
+    QUIZ.diag = d.name; $("#quiz-panel").style.display = "flex"; quizRender(); quizOpening();
+    setTimeout(() => { const i = $("#quiz-input"); if (i) i.focus(); }, 100);
+  }
+  async function quizSend() {
+    const i = $("#quiz-input"); const t = (i.value || "").trim(); if (!t || QUIZ.busy) return;
+    const d = quizDiag(); if (!d) return; (d.chat = d.chat || []).push({ role: "user", content: t, ts: new Date().toISOString() }); i.value = ""; quizRender();
+    await quizCall(t);
   }
   function initScreenRec() {
     if (!$("#scr-start")) return; scrUI();
     $("#scr-start").addEventListener("click", scrStart);
-    $("#scr-quiz").addEventListener("click", () => toast("Questionnaire : à venir. Il complétera l’enregistrement par quelques questions sur la tâche.", false));
+    $("#scr-quiz").addEventListener("click", () => quizOpen());
+    $("#quiz-close").addEventListener("click", () => { $("#quiz-panel").style.display = "none"; });
+    $("#quiz-diag").addEventListener("change", () => { QUIZ.diag = $("#quiz-diag").value; quizRender(); quizOpening(); });
+    $("#quiz-form").addEventListener("submit", (e) => { e.preventDefault(); quizSend(); });
+    $("#quiz-input").addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); quizSend(); } });
     $("#scr-docs").addEventListener("click", () => { if (!CLOUD || !ME || !ME.entreprise_id) { toast("L’import de documents demande la base en ligne.", false); return; } $("#scr-docs-in").value = ""; $("#scr-docs-in").click(); });
     $("#scr-docs-in").addEventListener("change", async (e) => {
       const files = Array.from(e.target.files || []); if (!files.length) return;
